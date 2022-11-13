@@ -1,0 +1,1305 @@
+
+
+Microchip MPLAB XC8 Assembler V2.36 build 20220127204148 
+                                                                                               Mon Oct 31 17:42:45 2022
+
+Microchip MPLAB XC8 C Compiler v2.36 (Free license) build 20220127204148 Og1 
+     1                           	processor	12F675
+     2                           	pagewidth 120
+     3                           	opt	flic
+     4                           	psect	idataBANK0,global,class=CODE,delta=2,noexec
+     5                           	psect	cinit,global,class=CODE,merge=1,delta=2
+     6                           	psect	bssBANK0,global,class=BANK0,space=1,delta=1,noexec
+     7                           	psect	dataBANK0,global,class=BANK0,space=1,delta=1,noexec
+     8                           	psect	cstackCOMMON,global,class=COMMON,space=1,delta=1,noexec
+     9                           	psect	cstackBANK0,global,class=BANK0,space=1,delta=1,noexec
+    10                           	psect	maintext,global,class=CODE,split=1,delta=2
+    11                           	psect	text1,local,class=CODE,merge=1,delta=2
+    12                           	psect	text2,local,class=CODE,merge=1,delta=2
+    13                           	psect	text3,local,class=CODE,merge=1,delta=2
+    14                           	psect	intentry,global,class=CODE,delta=2
+    15                           	psect	text4,local,class=CODE,merge=1,delta=2
+    16                           	psect	text5,local,class=CODE,merge=1,delta=2
+    17                           	psect	text6,local,class=CODE,merge=1,delta=2
+    18                           	psect	text7,local,class=CODE,merge=1,delta=2
+    19                           	psect	text8,local,class=CODE,merge=1,delta=2
+    20                           	psect	functab,global,class=ENTRY,delta=2
+    21                           	psect	idloc,global,abs,ovrld,class=IDLOC,space=5,delta=2,noexec
+    22                           	psect	config,global,abs,ovrld,class=CONFIG,space=4,delta=2,noexec
+    23                           	dabs	1,0x5E,2
+    24  0000                     
+    25                           ; Version 2.40
+    26                           ; Generated 06/12/2021 GMT
+    27                           ; 
+    28                           ; Copyright © 2021, Microchip Technology Inc. and its subsidiaries ("Microchip")
+    29                           ; All rights reserved.
+    30                           ; 
+    31                           ; This software is developed by Microchip Technology Inc. and its subsidiaries ("Microch
+      +                          ip").
+    32                           ; 
+    33                           ; Redistribution and use in source and binary forms, with or without modification, are
+    34                           ; permitted provided that the following conditions are met:
+    35                           ; 
+    36                           ;     1. Redistributions of source code must retain the above copyright notice, this lis
+      +                          t of
+    37                           ;        conditions and the following disclaimer.
+    38                           ; 
+    39                           ;     2. Redistributions in binary form must reproduce the above copyright notice, this 
+      +                          list
+    40                           ;        of conditions and the following disclaimer in the documentation and/or other
+    41                           ;        materials provided with the distribution. Publication is not required when
+    42                           ;        this file is used in an embedded application.
+    43                           ; 
+    44                           ;     3. Microchip's name may not be used to endorse or promote products derived from th
+      +                          is
+    45                           ;        software without specific prior written permission.
+    46                           ; 
+    47                           ; THIS SOFTWARE IS PROVIDED BY MICROCHIP "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+    48                           ; INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS F
+      +                          OR
+    49                           ; PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL MICROCHIP BE LIABLE FOR ANY DIRECT, INDIREC
+      +                          T,
+    50                           ; INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING BUT NOT LIMITED TO
+    51                           ; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA OR PROFITS; OR BUSINESS
+    52                           ; INTERRUPTION) HOWSOEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, ST
+      +                          RICT
+    53                           ; LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE U
+      +                          SE OF
+    54                           ; THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    55                           ; 
+    56                           ; 
+    57                           ; Code-generator required, PIC12F675 Definitions
+    58                           ; 
+    59                           ; SFR Addresses
+    60  0000                     	;# 
+    61  0001                     	;# 
+    62  0002                     	;# 
+    63  0003                     	;# 
+    64  0004                     	;# 
+    65  0005                     	;# 
+    66  000A                     	;# 
+    67  000B                     	;# 
+    68  000C                     	;# 
+    69  000E                     	;# 
+    70  000E                     	;# 
+    71  000F                     	;# 
+    72  0010                     	;# 
+    73  0019                     	;# 
+    74  001E                     	;# 
+    75  001F                     	;# 
+    76  0081                     	;# 
+    77  0085                     	;# 
+    78  008C                     	;# 
+    79  008E                     	;# 
+    80  0090                     	;# 
+    81  0095                     	;# 
+    82  0096                     	;# 
+    83  0096                     	;# 
+    84  0099                     	;# 
+    85  009A                     	;# 
+    86  009A                     	;# 
+    87  009B                     	;# 
+    88  009C                     	;# 
+    89  009D                     	;# 
+    90  009E                     	;# 
+    91  009F                     	;# 
+    92  0000                     	;# 
+    93  0001                     	;# 
+    94  0002                     	;# 
+    95  0003                     	;# 
+    96  0004                     	;# 
+    97  0005                     	;# 
+    98  000A                     	;# 
+    99  000B                     	;# 
+   100  000C                     	;# 
+   101  000E                     	;# 
+   102  000E                     	;# 
+   103  000F                     	;# 
+   104  0010                     	;# 
+   105  0019                     	;# 
+   106  001E                     	;# 
+   107  001F                     	;# 
+   108  0081                     	;# 
+   109  0085                     	;# 
+   110  008C                     	;# 
+   111  008E                     	;# 
+   112  0090                     	;# 
+   113  0095                     	;# 
+   114  0096                     	;# 
+   115  0096                     	;# 
+   116  0099                     	;# 
+   117  009A                     	;# 
+   118  009A                     	;# 
+   119  009B                     	;# 
+   120  009C                     	;# 
+   121  009D                     	;# 
+   122  009E                     	;# 
+   123  009F                     	;# 
+   124                           
+   125                           	psect	idataBANK0
+   126  00E1                     __pidataBANK0:
+   127                           
+   128                           ;initializer for _func_ptr
+   129  00E1  3402               	retlw	low (fp__even_pins_set_clear-i1fpbase)
+   130  00E2  3403               	retlw	low (fp__even_pins_clear_set-i1fpbase)
+   131  00E3  3401               	retlw	low (fp__odd_pins_set_clear-i1fpbase)
+   132  00E4  3404               	retlw	low (fp__odd_pins_clear_set-i1fpbase)
+   133  00E5  3404               	retlw	low (fp__odd_pins_clear_set-i1fpbase)
+   134  00E6  3401               	retlw	low (fp__odd_pins_set_clear-i1fpbase)
+   135  00E7  3403               	retlw	low (fp__even_pins_clear_set-i1fpbase)
+   136  00E8  3402               	retlw	low (fp__even_pins_set_clear-i1fpbase)
+   137                           
+   138                           ;initializer for _num_steps
+   139  00E9  340C               	retlw	12
+   140  00EA  3403               	retlw	3
+   141  00EB  3425               	retlw	37
+   142  00EC  3403               	retlw	3
+   143                           
+   144                           ;initializer for _target_OF_num
+   145  00ED  3401               	retlw	1
+   146  00EE  3400               	retlw	0
+   147  000E                     _TMR1	set	14
+   148  0010                     _T1CONbits	set	16
+   149  0019                     _CMCONbits	set	25
+   150  0060                     _TMR1IF	set	96
+   151  002B                     _GPIO3	set	43
+   152  005E                     _PEIE	set	94
+   153  005F                     _GIE	set	95
+   154  0081                     _TMR1CS	set	129
+   155  0083                     _T1OSCEN	set	131
+   156  0086                     _TMR1GE	set	134
+   157  00F8                     _ADON	set	248
+   158  002D                     _GPIO5	set	45
+   159  0080                     _TMR1ON	set	128
+   160  002A                     _GPIO2	set	42
+   161  0028                     _GPIO0	set	40
+   162  002C                     _GPIO4	set	44
+   163  0029                     _GPIO1	set	41
+   164  009F                     _ANSELbits	set	159
+   165  0460                     _TMR1IE	set	1120
+   166  042D                     _TRISIO5	set	1069
+   167  042C                     _TRISIO4	set	1068
+   168  042B                     _TRISIO3	set	1067
+   169  042A                     _TRISIO2	set	1066
+   170  0429                     _TRISIO1	set	1065
+   171  0428                     _TRISIO0	set	1064
+   172                           
+   173                           	psect	cinit
+   174  0010                     start_initialization:	
+   175                           ; #config settings
+   176                           
+   177  0010                     __initialization:
+   178                           
+   179                           ; Initialize objects allocated to BANK0
+   180  0010  20E1               	fcall	__pidataBANK0	;fetch initializer
+   181  0011  00A0               	movwf	__pdataBANK0& (0+127)
+   182  0012  20E2               	fcall	__pidataBANK0+1	;fetch initializer
+   183  0013  00A1               	movwf	(__pdataBANK0+1)& (0+127)
+   184  0014  20E3               	fcall	__pidataBANK0+2	;fetch initializer
+   185  0015  00A2               	movwf	(__pdataBANK0+2)& (0+127)
+   186  0016  20E4               	fcall	__pidataBANK0+3	;fetch initializer
+   187  0017  00A3               	movwf	(__pdataBANK0+3)& (0+127)
+   188  0018  20E5               	fcall	__pidataBANK0+4	;fetch initializer
+   189  0019  00A4               	movwf	(__pdataBANK0+4)& (0+127)
+   190  001A  20E6               	fcall	__pidataBANK0+5	;fetch initializer
+   191  001B  00A5               	movwf	(__pdataBANK0+5)& (0+127)
+   192  001C  20E7               	fcall	__pidataBANK0+6	;fetch initializer
+   193  001D  00A6               	movwf	(__pdataBANK0+6)& (0+127)
+   194  001E  20E8               	fcall	__pidataBANK0+7	;fetch initializer
+   195  001F  00A7               	movwf	(__pdataBANK0+7)& (0+127)
+   196  0020  20E9               	fcall	__pidataBANK0+8	;fetch initializer
+   197  0021  00A8               	movwf	(__pdataBANK0+8)& (0+127)
+   198  0022  20EA               	fcall	__pidataBANK0+9	;fetch initializer
+   199  0023  00A9               	movwf	(__pdataBANK0+9)& (0+127)
+   200  0024  20EB               	fcall	__pidataBANK0+10	;fetch initializer
+   201  0025  00AA               	movwf	(__pdataBANK0+10)& (0+127)
+   202  0026  20EC               	fcall	__pidataBANK0+11	;fetch initializer
+   203  0027  00AB               	movwf	(__pdataBANK0+11)& (0+127)
+   204  0028  20ED               	fcall	__pidataBANK0+12	;fetch initializer
+   205  0029  00AC               	movwf	(__pdataBANK0+12)& (0+127)
+   206  002A  20EE               	fcall	__pidataBANK0+13	;fetch initializer
+   207  002B  00AD               	movwf	(__pdataBANK0+13)& (0+127)
+   208                           
+   209                           ; Clear objects allocated to BANK0
+   210  002C  01BC               	clrf	__pbssBANK0& (0+127)
+   211  002D  01BD               	clrf	(__pbssBANK0+1)& (0+127)
+   212  002E  01BE               	clrf	(__pbssBANK0+2)& (0+127)
+   213  002F  01BF               	clrf	(__pbssBANK0+3)& (0+127)
+   214  0030  01C0               	clrf	(__pbssBANK0+4)& (0+127)
+   215  0031  01C1               	clrf	(__pbssBANK0+5)& (0+127)
+   216  0032                     end_of_initialization:	
+   217                           ;End of C runtime variable initialization code
+   218                           
+   219  0032                     __end_of__initialization:
+   220  0032  0183               	clrf	3
+   221  0033  2898               	ljmp	_main	;jump to C main() function
+   222                           
+   223                           	psect	bssBANK0
+   224  003C                     __pbssBANK0:
+   225  003C                     _OF_num_TMR1:
+   226  003C                     	ds	2
+   227  003E                     _tmp_set_clear_sequence:
+   228  003E                     	ds	1
+   229  003F                     _set_clear_sequence:
+   230  003F                     	ds	1
+   231  0040                     _pair_select:
+   232  0040                     	ds	1
+   233  0041                     _CW_CCW_select:
+   234  0041                     	ds	1
+   235                           
+   236                           	psect	dataBANK0
+   237  0020                     __pdataBANK0:
+   238  0020                     _func_ptr:
+   239  0020                     	ds	8
+   240  0028                     _num_steps:
+   241  0028                     	ds	4
+   242  002C                     _target_OF_num:
+   243  002C                     	ds	2
+   244                           
+   245                           	psect	cstackCOMMON
+   246  0000                     __pcstackCOMMON:
+   247  0000                     ??_even_pins_set_clear:
+   248  0000                     ??_even_pins_clear_set:	
+   249                           ; 1 bytes @ 0x0
+   250                           
+   251  0000                     ??_odd_pins_set_clear:	
+   252                           ; 1 bytes @ 0x0
+   253                           
+   254  0000                     ??_odd_pins_clear_set:	
+   255                           ; 1 bytes @ 0x0
+   256                           
+   257  0000                     ??_start_timer:	
+   258                           ; 1 bytes @ 0x0
+   259                           
+   260  0000                     ??_reset_all_pins:	
+   261                           ; 1 bytes @ 0x0
+   262                           
+   263  0000                     ??i1_reset_all_pins:	
+   264                           ; 1 bytes @ 0x0
+   265                           
+   266                           
+   267                           	psect	cstackBANK0
+   268  002E                     __pcstackBANK0:	
+   269                           ; 1 bytes @ 0x0
+   270                           
+   271  002E                     ?_even_pins_set_clear:
+   272  002E                     ?_even_pins_clear_set:	
+   273                           ; 1 bytes @ 0x0
+   274                           
+   275  002E                     ?_odd_pins_set_clear:	
+   276                           ; 1 bytes @ 0x0
+   277                           
+   278  002E                     ?_odd_pins_clear_set:	
+   279                           ; 1 bytes @ 0x0
+   280                           
+   281  002E                     ?_reset_all_pins:	
+   282                           ; 1 bytes @ 0x0
+   283                           
+   284  002E                     ?_main:	
+   285                           ; 1 bytes @ 0x0
+   286                           
+   287  002E                     ?_ISR:	
+   288                           ; 1 bytes @ 0x0
+   289                           
+   290  002E                     ??_ISR:	
+   291                           ; 1 bytes @ 0x0
+   292                           
+   293  002E                     ?i1_reset_all_pins:	
+   294                           ; 1 bytes @ 0x0
+   295                           
+   296                           
+   297                           ; 1 bytes @ 0x0
+   298  002E                     	ds	9
+   299  0037                     ?_start_timer:
+   300  0037                     start_timer@OF_num:	
+   301                           ; 1 bytes @ 0x9
+   302                           
+   303                           
+   304                           ; 2 bytes @ 0x9
+   305  0037                     	ds	2
+   306  0039                     ??_main:
+   307                           
+   308                           ; 1 bytes @ 0xB
+   309  0039                     	ds	3
+   310                           
+   311                           	psect	maintext
+   312  0098                     __pmaintext:	
+   313 ;;
+   314 ;;Main: autosize = 0, tempsize = 3, incstack = 0, save=0
+   315 ;;
+   316 ;; *************** function _main *****************
+   317 ;; Defined at:
+   318 ;;		line 93 in file "main.c"
+   319 ;; Parameters:    Size  Location     Type
+   320 ;;		None
+   321 ;; Auto vars:     Size  Location     Type
+   322 ;;		None
+   323 ;; Return value:  Size  Location     Type
+   324 ;;                  1    wreg      void 
+   325 ;; Registers used:
+   326 ;;		wreg, fsr0l, fsr0h, status,2, status,0, pclath, cstack
+   327 ;; Tracked objects:
+   328 ;;		On entry : B00/0
+   329 ;;		On exit  : 0/0
+   330 ;;		Unchanged: 0/0
+   331 ;; Data sizes:     COMMON   BANK0
+   332 ;;      Params:         0       0
+   333 ;;      Locals:         0       0
+   334 ;;      Temps:          0       3
+   335 ;;      Totals:         0       3
+   336 ;;Total ram usage:        3 bytes
+   337 ;; Hardware stack levels required when called: 3
+   338 ;; This function calls:
+   339 ;;		_reset_all_pins
+   340 ;;		_start_timer
+   341 ;; This function is called by:
+   342 ;;		Startup code after reset
+   343 ;; This function uses a non-reentrant model
+   344 ;;
+   345                           
+   346  0098                     _main:	
+   347                           ;psect for function _main
+   348                           
+   349  0098                     l789:	
+   350                           ;incstack = 0
+   351                           ; Regs used in _main: [wreg-fsr0h+status,2+status,0+pclath+cstack]
+   352                           
+   353                           
+   354                           ;main.c: 96:     TRISIO0 = 0;
+   355  0098  1683               	bsf	3,5	;RP0=1, select bank1
+   356  0099  1005               	bcf	5,0	;volatile
+   357                           
+   358                           ;main.c: 97:     TRISIO1 = 0;
+   359  009A  1085               	bcf	5,1	;volatile
+   360                           
+   361                           ;main.c: 98:     TRISIO2 = 0;
+   362  009B  1105               	bcf	5,2	;volatile
+   363                           
+   364                           ;main.c: 99:     TRISIO3 = 1;
+   365  009C  1585               	bsf	5,3	;volatile
+   366                           
+   367                           ;main.c: 100:     TRISIO4 = 0;
+   368  009D  1205               	bcf	5,4	;volatile
+   369                           
+   370                           ;main.c: 103:     TRISIO5 = 0;
+   371  009E  1285               	bcf	5,5	;volatile
+   372                           
+   373                           ;main.c: 104:     GPIO5 = 0;
+   374  009F  1283               	bcf	3,5	;RP0=0, select bank0
+   375  00A0  1285               	bcf	5,5	;volatile
+   376  00A1                     l791:
+   377                           
+   378                           ;main.c: 107:     CMCONbits.CM = 0b111;
+   379  00A1  3007               	movlw	7
+   380  00A2  0499               	iorwf	25,f	;volatile
+   381  00A3                     l793:
+   382                           
+   383                           ;main.c: 110:     ADON = 0;
+   384  00A3  101F               	bcf	31,0	;volatile
+   385                           
+   386                           ;main.c: 111:     ANSELbits.ANS = 0b0000;
+   387  00A4  30F0               	movlw	-16
+   388  00A5  1683               	bsf	3,5	;RP0=1, select bank1
+   389  00A6  059F               	andwf	31,f	;volatile
+   390  00A7                     l795:
+   391                           
+   392                           ;main.c: 114:     TMR1GE = 0;
+   393  00A7  1283               	bcf	3,5	;RP0=0, select bank0
+   394  00A8  1310               	bcf	16,6	;volatile
+   395                           
+   396                           ;main.c: 115:     T1CONbits.T1CKPS = 0b00;
+   397  00A9  30CF               	movlw	-49
+   398  00AA  0590               	andwf	16,f	;volatile
+   399  00AB                     l797:
+   400                           
+   401                           ;main.c: 116:     T1OSCEN = 0;
+   402  00AB  1190               	bcf	16,3	;volatile
+   403  00AC                     l799:
+   404                           
+   405                           ;main.c: 118:     TMR1CS = 0;
+   406  00AC  1090               	bcf	16,1	;volatile
+   407  00AD                     l801:
+   408                           
+   409                           ;main.c: 119:     TMR1ON = 0;
+   410  00AD  1010               	bcf	16,0	;volatile
+   411  00AE                     l803:
+   412                           
+   413                           ;main.c: 120:     TMR1 = 59582;
+   414  00AE  30E8               	movlw	232
+   415  00AF  008F               	movwf	15	;volatile
+   416  00B0  30BE               	movlw	190
+   417  00B1  008E               	movwf	14	;volatile
+   418  00B2                     l805:
+   419                           
+   420                           ;main.c: 123:     GIE = 1;
+   421  00B2  178B               	bsf	11,7	;volatile
+   422  00B3                     l807:
+   423                           
+   424                           ;main.c: 124:     PEIE = 1;
+   425  00B3  170B               	bsf	11,6	;volatile
+   426  00B4                     l809:
+   427                           
+   428                           ;main.c: 125:     TMR1IE = 1;
+   429  00B4  1683               	bsf	3,5	;RP0=1, select bank1
+   430  00B5  140C               	bsf	12,0	;volatile
+   431  00B6                     l811:
+   432                           
+   433                           ;main.c: 128:     reset_all_pins();
+   434  00B6  20F6               	fcall	_reset_all_pins
+   435  00B7                     l813:
+   436                           
+   437                           ;main.c: 133:         if(GPIO3) {;
+   438  00B7  1283               	bcf	3,5	;RP0=0, select bank0
+   439  00B8  1D85               	btfss	5,3	;volatile
+   440  00B9  28BB               	goto	u111
+   441  00BA  28BC               	goto	u110
+   442  00BB                     u111:
+   443  00BB  28B7               	goto	l813
+   444  00BC                     u110:
+   445  00BC                     l815:
+   446                           
+   447                           ;main.c: 134:             CW_CCW_select = !CW_CCW_select;
+   448  00BC  0841               	movf	_CW_CCW_select,w
+   449  00BD  1903               	btfsc	3,2
+   450  00BE  28C0               	goto	u121
+   451  00BF  28C2               	goto	u120
+   452  00C0                     u121:
+   453  00C0  3001               	movlw	1
+   454  00C1  28C3               	goto	u130
+   455  00C2                     u120:
+   456  00C2  3000               	movlw	0
+   457  00C3                     u130:
+   458  00C3  00B9               	movwf	??_main
+   459  00C4  0839               	movf	??_main,w
+   460  00C5  00C1               	movwf	_CW_CCW_select
+   461  00C6                     l817:
+   462                           
+   463                           ;main.c: 135:             start_timer(num_steps[CW_CCW_select]);
+   464  00C6  0841               	movf	_CW_CCW_select,w
+   465  00C7  00B9               	movwf	??_main
+   466  00C8  0739               	addwf	??_main,w
+   467  00C9  3E28               	addlw	(low (_num_steps| 0))& (0+255)
+   468  00CA  0084               	movwf	4
+   469  00CB  1383               	bcf	3,7	;select IRP bank0
+   470  00CC  0800               	movf	0,w
+   471  00CD  00B7               	movwf	start_timer@OF_num
+   472  00CE  0A84               	incf	4,f
+   473  00CF  0800               	movf	0,w
+   474  00D0  00B8               	movwf	start_timer@OF_num+1
+   475  00D1  20EF               	fcall	_start_timer
+   476  00D2                     l819:
+   477                           
+   478                           ;main.c: 136:             _delay((unsigned long)((300)*(4000000/4000.0)));
+   479  00D2  3002               	movlw	2
+   480  00D3  1283               	bcf	3,5	;RP0=0, select bank0
+   481  00D4  00BB               	movwf	??_main+2
+   482  00D5  3086               	movlw	134
+   483  00D6  00BA               	movwf	??_main+1
+   484  00D7  3099               	movlw	153
+   485  00D8  00B9               	movwf	??_main
+   486  00D9                     u217:
+   487  00D9  0BB9               	decfsz	??_main,f
+   488  00DA  28D9               	goto	u217
+   489  00DB  0BBA               	decfsz	??_main+1,f
+   490  00DC  28D9               	goto	u217
+   491  00DD  0BBB               	decfsz	??_main+2,f
+   492  00DE  28D9               	goto	u217
+   493  00DF  28B7               	goto	l813
+   494  00E0  280F               	ljmp	start
+   495  00E1                     __end_of_main:
+   496                           
+   497                           	psect	text1
+   498  00EF                     __ptext1:	
+   499 ;; *************** function _start_timer *****************
+   500 ;; Defined at:
+   501 ;;		line 76 in file "main.c"
+   502 ;; Parameters:    Size  Location     Type
+   503 ;;  OF_num          2    9[BANK0 ] int 
+   504 ;; Auto vars:     Size  Location     Type
+   505 ;;		None
+   506 ;; Return value:  Size  Location     Type
+   507 ;;                  1    wreg      void 
+   508 ;; Registers used:
+   509 ;;		wreg
+   510 ;; Tracked objects:
+   511 ;;		On entry : 0/0
+   512 ;;		On exit  : 0/0
+   513 ;;		Unchanged: 0/0
+   514 ;; Data sizes:     COMMON   BANK0
+   515 ;;      Params:         0       2
+   516 ;;      Locals:         0       0
+   517 ;;      Temps:          0       0
+   518 ;;      Totals:         0       2
+   519 ;;Total ram usage:        2 bytes
+   520 ;; Hardware stack levels used: 1
+   521 ;; Hardware stack levels required when called: 2
+   522 ;; This function calls:
+   523 ;;		Nothing
+   524 ;; This function is called by:
+   525 ;;		_main
+   526 ;; This function uses a non-reentrant model
+   527 ;;
+   528                           
+   529  00EF                     _start_timer:	
+   530                           ;psect for function _start_timer
+   531                           
+   532  00EF                     l781:	
+   533                           ;incstack = 0
+   534                           ; Regs used in _start_timer: [wreg]
+   535                           
+   536                           
+   537                           ;main.c: 77:     target_OF_num = OF_num;
+   538  00EF  1283               	bcf	3,5	;RP0=0, select bank0
+   539  00F0  0838               	movf	start_timer@OF_num+1,w
+   540  00F1  00AD               	movwf	_target_OF_num+1
+   541  00F2  0837               	movf	start_timer@OF_num,w
+   542  00F3  00AC               	movwf	_target_OF_num
+   543  00F4                     l783:
+   544                           
+   545                           ;main.c: 78:     TMR1ON = 1;
+   546  00F4  1410               	bsf	16,0	;volatile
+   547  00F5                     l83:
+   548  00F5  0008               	return
+   549  00F6                     __end_of_start_timer:
+   550                           
+   551                           	psect	text2
+   552  00F6                     __ptext2:	
+   553 ;; *************** function _reset_all_pins *****************
+   554 ;; Defined at:
+   555 ;;		line 85 in file "main.c"
+   556 ;; Parameters:    Size  Location     Type
+   557 ;;		None
+   558 ;; Auto vars:     Size  Location     Type
+   559 ;;		None
+   560 ;; Return value:  Size  Location     Type
+   561 ;;                  1    wreg      void 
+   562 ;; Registers used:
+   563 ;;		None
+   564 ;; Tracked objects:
+   565 ;;		On entry : 0/0
+   566 ;;		On exit  : 0/0
+   567 ;;		Unchanged: 0/0
+   568 ;; Data sizes:     COMMON   BANK0
+   569 ;;      Params:         0       0
+   570 ;;      Locals:         0       0
+   571 ;;      Temps:          0       0
+   572 ;;      Totals:         0       0
+   573 ;;Total ram usage:        0 bytes
+   574 ;; Hardware stack levels used: 1
+   575 ;; Hardware stack levels required when called: 2
+   576 ;; This function calls:
+   577 ;;		Nothing
+   578 ;; This function is called by:
+   579 ;;		_main
+   580 ;; This function uses a non-reentrant model
+   581 ;;
+   582                           
+   583  00F6                     _reset_all_pins:	
+   584                           ;psect for function _reset_all_pins
+   585                           
+   586  00F6                     l785:	
+   587                           ;incstack = 0
+   588                           ; Regs used in _reset_all_pins: []
+   589                           
+   590                           
+   591                           ;main.c: 86:     GPIO0 = 0;
+   592  00F6  1283               	bcf	3,5	;RP0=0, select bank0
+   593  00F7  1005               	bcf	5,0	;volatile
+   594                           
+   595                           ;main.c: 87:     GPIO1 = 0;
+   596  00F8  1085               	bcf	5,1	;volatile
+   597                           
+   598                           ;main.c: 88:     GPIO2 = 0;
+   599  00F9  1105               	bcf	5,2	;volatile
+   600                           
+   601                           ;main.c: 89:     GPIO4 = 0;
+   602  00FA  1205               	bcf	5,4	;volatile
+   603  00FB                     l89:
+   604  00FB  0008               	return
+   605  00FC                     __end_of_reset_all_pins:
+   606                           
+   607                           	psect	text3
+   608  003F                     __ptext3:	
+   609 ;; *************** function _ISR *****************
+   610 ;; Defined at:
+   611 ;;		line 147 in file "main.c"
+   612 ;; Parameters:    Size  Location     Type
+   613 ;;		None
+   614 ;; Auto vars:     Size  Location     Type
+   615 ;;		None
+   616 ;; Return value:  Size  Location     Type
+   617 ;;                  1    wreg      void 
+   618 ;; Registers used:
+   619 ;;		wreg, fsr0l, fsr0h, status,2, status,0, pclath, cstack
+   620 ;; Tracked objects:
+   621 ;;		On entry : 0/0
+   622 ;;		On exit  : 0/0
+   623 ;;		Unchanged: 0/0
+   624 ;; Data sizes:     COMMON   BANK0
+   625 ;;      Params:         0       0
+   626 ;;      Locals:         0       0
+   627 ;;      Temps:          0       9
+   628 ;;      Totals:         0       9
+   629 ;;Total ram usage:        9 bytes
+   630 ;; Hardware stack levels used: 1
+   631 ;; Hardware stack levels required when called: 1
+   632 ;; This function calls:
+   633 ;;		_even_pins_clear_set
+   634 ;;		_even_pins_set_clear
+   635 ;;		_odd_pins_clear_set
+   636 ;;		_odd_pins_set_clear
+   637 ;;		i1_reset_all_pins
+   638 ;; This function is called by:
+   639 ;;		Interrupt level 1
+   640 ;; This function uses a non-reentrant model
+   641 ;;
+   642                           
+   643  003F                     _ISR:	
+   644                           ;psect for function _ISR
+   645                           
+   646  003F                     i1l821:
+   647                           
+   648                           ;main.c: 149:     if(TMR1IF) {
+   649  003F  1C0C               	btfss	12,0	;volatile
+   650  0040  2842               	goto	u14_21
+   651  0041  2843               	goto	u14_20
+   652  0042                     u14_21:
+   653  0042  288E               	goto	i1l105
+   654  0043                     u14_20:
+   655  0043                     i1l823:
+   656                           
+   657                           ;main.c: 153:         TMR1 = 59582;
+   658  0043  30E8               	movlw	232
+   659  0044  008F               	movwf	15	;volatile
+   660  0045  30BE               	movlw	190
+   661  0046  008E               	movwf	14	;volatile
+   662  0047                     i1l825:
+   663                           
+   664                           ;main.c: 155:         OF_num_TMR1++;
+   665  0047  3001               	movlw	1
+   666  0048  07BC               	addwf	_OF_num_TMR1,f
+   667  0049  1803               	skipnc
+   668  004A  0ABD               	incf	_OF_num_TMR1+1,f
+   669  004B  3000               	movlw	0
+   670  004C  07BD               	addwf	_OF_num_TMR1+1,f
+   671  004D                     i1l827:
+   672                           
+   673                           ;main.c: 159:         pair_select = !pair_select;
+   674  004D  0840               	movf	_pair_select,w
+   675  004E  1903               	btfsc	3,2
+   676  004F  2851               	goto	u15_21
+   677  0050  2853               	goto	u15_20
+   678  0051                     u15_21:
+   679  0051  3001               	movlw	1
+   680  0052  2854               	goto	u16_20
+   681  0053                     u15_20:
+   682  0053  3000               	movlw	0
+   683  0054                     u16_20:
+   684  0054  00AE               	movwf	??_ISR
+   685  0055  082E               	movf	??_ISR,w
+   686  0056  00C0               	movwf	_pair_select
+   687  0057                     i1l829:
+   688                           
+   689                           ;main.c: 161:         set_clear_sequence ^= tmp_set_clear_sequence;
+   690  0057  083E               	movf	_tmp_set_clear_sequence,w
+   691  0058  00AE               	movwf	??_ISR
+   692  0059  082E               	movf	??_ISR,w
+   693  005A  06BF               	xorwf	_set_clear_sequence,f
+   694  005B                     i1l831:
+   695                           
+   696                           ;main.c: 162:         tmp_set_clear_sequence = !tmp_set_clear_sequence;
+   697  005B  083E               	movf	_tmp_set_clear_sequence,w
+   698  005C  1903               	btfsc	3,2
+   699  005D  285F               	goto	u17_21
+   700  005E  2861               	goto	u17_20
+   701  005F                     u17_21:
+   702  005F  3001               	movlw	1
+   703  0060  2862               	goto	u18_20
+   704  0061                     u17_20:
+   705  0061  3000               	movlw	0
+   706  0062                     u18_20:
+   707  0062  00AE               	movwf	??_ISR
+   708  0063  082E               	movf	??_ISR,w
+   709  0064  00BE               	movwf	_tmp_set_clear_sequence
+   710  0065                     i1l833:
+   711                           
+   712                           ;main.c: 164:         (*func_ptr[CW_CCW_select][pair_select][set_clear_sequence])();
+   713  0065  0841               	movf	_CW_CCW_select,w
+   714  0066  00AE               	movwf	??_ISR
+   715  0067  3002               	movlw	2
+   716  0068                     u19_25:
+   717  0068  1003               	clrc
+   718  0069  0DAE               	rlf	??_ISR,f
+   719  006A  3EFF               	addlw	-1
+   720  006B  1D03               	skipz
+   721  006C  2868               	goto	u19_25
+   722  006D  3020               	movlw	(low (_func_ptr| 0))& (0+255)
+   723  006E  072E               	addwf	??_ISR,w
+   724  006F  00AF               	movwf	??_ISR+1
+   725  0070  0840               	movf	_pair_select,w
+   726  0071  00B0               	movwf	??_ISR+2
+   727  0072  0730               	addwf	??_ISR+2,w
+   728  0073  072F               	addwf	??_ISR+1,w
+   729  0074  00B1               	movwf	??_ISR+3
+   730  0075  083F               	movf	_set_clear_sequence,w
+   731  0076  0731               	addwf	??_ISR+3,w
+   732  0077  00B2               	movwf	??_ISR+4
+   733  0078  0832               	movf	??_ISR+4,w
+   734  0079  0084               	movwf	4
+   735  007A  1383               	bcf	3,7	;select IRP bank0
+   736  007B  0800               	movf	0,w
+   737  007C  2035               	fcall	i1fptable
+   738  007D                     i1l835:
+   739                           
+   740                           ;main.c: 167:         if (OF_num_TMR1 == target_OF_num) {
+   741  007D  1283               	bcf	3,5	;RP0=0, select bank0
+   742  007E  082D               	movf	_target_OF_num+1,w
+   743  007F  063D               	xorwf	_OF_num_TMR1+1,w
+   744  0080  1D03               	skipz
+   745  0081  2884               	goto	u20_25
+   746  0082  082C               	movf	_target_OF_num,w
+   747  0083  063C               	xorwf	_OF_num_TMR1,w
+   748  0084                     u20_25:
+   749  0084  1D03               	skipz
+   750  0085  2887               	goto	u20_21
+   751  0086  2888               	goto	u20_20
+   752  0087                     u20_21:
+   753  0087  288D               	goto	i1l843
+   754  0088                     u20_20:
+   755  0088                     i1l837:
+   756                           
+   757                           ;main.c: 168:             TMR1ON = 0;
+   758  0088  1010               	bcf	16,0	;volatile
+   759  0089                     i1l839:
+   760                           
+   761                           ;main.c: 169:             reset_all_pins();
+   762  0089  20FC               	fcall	i1_reset_all_pins
+   763  008A                     i1l841:
+   764                           
+   765                           ;main.c: 171:             OF_num_TMR1 = 0;
+   766  008A  1283               	bcf	3,5	;RP0=0, select bank0
+   767  008B  01BC               	clrf	_OF_num_TMR1
+   768  008C  01BD               	clrf	_OF_num_TMR1+1
+   769  008D                     i1l843:
+   770                           
+   771                           ;main.c: 175:         TMR1IF = 0;
+   772  008D  100C               	bcf	12,0	;volatile
+   773  008E                     i1l105:
+   774  008E  0836               	movf	??_ISR+8,w
+   775  008F  0835               	movf	??_ISR+7,w
+   776  0090  008A               	movwf	10
+   777  0091  0834               	movf	??_ISR+6,w
+   778  0092  0084               	movwf	4
+   779  0093  0E33               	swapf	??_ISR+5,w
+   780  0094  0083               	movwf	3
+   781  0095  0EDE               	swapf	btemp,f
+   782  0096  0E5E               	swapf	btemp,w
+   783  0097  0009               	retfie
+   784  0098                     __end_of_ISR:
+   785                           
+   786                           	psect	intentry
+   787  0004                     __pintentry:	
+   788                           ;incstack = 0
+   789                           ; Regs used in _ISR: [wreg-fsr0h+status,2+status,0+pclath+cstack]
+   790                           
+   791  0004                     interrupt_function:
+   792  005E                     saved_w	set	btemp
+   793  0004  00DE               	movwf	btemp
+   794  0005  0E03               	swapf	3,w
+   795  0006  1283               	bcf	3,5	;RP0=0, select bank0
+   796  0007  00B3               	movwf	??_ISR+5
+   797  0008  0804               	movf	4,w
+   798  0009  00B4               	movwf	??_ISR+6
+   799  000A  080A               	movf	10,w
+   800  000B  00B5               	movwf	??_ISR+7
+   801  000C  085F               	movf	btemp+1,w
+   802  000D  00B6               	movwf	??_ISR+8
+   803  000E  283F               	ljmp	_ISR
+   804                           
+   805                           	psect	text4
+   806  00FC                     __ptext4:	
+   807 ;; *************** function i1_reset_all_pins *****************
+   808 ;; Defined at:
+   809 ;;		line 85 in file "main.c"
+   810 ;; Parameters:    Size  Location     Type
+   811 ;;		None
+   812 ;; Auto vars:     Size  Location     Type
+   813 ;;		None
+   814 ;; Return value:  Size  Location     Type
+   815 ;;                  1    wreg      void 
+   816 ;; Registers used:
+   817 ;;		None
+   818 ;; Tracked objects:
+   819 ;;		On entry : 0/0
+   820 ;;		On exit  : 0/0
+   821 ;;		Unchanged: 0/0
+   822 ;; Data sizes:     COMMON   BANK0
+   823 ;;      Params:         0       0
+   824 ;;      Locals:         0       0
+   825 ;;      Temps:          0       0
+   826 ;;      Totals:         0       0
+   827 ;;Total ram usage:        0 bytes
+   828 ;; Hardware stack levels used: 1
+   829 ;; This function calls:
+   830 ;;		Nothing
+   831 ;; This function is called by:
+   832 ;;		_ISR
+   833 ;; This function uses a non-reentrant model
+   834 ;;
+   835                           
+   836  00FC                     i1_reset_all_pins:	
+   837                           ;psect for function i1_reset_all_pins
+   838                           
+   839  00FC                     i1l787:	
+   840                           ;incstack = 0
+   841                           ; Regs used in i1_reset_all_pins: []
+   842                           
+   843                           
+   844                           ;main.c: 86:     GPIO0 = 0;
+   845  00FC  1283               	bcf	3,5	;RP0=0, select bank0
+   846  00FD  1005               	bcf	5,0	;volatile
+   847                           
+   848                           ;main.c: 87:     GPIO1 = 0;
+   849  00FE  1085               	bcf	5,1	;volatile
+   850                           
+   851                           ;main.c: 88:     GPIO2 = 0;
+   852  00FF  1105               	bcf	5,2	;volatile
+   853                           
+   854                           ;main.c: 89:     GPIO4 = 0;
+   855  0100  1205               	bcf	5,4	;volatile
+   856  0101                     i1l89:
+   857  0101  0008               	return
+   858  0102                     __end_ofi1_reset_all_pins:
+   859                           
+   860                           	psect	text5
+   861  0102                     __ptext5:	
+   862 ;; *************** function _odd_pins_clear_set *****************
+   863 ;; Defined at:
+   864 ;;		line 54 in file "main.c"
+   865 ;; Parameters:    Size  Location     Type
+   866 ;;		None
+   867 ;; Auto vars:     Size  Location     Type
+   868 ;;		None
+   869 ;; Return value:  Size  Location     Type
+   870 ;;                  1    wreg      void 
+   871 ;; Registers used:
+   872 ;;		None
+   873 ;; Tracked objects:
+   874 ;;		On entry : 0/0
+   875 ;;		On exit  : 0/0
+   876 ;;		Unchanged: 0/0
+   877 ;; Data sizes:     COMMON   BANK0
+   878 ;;      Params:         0       0
+   879 ;;      Locals:         0       0
+   880 ;;      Temps:          0       0
+   881 ;;      Totals:         0       0
+   882 ;;Total ram usage:        0 bytes
+   883 ;; Hardware stack levels used: 1
+   884 ;; This function calls:
+   885 ;;		Nothing
+   886 ;; This function is called by:
+   887 ;;		_ISR
+   888 ;; This function uses a non-reentrant model
+   889 ;;
+   890                           
+   891  0102                     _odd_pins_clear_set:	
+   892                           ;psect for function _odd_pins_clear_set
+   893                           
+   894  0102                     i1l779:	
+   895                           ;incstack = 0
+   896                           ; Regs used in _odd_pins_clear_set: []
+   897                           
+   898                           
+   899                           ;main.c: 55:     GPIO0 = 0;
+   900  0102  1283               	bcf	3,5	;RP0=0, select bank0
+   901  0103  1005               	bcf	5,0	;volatile
+   902                           
+   903                           ;main.c: 56:     GPIO2 = 1;
+   904  0104  1505               	bsf	5,2	;volatile
+   905  0105                     i1l78:
+   906  0105  0008               	return
+   907  0106                     __end_of_odd_pins_clear_set:
+   908                           
+   909                           	psect	text6
+   910  0106                     __ptext6:	
+   911 ;; *************** function _even_pins_clear_set *****************
+   912 ;; Defined at:
+   913 ;;		line 44 in file "main.c"
+   914 ;; Parameters:    Size  Location     Type
+   915 ;;		None
+   916 ;; Auto vars:     Size  Location     Type
+   917 ;;		None
+   918 ;; Return value:  Size  Location     Type
+   919 ;;                  1    wreg      void 
+   920 ;; Registers used:
+   921 ;;		None
+   922 ;; Tracked objects:
+   923 ;;		On entry : 0/0
+   924 ;;		On exit  : 0/0
+   925 ;;		Unchanged: 0/0
+   926 ;; Data sizes:     COMMON   BANK0
+   927 ;;      Params:         0       0
+   928 ;;      Locals:         0       0
+   929 ;;      Temps:          0       0
+   930 ;;      Totals:         0       0
+   931 ;;Total ram usage:        0 bytes
+   932 ;; Hardware stack levels used: 1
+   933 ;; This function calls:
+   934 ;;		Nothing
+   935 ;; This function is called by:
+   936 ;;		_ISR
+   937 ;; This function uses a non-reentrant model
+   938 ;;
+   939                           
+   940  0106                     _even_pins_clear_set:	
+   941                           ;psect for function _even_pins_clear_set
+   942                           
+   943  0106                     i1l775:	
+   944                           ;incstack = 0
+   945                           ; Regs used in _even_pins_clear_set: []
+   946                           
+   947                           
+   948                           ;main.c: 45:     GPIO1 = 0;
+   949  0106  1283               	bcf	3,5	;RP0=0, select bank0
+   950  0107  1085               	bcf	5,1	;volatile
+   951                           
+   952                           ;main.c: 46:     GPIO4 = 1;
+   953  0108  1605               	bsf	5,4	;volatile
+   954  0109                     i1l72:
+   955  0109  0008               	return
+   956  010A                     __end_of_even_pins_clear_set:
+   957                           
+   958                           	psect	text7
+   959  010A                     __ptext7:	
+   960 ;; *************** function _even_pins_set_clear *****************
+   961 ;; Defined at:
+   962 ;;		line 39 in file "main.c"
+   963 ;; Parameters:    Size  Location     Type
+   964 ;;		None
+   965 ;; Auto vars:     Size  Location     Type
+   966 ;;		None
+   967 ;; Return value:  Size  Location     Type
+   968 ;;                  1    wreg      void 
+   969 ;; Registers used:
+   970 ;;		None
+   971 ;; Tracked objects:
+   972 ;;		On entry : 0/0
+   973 ;;		On exit  : 0/0
+   974 ;;		Unchanged: 0/0
+   975 ;; Data sizes:     COMMON   BANK0
+   976 ;;      Params:         0       0
+   977 ;;      Locals:         0       0
+   978 ;;      Temps:          0       0
+   979 ;;      Totals:         0       0
+   980 ;;Total ram usage:        0 bytes
+   981 ;; Hardware stack levels used: 1
+   982 ;; This function calls:
+   983 ;;		Nothing
+   984 ;; This function is called by:
+   985 ;;		_ISR
+   986 ;; This function uses a non-reentrant model
+   987 ;;
+   988                           
+   989  010A                     _even_pins_set_clear:	
+   990                           ;psect for function _even_pins_set_clear
+   991                           
+   992  010A                     i1l773:	
+   993                           ;incstack = 0
+   994                           ; Regs used in _even_pins_set_clear: []
+   995                           
+   996                           
+   997                           ;main.c: 40:     GPIO1 = 1;
+   998  010A  1283               	bcf	3,5	;RP0=0, select bank0
+   999  010B  1485               	bsf	5,1	;volatile
+  1000                           
+  1001                           ;main.c: 41:     GPIO4 = 0;
+  1002  010C  1205               	bcf	5,4	;volatile
+  1003  010D                     i1l69:
+  1004  010D  0008               	return
+  1005  010E                     __end_of_even_pins_set_clear:
+  1006                           
+  1007                           	psect	text8
+  1008  010E                     __ptext8:	
+  1009 ;; *************** function _odd_pins_set_clear *****************
+  1010 ;; Defined at:
+  1011 ;;		line 49 in file "main.c"
+  1012 ;; Parameters:    Size  Location     Type
+  1013 ;;		None
+  1014 ;; Auto vars:     Size  Location     Type
+  1015 ;;		None
+  1016 ;; Return value:  Size  Location     Type
+  1017 ;;                  1    wreg      void 
+  1018 ;; Registers used:
+  1019 ;;		None
+  1020 ;; Tracked objects:
+  1021 ;;		On entry : 0/0
+  1022 ;;		On exit  : 0/0
+  1023 ;;		Unchanged: 0/0
+  1024 ;; Data sizes:     COMMON   BANK0
+  1025 ;;      Params:         0       0
+  1026 ;;      Locals:         0       0
+  1027 ;;      Temps:          0       0
+  1028 ;;      Totals:         0       0
+  1029 ;;Total ram usage:        0 bytes
+  1030 ;; Hardware stack levels used: 1
+  1031 ;; This function calls:
+  1032 ;;		Nothing
+  1033 ;; This function is called by:
+  1034 ;;		_ISR
+  1035 ;; This function uses a non-reentrant model
+  1036 ;;
+  1037                           
+  1038  010E                     _odd_pins_set_clear:	
+  1039                           ;psect for function _odd_pins_set_clear
+  1040                           
+  1041  010E                     i1l777:	
+  1042                           ;incstack = 0
+  1043                           ; Regs used in _odd_pins_set_clear: []
+  1044                           
+  1045                           
+  1046                           ;main.c: 50:     GPIO0 = 1;
+  1047  010E  1283               	bcf	3,5	;RP0=0, select bank0
+  1048  010F  1405               	bsf	5,0	;volatile
+  1049                           
+  1050                           ;main.c: 51:     GPIO2 = 0;
+  1051  0110  1105               	bcf	5,2	;volatile
+  1052  0111                     i1l75:
+  1053  0111  0008               	return
+  1054  0112                     __end_of_odd_pins_set_clear:
+  1055  000C                     
+  1056                           	psect	functab
+  1057  0034                     __pfunctab:
+  1058  0034                     fptable:
+  1059  0034  2834               	goto	fptable	;no entries
+  1060  0035                     __i1fptable:
+  1061  0035                     i1fptable:
+  1062  0035  00DF               	movwf	(btemp+1)& (0+127)
+  1063  0036  3000               	movlw	high i1fptable
+  1064  0037  008A               	movwf	10
+  1065  0038  085F               	movf	(btemp+1)& (0+127),w
+  1066  0039  0782               	addwf	2,f
+  1067  003A                     i1fpbase:
+  1068  003A  283A               	goto	i1fpbase	; Call via a null pointer and you will get stuck here.
+  1069  003B                     fp__odd_pins_set_clear:
+  1070  003B  290E               	ljmp	_odd_pins_set_clear
+  1071  003C                     fp__even_pins_set_clear:
+  1072  003C  290A               	ljmp	_even_pins_set_clear
+  1073  003D                     fp__even_pins_clear_set:
+  1074  003D  2906               	ljmp	_even_pins_clear_set
+  1075  003E                     fp__odd_pins_clear_set:
+  1076  003E  2902               	ljmp	_odd_pins_clear_set
+  1077  003F                     __end_of__i1fptable:
+  1078  005E                     btemp	set	94	;btemp
+  1079  005E                     wtemp0	set	94
+  1080                           
+  1081                           	psect	idloc
+  1082                           
+  1083                           ;Config register IDLOC0 @ 0x2000
+  1084                           ;	unspecified, using default values
+  1085  2000                     	org	8192
+  1086  2000  3FFF               	dw	16383
+  1087                           
+  1088                           ;Config register IDLOC1 @ 0x2001
+  1089                           ;	unspecified, using default values
+  1090  2001                     	org	8193
+  1091  2001  3FFF               	dw	16383
+  1092                           
+  1093                           ;Config register IDLOC2 @ 0x2002
+  1094                           ;	unspecified, using default values
+  1095  2002                     	org	8194
+  1096  2002  3FFF               	dw	16383
+  1097                           
+  1098                           ;Config register IDLOC3 @ 0x2003
+  1099                           ;	unspecified, using default values
+  1100  2003                     	org	8195
+  1101  2003  3FFF               	dw	16383
+  1102                           
+  1103                           	psect	config
+  1104                           
+  1105                           ;Config register CONFIG @ 0x2007
+  1106                           ;	Oscillator Selection bits
+  1107                           ;	FOSC = INTRCIO, INTOSC oscillator: I/O function on GP4/OSC2/CLKOUT pin, I/O function o
+      +                          n GP5/OSC1/CLKIN
+  1108                           ;	Watchdog Timer Enable bit
+  1109                           ;	WDTE = OFF, WDT disabled
+  1110                           ;	Power-Up Timer Enable bit
+  1111                           ;	PWRTE = ON, PWRT enabled
+  1112                           ;	GP3/MCLR pin function select
+  1113                           ;	MCLRE = OFF, GP3/MCLR pin function is digital I/O, MCLR internally tied to VDD
+  1114                           ;	Brown-out Detect Enable bit
+  1115                           ;	BOREN = ON, BOD enabled
+  1116                           ;	Code Protection bit
+  1117                           ;	CP = OFF, Program Memory code protection is disabled
+  1118                           ;	Data Code Protection bit
+  1119                           ;	CPD = OFF, Data memory code protection is disabled
+  1120  2007                     	org	8199
+  1121  2007  31C4               	dw	12740
+
+Data Sizes:
+    Strings     0
+    Constant    0
+    Data        14
+    BSS         6
+    Persistent  0
+    Stack       0
+
+Auto Spaces:
+    Space          Size  Autos    Used
+    COMMON            0      0       0
+    BANK0            62     14      34
+
+Pointer List with Targets:
+
+    func_ptr	PTR FTN()void [2][2][2] size(1) Largest target is 1
+		 -> odd_pins_clear_set(), odd_pins_set_clear(), even_pins_clear_set(), even_pins_set_clear(), 
+
+
+Critical Paths under _main in COMMON
+
+    None.
+
+Critical Paths under _ISR in COMMON
+
+    None.
+
+Critical Paths under _main in BANK0
+
+    _main->_start_timer
+
+Critical Paths under _ISR in BANK0
+
+    None.
+
+Call Graph Tables:
+
+ ---------------------------------------------------------------------------------
+ (Depth) Function   	        Calls       Base Space   Used Autos Params    Refs
+ ---------------------------------------------------------------------------------
+ (0) _main                                                 3     3      0      98
+                                             11 BANK0      3     3      0
+                     _reset_all_pins
+                        _start_timer
+ ---------------------------------------------------------------------------------
+ (1) _start_timer                                          2     0      2      98
+                                              9 BANK0      2     0      2
+ ---------------------------------------------------------------------------------
+ (1) _reset_all_pins                                       0     0      0       0
+ ---------------------------------------------------------------------------------
+ Estimated maximum stack depth 1
+ ---------------------------------------------------------------------------------
+ (Depth) Function   	        Calls       Base Space   Used Autos Params    Refs
+ ---------------------------------------------------------------------------------
+ (2) _ISR                                                  9     9      0       0
+                                              0 BANK0      9     9      0
+                _even_pins_clear_set *
+                _even_pins_set_clear *
+                 _odd_pins_clear_set *
+                 _odd_pins_set_clear *
+                   i1_reset_all_pins
+ ---------------------------------------------------------------------------------
+ (3) i1_reset_all_pins                                     0     0      0       0
+ ---------------------------------------------------------------------------------
+ (3) _odd_pins_set_clear                                   0     0      0       0
+ ---------------------------------------------------------------------------------
+ (3) _odd_pins_clear_set                                   0     0      0       0
+ ---------------------------------------------------------------------------------
+ (3) _even_pins_set_clear                                  0     0      0       0
+ ---------------------------------------------------------------------------------
+ (3) _even_pins_clear_set                                  0     0      0       0
+ ---------------------------------------------------------------------------------
+ Estimated maximum stack depth 3
+ ---------------------------------------------------------------------------------
+
+ Call Graph Graphs:
+
+ _main (ROOT)
+   _reset_all_pins
+   _start_timer
+
+ _ISR (ROOT)
+   _even_pins_clear_set *
+   _even_pins_set_clear *
+   _odd_pins_clear_set *
+   _odd_pins_set_clear *
+   i1_reset_all_pins *
+
+ Address spaces:
+Name               Size   Autos  Total    Cost      Usage
+SFR1                 0      0       0       2        0.0%
+BITSFR1              0      0       0       2        0.0%
+BANK0               3E      E      22       4       54.8%
+BITBANK0            3E      0       0       3        0.0%
+SFR0                 0      0       0       1        0.0%
+BITSFR0              0      0       0       1        0.0%
+COMMON               0      0       0       1        0.0%
+BITCOMMON            0      0       0       0        0.0%
+CODE                 0      0       0       0        0.0%
+DATA                 0      0      22       6        0.0%
+ABS                  0      0      22       5        0.0%
+NULL                 0      0       0       0        0.0%
+STACK                0      0       0       2        0.0%
+EEDATA              80      0       0       0        0.0%
+
+
+Microchip Technology PIC Macro Assembler V2.36 build 20220127204148 
+Symbol Table                                                                                   Mon Oct 31 17:42:45 2022
+
+                          pc 0002                  _OF_num_TMR1 003C                           l83 00F5  
+                         l89 00FB                          l801 00AD                          l811 00B6  
+                        l803 00AE                          l813 00B7                          l805 00B2  
+                        l815 00BC                          l807 00B3                          l817 00C6  
+                        l809 00B4                          l819 00D2                          l781 00EF  
+                        l783 00F4                          l791 00A1                          l785 00F6  
+                        l793 00A3                          l795 00A7                          l797 00AB  
+                        l789 0098                          l799 00AC                          _GIE 005F  
+                        u110 00BC                          u111 00BB                          u120 00C2  
+                        u121 00C0                          u130 00C3                          u217 00D9  
+                        _ISR 003F                          fsr0 0004                          indf 0000  
+                _start_timer 00EF           _odd_pins_clear_set 0102                         ?_ISR 002E  
+                       _ADON 00F8                         _PEIE 005E                         i1l72 0109  
+                       i1l75 0111                         i1l69 010D                         i1l78 0105  
+                       i1l89 0101                         _TMR1 000E          ?_odd_pins_clear_set 002E  
+                       _main 0098                         btemp 005E                         start 000F  
+        _even_pins_clear_set 0106                        ??_ISR 002E         ??_odd_pins_clear_set 0000  
+                      ?_main 002E                        _GPIO0 0028                        _GPIO1 0029  
+                      _GPIO2 002A                        _GPIO3 002B                        _GPIO4 002C  
+                      _GPIO5 002D                        i1l105 008E                        i1l821 003F  
+                      i1l831 005B                        i1l823 0043                        i1l841 008A  
+                      i1l833 0065                        i1l825 0047                        i1l843 008D  
+                      i1l835 007D                        i1l827 004D                        i1l773 010A  
+                      i1l837 0088                        i1l829 0057                        i1l775 0106  
+                      i1l839 0089                        i1l777 010E                        i1l779 0102  
+                      i1l787 00FC                        u20_20 0088                        u20_21 0087  
+                      u20_25 0084                        u14_20 0043                        u14_21 0042  
+       ?_even_pins_clear_set 002E                        u15_20 0053                        u15_21 0051  
+                      u16_20 0054                        u17_20 0061                        u17_21 005F  
+                      u18_20 0062                        u19_25 0068           _odd_pins_set_clear 010E  
+                      fpbase 0000                        pclath 000A          ?_odd_pins_set_clear 002E  
+                      status 0003                        wtemp0 005E          _even_pins_set_clear 010A  
+            __initialization 0010                 __end_of_main 00E1         ??_odd_pins_set_clear 0000  
+                     ??_main 0039        ??_even_pins_clear_set 0000         ?_even_pins_set_clear 002E  
+                 __i1fptable 0035                       _TMR1GE 0086                       _TMR1IE 0460  
+                     _TMR1IF 0060                       _TMR1CS 0081                       _TMR1ON 0080  
+              _CW_CCW_select 0041        ??_even_pins_set_clear 0000            ?i1_reset_all_pins 002E  
+                     fptable 0034                       fptotal 0000                       saved_w 005E  
+         ??i1_reset_all_pins 0000      __end_of__initialization 0032               __pcstackCOMMON 0000  
+               __pidataBANK0 00E1                 ?_start_timer 0037                   __pbssBANK0 003C  
+                 __pmaintext 0098                   __pintentry 0004                      _T1OSCEN 0083  
+                    _TRISIO0 0428                      _TRISIO1 0429                      _TRISIO2 042A  
+                    _TRISIO3 042B                      _TRISIO4 042C                      _TRISIO5 042D  
+                    i1fpbase 003A                    _CMCONbits 0019                    _ANSELbits 009F  
+                    __ptext1 00EF                      __ptext2 00F6                      __ptext3 003F  
+                    __ptext4 00FC                      __ptext5 0102                      __ptext6 0106  
+                    __ptext7 010A                      __ptext8 010E          __size_of__i1fptable 000A  
+                  _T1CONbits 0010               _reset_all_pins 00F6         end_of_initialization 0032  
+         _set_clear_sequence 003F  __end_of_even_pins_clear_set 010A       __end_of_reset_all_pins 00FC  
+__end_of_even_pins_set_clear 010E              ?_reset_all_pins 002E          start_initialization 0010  
+                __end_of_ISR 0098                  __pdataBANK0 0020           __end_of__i1fptable 003F  
+                  ___latbits 0000                __pcstackBANK0 002E                _target_OF_num 002C  
+                  __pfunctab 0034            interrupt_function 0004             i1_reset_all_pins 00FC  
+ __end_of_odd_pins_clear_set 0106                    _num_steps 0028       fp__even_pins_clear_set 003D  
+                   i1fptable 0035                     i1fptotal 000C             ??_reset_all_pins 0000  
+ __end_of_odd_pins_set_clear 0112                ??_start_timer 0000       fp__even_pins_set_clear 003C  
+                _pair_select 0040       _tmp_set_clear_sequence 003E                     _func_ptr 0020  
+          start_timer@OF_num 0037        fp__odd_pins_clear_set 003E          __end_of_start_timer 00F6  
+                   intlevel1 0034        fp__odd_pins_set_clear 003B     __end_ofi1_reset_all_pins 0102  
