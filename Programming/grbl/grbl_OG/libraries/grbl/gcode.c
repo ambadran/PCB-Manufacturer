@@ -854,7 +854,7 @@ uint8_t gc_execute_line(char *line)
     gc_state.spindle_speed = gc_block.values.s; 
   }
     
-  // [5. Select tool ]: NOT SUPPORTED. Only tracks tool value.
+  // [5. Select tool ]: NOT SUPPORTED. Only tracks tool value. # FOUND YOU BITCH HAHAHAHA
   gc_state.tool = gc_block.values.t;
 
   // [6. Change tool ]: NOT SUPPORTED
