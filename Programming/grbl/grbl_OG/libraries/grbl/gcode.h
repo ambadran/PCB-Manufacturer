@@ -123,6 +123,11 @@
 // Modal Group G12: Active work coordinate system
 // N/A: Stores coordinate system value (54-59) to change to.
 
+// NEWLY ADDED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// Modal_GROUP Ax: Latch control
+#define LATCH_CLOSE 0 // A0
+#define LATCH_OPEN 1 // A1
+
 
 // Define parameter word mapping.
 #define WORD_F  0
@@ -155,6 +160,7 @@ typedef struct {
   uint8_t program_flow;    // {M0,M1,M2,M30}
   uint8_t coolant;         // {M7,M8,M9}
   uint8_t spindle;         // {M3,M4,M5}
+  uint8_t latch;           // {A0, A1} NEWLY ADDED !!!!!!!!!!!!!!!!!!!!!!!!!
 } gc_modal_t;  
 
 typedef struct {

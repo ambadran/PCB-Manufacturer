@@ -58,5 +58,6 @@
 #include "serial.h"
 #include "spindle_control.h"
 #include "stepper.h"
+#include "latch.h"  // NEWLY ADDED !!!!!!!!!!!!!!!!!
 
 #endif

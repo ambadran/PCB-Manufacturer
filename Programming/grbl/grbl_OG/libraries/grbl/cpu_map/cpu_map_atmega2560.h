@@ -136,3 +136,10 @@
   #define SPINDLE_PWM_PORT    PORTH
   #define SPINDLE_PWM_BIT		4 // MEGA2560 Digital Pin 97  # NO IT'S PIN 7 ON ARDUION MEGA
 #endif // End of VARIABLE_SPINDLE
+
+
+// NEWLY ADDED !!!!!!!!!!!!!!!
+// for Latch Control
+#define LATCH_DDR DDRL
+#define LATCH_PORT PORTL
+#define LATCH_BIT 6 // MEGA2560 Digital Pin 41 

@@ -320,6 +320,24 @@ uint8_t gc_execute_line(char *line)
         if ( bit_istrue(command_words,bit(word_bit)) ) { FAIL(STATUS_GCODE_MODAL_GROUP_VIOLATION); }
         command_words |= bit(word_bit);
         break;
+
+      // NEWLY_ADDED !!!!!!!!!!!!!!!!!
+      // LATCH CONTROL COMMAND
+      case 'A':
+
+        switch(int_value) {
+
+          case 0:
+            gc_block.modal.latch = LATCH_CLOSE;
+            break;
+
+          case 1:
+            gc_block.modal.latch = LATCH_OPEN;
+            break;
+
+        }
+
+        break;
       
       // NOTE: All remaining letters assign values.
       default: 
@@ -328,7 +346,7 @@ uint8_t gc_execute_line(char *line)
            legal g-code words and stores their value. Error-checking is performed later since some
            words (I,J,K,L,P,R) have multiple connotations and/or depend on the issued commands. */
         switch(letter){
-          // case 'A': // Not supported
+          // case 'A': // Not supported // NOW IT'S SUPPORTED for LATCH CONTROL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           // case 'B': // Not supported
           // case 'C': // Not supported
           // case 'D': // Not supported
@@ -337,7 +355,7 @@ uint8_t gc_execute_line(char *line)
           case 'I': word_bit = WORD_I; gc_block.values.ijk[X_AXIS] = value; ijk_words |= (1<<X_AXIS); break;
           case 'J': word_bit = WORD_J; gc_block.values.ijk[Y_AXIS] = value; ijk_words |= (1<<Y_AXIS); break;
           case 'K': word_bit = WORD_K; gc_block.values.ijk[Z_AXIS] = value; ijk_words |= (1<<Z_AXIS); break;
-          case 'L': word_bit = WORD_L; gc_block.values.l = int_value; break;
+          case 'L': word_bit = WORD_L; gc_block.values.l = int_value; break;  
           case 'N': word_bit = WORD_N; gc_block.values.n = trunc(value); break;
           case 'P': word_bit = WORD_P; gc_block.values.p = value; break;
           // NOTE: For certain commands, P value must be an integer, but none of these commands are supported.
@@ -865,6 +883,10 @@ uint8_t gc_execute_line(char *line)
     spindle_run(gc_block.modal.spindle, gc_state.spindle_speed);
     gc_state.modal.spindle = gc_block.modal.spindle;    
   }
+
+  // NEWLY_ADDED !!!!!!!!!!!!!!!!!!!!!!
+  // [ . Latch control ]
+  latch_run(gc_block.modal.latch);
 
   // [8. Coolant control ]:  
   if (gc_state.modal.coolant != gc_block.modal.coolant) {
