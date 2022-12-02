@@ -886,7 +886,11 @@ uint8_t gc_execute_line(char *line)
 
   // NEWLY_ADDED !!!!!!!!!!!!!!!!!!!!!!
   // [ . Latch control ]
-  latch_run(gc_block.modal.latch);
+  if (gc_state.modal.latch != gc_block.modal.latch) {
+    // Update latch control
+    latch_run(gc_block.modal.latch);
+    gc_state.modal.latch = gc_block.modal.latch;
+  }
 
   // [8. Coolant control ]:  
   if (gc_state.modal.coolant != gc_block.modal.coolant) {
