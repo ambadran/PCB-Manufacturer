@@ -336,7 +336,30 @@ uint8_t gc_execute_line(char *line)
             break;
 
         }
+        break;
 
+      // NEWLY_ADDED !!!!!!!!!!!
+      // Power supply control
+      case 'B':
+
+        switch (int_value) {
+
+          case 0:
+            gc_block.modal.power_supply = POWER_SUPPLY_DISABLE;
+            break;
+
+          case 1:
+            gc_block.modal.power_supply = POWER_SUPPLY_ENABLE;
+            break;
+
+        }
+        break;
+
+      // NEWLY_ADDED !!!!!!!!!
+      // Tool Select control
+      case 'C':
+
+        gc_block.modal.tool_select = int_value;
         break;
       
       // NOTE: All remaining letters assign values.
@@ -347,7 +370,7 @@ uint8_t gc_execute_line(char *line)
            words (I,J,K,L,P,R) have multiple connotations and/or depend on the issued commands. */
         switch(letter){
           // case 'A': // Not supported // NOW IT'S SUPPORTED for LATCH CONTROL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-          // case 'B': // Not supported
+          // case 'B': // Not supported // NOW IT'S SUPPORTED for power supply CONTROL !!!!!!!!!!!!!!!!!!!!!!!!!
           // case 'C': // Not supported
           // case 'D': // Not supported
           case 'F': word_bit = WORD_F; gc_block.values.f = value; break;
@@ -890,6 +913,20 @@ uint8_t gc_execute_line(char *line)
     // Update latch control
     latch_run(gc_block.modal.latch);
     gc_state.modal.latch = gc_block.modal.latch;
+  }
+
+  // [ . Power Supply control ]
+  if (gc_state.modal.power_supply != gc_block.modal.power_supply) {
+    // Update power supply control
+    power_supply_run(gc_block.modal.power_supply);
+    gc_state.modal.power_supply = gc_block.modal.power_supply;
+  }
+
+  // [ . Tool Select control ]
+  if (gc_state.modal.tool_select != gc_block.modal.tool_select) {
+    // Update Tool Select Control
+    tool_select_run(gc_block.modal.tool_select);
+    gc_state.modal.tool_select = gc_block.modal.tool_select;
   }
 
   // [8. Coolant control ]:  

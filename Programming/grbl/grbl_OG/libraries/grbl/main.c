@@ -70,7 +70,10 @@ int main(void)
     probe_init();
     plan_reset(); // Clear block buffer and planner variables
     st_reset(); // Clear stepper subsystem variables.
-    latch_init(); // NEWLY ADDED !!!!!!!!!!!!!!!!!!!!!!!!!
+    latch_init();  // NEWLY ADDED !!!!!!!!!!!!!!!!!!!!!!!!!
+    power_supply_init();  // NEWLY ADDED !!!!!!!!!!!!!!!!!!!!!!!!!
+    tool_select_init();  // NEWLY ADDED !!!!!!!!!!!!!!!!!!!!!!!!!
+
 
     // Sync cleared gcode and planner positions to current system position.
     plan_sync_position();

@@ -59,5 +59,8 @@
 #include "spindle_control.h"
 #include "stepper.h"
 #include "latch.h"  // NEWLY ADDED !!!!!!!!!!!!!!!!!
+#include "power_supply.h"  // NEWLY ADDED !!!!!!!!!!!!!!!!!
+#include "tool_select.h"  // NEWLY ADDED !!!!!!!!!!!!!!!!!
+
 
 #endif

@@ -124,9 +124,23 @@
 // N/A: Stores coordinate system value (54-59) to change to.
 
 // NEWLY ADDED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// Modal_GROUP Ax: Latch control
+// Modal Group Ax: Latch control
 #define LATCH_CLOSE 0 // A0
 #define LATCH_OPEN 1 // A1
+
+// Modal Group Bx: Power Supply Relay control
+#define POWER_SUPPLY_DISABLE 0 // B0
+#define POWER_SUPPLY_ENABLE 1 // B1
+
+// Modal Group Cx: Tool Select control
+#define TOOL0 0  // C0
+#define TOOL1 1  // C1
+#define TOOL2 2  // C2
+#define TOOL3 3  // C3
+#define TOOL4 4  // C4
+#define TOOL5 5  // C5
+#define TOOL6 6  // C6
+#define TOOL7 7  // C7
 
 
 // Define parameter word mapping.
@@ -160,7 +174,10 @@ typedef struct {
   uint8_t program_flow;    // {M0,M1,M2,M30}
   uint8_t coolant;         // {M7,M8,M9}
   uint8_t spindle;         // {M3,M4,M5}
-  uint8_t latch;           // {A0, A1} NEWLY ADDED !!!!!!!!!!!!!!!!!!!!!!!!!
+  uint8_t latch;           // {A0, A1} NEWLY ADDED !!!!!!!!!!!!!!!!!!!!!!!!!!
+  uint8_t power_supply;    // {B0, B1}  NEWLY ADDED !!!!!!!!!!!!!!!!!!!!!!!!!
+  uint8_t tool_select;     // {C0, C1, C2, C3, C4, C5, C6, C7} NEWLY ADDED !!
+
 } gc_modal_t;  
 
 typedef struct {

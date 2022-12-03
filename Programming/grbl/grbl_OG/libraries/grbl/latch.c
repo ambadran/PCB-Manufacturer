@@ -23,13 +23,13 @@ void latch_set_state(uint8_t state) {
 
   if (state == LATCH_OPEN) {
 
-  // sets the latch pin
-  LATCH_PORT |= (1<<LATCH_BIT);
+    // sets the latch pin
+    LATCH_PORT |= (1<<LATCH_BIT);
 
   } else {
 
-  // clears the latch pin
-  LATCH_PORT &= ~(1<<LATCH_BIT);
+    // clears the latch pin
+    LATCH_PORT &= ~(1<<LATCH_BIT);
 
   }
 

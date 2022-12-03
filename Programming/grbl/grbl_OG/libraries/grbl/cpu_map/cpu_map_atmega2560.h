@@ -142,4 +142,21 @@
 // for Latch Control
 #define LATCH_DDR DDRL
 #define LATCH_PORT PORTL
-#define LATCH_BIT 6 // MEGA2560 Digital Pin 41 
+#define LATCH_BIT 6 // MEGA2560 Digital Pin 43, PL6
+
+
+// for Tool Select pins
+// we have 3 pins that will be connected to an 8-input demultiplexer which will choose which
+// module receive the PWM signal output
+#define TOOL_SELECT_DDR DDRB
+#define TOOL_SELECT_PORT PORTB
+// not really needed
+#define TOOL_SELECT_BIT0 0  // PB0 Pin 53 
+#define TOOL_SELECT_BIT1 1  // PB1 Pin 52
+#define TOOL_SELECT_BIT2 2  // PB2 Pin 51
+
+
+// For Power Supply enable pin
+#define POWER_SUPPLY_DDR DDRG
+#define POWER_SUPPLY_PORT PORTG
+#define POWER_SUPPLY_BIT 0  // Pin 41, PG0
