@@ -25,7 +25,7 @@ def connect():
 
 def open_socket(ip):
     # Open a socket
-    address = (ip, 80)
+    address = (ip, 1234)
     connection = socket.socket()
     connection.bind(address)
     connection.listen(1)
@@ -44,9 +44,9 @@ def serve(connection):
         request = str(request)
 
         request = request.strip()
-        print(request)
+        print(request, 'from tcp socket')
 
-        to_be_sent = request + '\n'
+        to_be_sent = request + ' from pico\n'
         client.send(to_be_sent)
         # client.close()
 
