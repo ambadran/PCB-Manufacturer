@@ -1,31 +1,31 @@
-# 1 "C:\\Program Files\\Microchip\\xc8\\v2.36\\pic\\sources\\c90\\pic\\__eeprom.c"
+# 1 "/opt/microchip/xc8/v2.36/pic/sources/c90/pic/__eeprom.c"
 # 1 "<built-in>" 1
 # 1 "<built-in>" 3
 # 288 "<built-in>" 3
 # 1 "<command line>" 1
 # 1 "<built-in>" 2
-# 1 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\language_support.h" 1 3
+# 1 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/language_support.h" 1 3
 # 2 "<built-in>" 2
-# 1 "C:\\Program Files\\Microchip\\xc8\\v2.36\\pic\\sources\\c90\\pic\\__eeprom.c" 2
-# 1 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\xc.h" 1 3
-# 18 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\xc.h" 3
+# 1 "/opt/microchip/xc8/v2.36/pic/sources/c90/pic/__eeprom.c" 2
+# 1 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/xc.h" 1 3
+# 18 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/xc.h" 3
 extern const char __xc8_OPTIM_SPEED;
 
 extern double __fpnormalize(double);
 
 
 
-# 1 "C:\\Program Files\\Microchip\\xc8\\v2.36\\pic\\include\\c90\\xc8debug.h" 1 3
-# 13 "C:\\Program Files\\Microchip\\xc8\\v2.36\\pic\\include\\c90\\xc8debug.h" 3
+# 1 "/opt/microchip/xc8/v2.36/pic/include/c90/xc8debug.h" 1 3
+# 13 "/opt/microchip/xc8/v2.36/pic/include/c90/xc8debug.h" 3
 #pragma intrinsic(__builtin_software_breakpoint)
 extern void __builtin_software_breakpoint(void);
-# 24 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\xc.h" 2 3
-# 1 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\builtins.h" 1 3
+# 24 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/xc.h" 2 3
+# 1 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/builtins.h" 1 3
 
 
 
-# 1 "C:\\Program Files\\Microchip\\xc8\\v2.36\\pic\\include\\c90\\stdint.h" 1 3
-# 13 "C:\\Program Files\\Microchip\\xc8\\v2.36\\pic\\include\\c90\\stdint.h" 3
+# 1 "/opt/microchip/xc8/v2.36/pic/include/c90/stdint.h" 1 3
+# 13 "/opt/microchip/xc8/v2.36/pic/include/c90/stdint.h" 3
 typedef signed char int8_t;
 
 
@@ -50,7 +50,7 @@ typedef __int24 int24_t;
 
 
 typedef signed long int int32_t;
-# 52 "C:\\Program Files\\Microchip\\xc8\\v2.36\\pic\\include\\c90\\stdint.h" 3
+# 52 "/opt/microchip/xc8/v2.36/pic/include/c90/stdint.h" 3
 typedef unsigned char uint8_t;
 
 
@@ -72,7 +72,7 @@ typedef __uint24 uint24_t;
 
 
 typedef unsigned long int uint32_t;
-# 88 "C:\\Program Files\\Microchip\\xc8\\v2.36\\pic\\include\\c90\\stdint.h" 3
+# 88 "/opt/microchip/xc8/v2.36/pic/include/c90/stdint.h" 3
 typedef signed char int_least8_t;
 
 
@@ -82,11 +82,11 @@ typedef signed char int_least8_t;
 
 
 typedef signed int int_least16_t;
-# 109 "C:\\Program Files\\Microchip\\xc8\\v2.36\\pic\\include\\c90\\stdint.h" 3
+# 109 "/opt/microchip/xc8/v2.36/pic/include/c90/stdint.h" 3
 typedef __int24 int_least24_t;
-# 118 "C:\\Program Files\\Microchip\\xc8\\v2.36\\pic\\include\\c90\\stdint.h" 3
+# 118 "/opt/microchip/xc8/v2.36/pic/include/c90/stdint.h" 3
 typedef signed long int int_least32_t;
-# 136 "C:\\Program Files\\Microchip\\xc8\\v2.36\\pic\\include\\c90\\stdint.h" 3
+# 136 "/opt/microchip/xc8/v2.36/pic/include/c90/stdint.h" 3
 typedef unsigned char uint_least8_t;
 
 
@@ -95,7 +95,7 @@ typedef unsigned char uint_least8_t;
 
 
 typedef unsigned int uint_least16_t;
-# 154 "C:\\Program Files\\Microchip\\xc8\\v2.36\\pic\\include\\c90\\stdint.h" 3
+# 154 "/opt/microchip/xc8/v2.36/pic/include/c90/stdint.h" 3
 typedef __uint24 uint_least24_t;
 
 
@@ -105,7 +105,7 @@ typedef __uint24 uint_least24_t;
 
 
 typedef unsigned long int uint_least32_t;
-# 181 "C:\\Program Files\\Microchip\\xc8\\v2.36\\pic\\include\\c90\\stdint.h" 3
+# 181 "/opt/microchip/xc8/v2.36/pic/include/c90/stdint.h" 3
 typedef signed char int_fast8_t;
 
 
@@ -114,7 +114,7 @@ typedef signed char int_fast8_t;
 
 
 typedef signed int int_fast16_t;
-# 200 "C:\\Program Files\\Microchip\\xc8\\v2.36\\pic\\include\\c90\\stdint.h" 3
+# 200 "/opt/microchip/xc8/v2.36/pic/include/c90/stdint.h" 3
 typedef __int24 int_fast24_t;
 
 
@@ -124,7 +124,7 @@ typedef __int24 int_fast24_t;
 
 
 typedef signed long int int_fast32_t;
-# 224 "C:\\Program Files\\Microchip\\xc8\\v2.36\\pic\\include\\c90\\stdint.h" 3
+# 224 "/opt/microchip/xc8/v2.36/pic/include/c90/stdint.h" 3
 typedef unsigned char uint_fast8_t;
 
 
@@ -132,7 +132,7 @@ typedef unsigned char uint_fast8_t;
 
 
 typedef unsigned int uint_fast16_t;
-# 240 "C:\\Program Files\\Microchip\\xc8\\v2.36\\pic\\include\\c90\\stdint.h" 3
+# 240 "/opt/microchip/xc8/v2.36/pic/include/c90/stdint.h" 3
 typedef __uint24 uint_fast24_t;
 
 
@@ -141,9 +141,9 @@ typedef __uint24 uint_fast24_t;
 
 
 typedef unsigned long int uint_fast32_t;
-# 268 "C:\\Program Files\\Microchip\\xc8\\v2.36\\pic\\include\\c90\\stdint.h" 3
+# 268 "/opt/microchip/xc8/v2.36/pic/include/c90/stdint.h" 3
 typedef int32_t intmax_t;
-# 282 "C:\\Program Files\\Microchip\\xc8\\v2.36\\pic\\include\\c90\\stdint.h" 3
+# 282 "/opt/microchip/xc8/v2.36/pic/include/c90/stdint.h" 3
 typedef uint32_t uintmax_t;
 
 
@@ -157,7 +157,7 @@ typedef int16_t intptr_t;
 
 
 typedef uint16_t uintptr_t;
-# 5 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\builtins.h" 2 3
+# 5 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/builtins.h" 2 3
 
 
 #pragma intrinsic(__nop)
@@ -168,22 +168,22 @@ extern void __nop(void);
 extern __attribute__((nonreentrant)) void _delay(uint32_t);
 #pragma intrinsic(_delaywdt)
 extern __attribute__((nonreentrant)) void _delaywdt(uint32_t);
-# 25 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\xc.h" 2 3
+# 25 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/xc.h" 2 3
 
 
 
-# 1 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\pic.h" 1 3
+# 1 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/pic.h" 1 3
 
 
 
 
-# 1 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\htc.h" 1 3
+# 1 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/htc.h" 1 3
 
 
 
-# 1 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\xc.h" 1 3
-# 5 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\htc.h" 2 3
-# 6 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\pic.h" 2 3
+# 1 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/xc.h" 1 3
+# 5 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/htc.h" 2 3
+# 6 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/pic.h" 2 3
 
 
 
@@ -192,12 +192,12 @@ extern unsigned char __osccal_val(void);
 
 
 
-# 1 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\pic_chip_select.h" 1 3
-# 224 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\pic_chip_select.h" 3
-# 1 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 1 3
-# 45 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
-# 1 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\__at.h" 1 3
-# 46 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 2 3
+# 1 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/pic_chip_select.h" 1 3
+# 224 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/pic_chip_select.h" 3
+# 1 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 1 3
+# 45 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
+# 1 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/__at.h" 1 3
+# 46 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 2 3
 
 
 
@@ -216,7 +216,7 @@ typedef union {
     };
 } INDFbits_t;
 extern volatile INDFbits_t INDFbits __attribute__((address(0x000)));
-# 73 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 73 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 extern volatile unsigned char TMR0 __attribute__((address(0x001)));
 
 __asm("TMR0 equ 01h");
@@ -228,7 +228,7 @@ typedef union {
     };
 } TMR0bits_t;
 extern volatile TMR0bits_t TMR0bits __attribute__((address(0x001)));
-# 93 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 93 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 extern volatile unsigned char PCL __attribute__((address(0x002)));
 
 __asm("PCL equ 02h");
@@ -240,7 +240,7 @@ typedef union {
     };
 } PCLbits_t;
 extern volatile PCLbits_t PCLbits __attribute__((address(0x002)));
-# 113 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 113 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 extern volatile unsigned char STATUS __attribute__((address(0x003)));
 
 __asm("STATUS equ 03h");
@@ -268,7 +268,7 @@ typedef union {
     };
 } STATUSbits_t;
 extern volatile STATUSbits_t STATUSbits __attribute__((address(0x003)));
-# 199 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 199 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 extern volatile unsigned char FSR __attribute__((address(0x004)));
 
 __asm("FSR equ 04h");
@@ -280,7 +280,7 @@ typedef union {
     };
 } FSRbits_t;
 extern volatile FSRbits_t FSRbits __attribute__((address(0x004)));
-# 219 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 219 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 extern volatile unsigned char GPIO __attribute__((address(0x005)));
 
 __asm("GPIO equ 05h");
@@ -305,7 +305,7 @@ typedef union {
     };
 } GPIObits_t;
 extern volatile GPIObits_t GPIObits __attribute__((address(0x005)));
-# 307 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 307 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 extern volatile unsigned char PCLATH __attribute__((address(0x00A)));
 
 __asm("PCLATH equ 0Ah");
@@ -317,7 +317,7 @@ typedef union {
     };
 } PCLATHbits_t;
 extern volatile PCLATHbits_t PCLATHbits __attribute__((address(0x00A)));
-# 327 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 327 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 extern volatile unsigned char INTCON __attribute__((address(0x00B)));
 
 __asm("INTCON equ 0Bh");
@@ -342,7 +342,7 @@ typedef union {
     };
 } INTCONbits_t;
 extern volatile INTCONbits_t INTCONbits __attribute__((address(0x00B)));
-# 405 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 405 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 extern volatile unsigned char PIR1 __attribute__((address(0x00C)));
 
 __asm("PIR1 equ 0Ch");
@@ -362,7 +362,7 @@ typedef union {
     };
 } PIR1bits_t;
 extern volatile PIR1bits_t PIR1bits __attribute__((address(0x00C)));
-# 453 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 453 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 extern volatile unsigned short TMR1 __attribute__((address(0x00E)));
 
 __asm("TMR1 equ 0Eh");
@@ -381,7 +381,7 @@ typedef union {
     };
 } TMR1Lbits_t;
 extern volatile TMR1Lbits_t TMR1Lbits __attribute__((address(0x00E)));
-# 480 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 480 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 extern volatile unsigned char TMR1H __attribute__((address(0x00F)));
 
 __asm("TMR1H equ 0Fh");
@@ -393,7 +393,7 @@ typedef union {
     };
 } TMR1Hbits_t;
 extern volatile TMR1Hbits_t TMR1Hbits __attribute__((address(0x00F)));
-# 500 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 500 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 extern volatile unsigned char T1CON __attribute__((address(0x010)));
 
 __asm("T1CON equ 010h");
@@ -415,7 +415,7 @@ typedef union {
     };
 } T1CONbits_t;
 extern volatile T1CONbits_t T1CONbits __attribute__((address(0x010)));
-# 565 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 565 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 extern volatile unsigned char CMCON __attribute__((address(0x019)));
 
 __asm("CMCON equ 019h");
@@ -436,7 +436,7 @@ typedef union {
     };
 } CMCONbits_t;
 extern volatile CMCONbits_t CMCONbits __attribute__((address(0x019)));
-# 624 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 624 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 extern volatile unsigned char ADRESH __attribute__((address(0x01E)));
 
 __asm("ADRESH equ 01Eh");
@@ -448,7 +448,7 @@ typedef union {
     };
 } ADRESHbits_t;
 extern volatile ADRESHbits_t ADRESHbits __attribute__((address(0x01E)));
-# 644 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 644 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 extern volatile unsigned char ADCON0 __attribute__((address(0x01F)));
 
 __asm("ADCON0 equ 01Fh");
@@ -479,7 +479,7 @@ typedef union {
     };
 } ADCON0bits_t;
 extern volatile ADCON0bits_t ADCON0bits __attribute__((address(0x01F)));
-# 728 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 728 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 extern volatile unsigned char OPTION_REG __attribute__((address(0x081)));
 
 __asm("OPTION_REG equ 081h");
@@ -501,7 +501,7 @@ typedef union {
     };
 } OPTION_REGbits_t;
 extern volatile OPTION_REGbits_t OPTION_REGbits __attribute__((address(0x081)));
-# 798 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 798 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 extern volatile unsigned char TRISIO __attribute__((address(0x085)));
 
 __asm("TRISIO equ 085h");
@@ -518,7 +518,7 @@ typedef union {
     };
 } TRISIObits_t;
 extern volatile TRISIObits_t TRISIObits __attribute__((address(0x085)));
-# 848 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 848 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 extern volatile unsigned char PIE1 __attribute__((address(0x08C)));
 
 __asm("PIE1 equ 08Ch");
@@ -538,7 +538,7 @@ typedef union {
     };
 } PIE1bits_t;
 extern volatile PIE1bits_t PIE1bits __attribute__((address(0x08C)));
-# 896 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 896 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 extern volatile unsigned char PCON __attribute__((address(0x08E)));
 
 __asm("PCON equ 08Eh");
@@ -554,7 +554,7 @@ typedef union {
     };
 } PCONbits_t;
 extern volatile PCONbits_t PCONbits __attribute__((address(0x08E)));
-# 930 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 930 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 extern volatile unsigned char OSCCAL __attribute__((address(0x090)));
 
 __asm("OSCCAL equ 090h");
@@ -576,7 +576,7 @@ typedef union {
     };
 } OSCCALbits_t;
 extern volatile OSCCALbits_t OSCCALbits __attribute__((address(0x090)));
-# 990 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 990 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 extern volatile unsigned char WPU __attribute__((address(0x095)));
 
 __asm("WPU equ 095h");
@@ -593,7 +593,7 @@ typedef union {
     };
 } WPUbits_t;
 extern volatile WPUbits_t WPUbits __attribute__((address(0x095)));
-# 1035 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 1035 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 extern volatile unsigned char IOC __attribute__((address(0x096)));
 
 __asm("IOC equ 096h");
@@ -623,7 +623,7 @@ typedef union {
     };
 } IOCbits_t;
 extern volatile IOCbits_t IOCbits __attribute__((address(0x096)));
-# 1126 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 1126 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 typedef union {
     struct {
         unsigned IOC0 :1;
@@ -643,7 +643,7 @@ typedef union {
     };
 } IOCBbits_t;
 extern volatile IOCBbits_t IOCBbits __attribute__((address(0x096)));
-# 1209 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 1209 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 extern volatile unsigned char VRCON __attribute__((address(0x099)));
 
 __asm("VRCON equ 099h");
@@ -665,7 +665,7 @@ typedef union {
     };
 } VRCONbits_t;
 extern volatile VRCONbits_t VRCONbits __attribute__((address(0x099)));
-# 1269 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 1269 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 extern volatile unsigned char EEDATA __attribute__((address(0x09A)));
 
 __asm("EEDATA equ 09Ah");
@@ -695,7 +695,7 @@ typedef union {
     };
 } EEDATbits_t;
 extern volatile EEDATbits_t EEDATbits __attribute__((address(0x09A)));
-# 1307 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 1307 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 extern volatile unsigned char EEADR __attribute__((address(0x09B)));
 
 __asm("EEADR equ 09Bh");
@@ -707,7 +707,7 @@ typedef union {
     };
 } EEADRbits_t;
 extern volatile EEADRbits_t EEADRbits __attribute__((address(0x09B)));
-# 1327 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 1327 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 extern volatile unsigned char EECON1 __attribute__((address(0x09C)));
 
 __asm("EECON1 equ 09Ch");
@@ -722,7 +722,7 @@ typedef union {
     };
 } EECON1bits_t;
 extern volatile EECON1bits_t EECON1bits __attribute__((address(0x09C)));
-# 1365 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 1365 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 extern volatile unsigned char EECON2 __attribute__((address(0x09D)));
 
 __asm("EECON2 equ 09Dh");
@@ -734,7 +734,7 @@ typedef union {
     };
 } EECON2bits_t;
 extern volatile EECON2bits_t EECON2bits __attribute__((address(0x09D)));
-# 1385 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 1385 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 extern volatile unsigned char ADRESL __attribute__((address(0x09E)));
 
 __asm("ADRESL equ 09Eh");
@@ -746,7 +746,7 @@ typedef union {
     };
 } ADRESLbits_t;
 extern volatile ADRESLbits_t ADRESLbits __attribute__((address(0x09E)));
-# 1405 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 1405 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 extern volatile unsigned char ANSEL __attribute__((address(0x09F)));
 
 __asm("ANSEL equ 09Fh");
@@ -768,7 +768,7 @@ typedef union {
     };
 } ANSELbits_t;
 extern volatile ANSELbits_t ANSELbits __attribute__((address(0x09F)));
-# 1485 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\proc\\pic12f675.h" 3
+# 1485 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h" 3
 extern volatile __bit ADCS0 __attribute__((address(0x4FC)));
 
 
@@ -1124,9 +1124,9 @@ extern volatile __bit nT1SYNC __attribute__((address(0x82)));
 
 
 extern volatile __bit nTO __attribute__((address(0x1C)));
-# 225 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\pic_chip_select.h" 2 3
-# 14 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\pic.h" 2 3
-# 76 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\pic.h" 3
+# 225 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/pic_chip_select.h" 2 3
+# 14 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/pic.h" 2 3
+# 76 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/pic.h" 3
 __attribute__((__unsupported__("The " "FLASH_READ" " macro function is no longer supported. Please use the MPLAB X MCC."))) unsigned char __flash_read(unsigned short addr);
 
 __attribute__((__unsupported__("The " "FLASH_WRITE" " macro function is no longer supported. Please use the MPLAB X MCC."))) void __flash_write(unsigned short addr, unsigned short data);
@@ -1135,18 +1135,17 @@ __attribute__((__unsupported__("The " "FLASH_ERASE" " macro function is no longe
 
 
 
-# 1 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\eeprom_routines.h" 1 3
-# 114 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\eeprom_routines.h" 3
+# 1 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/eeprom_routines.h" 1 3
+# 114 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/eeprom_routines.h" 3
 extern void eeprom_write(unsigned char addr, unsigned char value);
 extern unsigned char eeprom_read(unsigned char addr);
-# 84 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\pic.h" 2 3
-# 118 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\pic.h" 3
+# 84 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/pic.h" 2 3
+# 118 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/pic.h" 3
 extern __bank0 unsigned char __resetbits;
 extern __bank0 __bit __powerdown;
 extern __bank0 __bit __timeout;
-# 29 "C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\\pic\\include\\xc.h" 2 3
-# 1 "C:\\Program Files\\Microchip\\xc8\\v2.36\\pic\\sources\\c90\\pic\\__eeprom.c" 2
-
+# 29 "/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/xc.h" 2 3
+# 2 "/opt/microchip/xc8/v2.36/pic/sources/c90/pic/__eeprom.c" 2
 
 
 
@@ -1166,7 +1165,7 @@ __eecpymem(volatile unsigned char *to, __eeprom unsigned char * from, unsigned c
   *cp++ = EEDATA;
   ++EEADR;
  }
-# 36 "C:\\Program Files\\Microchip\\xc8\\v2.36\\pic\\sources\\c90\\pic\\__eeprom.c"
+# 36 "/opt/microchip/xc8/v2.36/pic/sources/c90/pic/__eeprom.c"
 }
 
 void
@@ -1199,7 +1198,7 @@ __memcpyee(__eeprom unsigned char * to, const unsigned char *from, unsigned char
    INTCONbits.GIE = 1;
   }
  }
-# 101 "C:\\Program Files\\Microchip\\xc8\\v2.36\\pic\\sources\\c90\\pic\\__eeprom.c"
+# 101 "/opt/microchip/xc8/v2.36/pic/sources/c90/pic/__eeprom.c"
 }
 
 unsigned char

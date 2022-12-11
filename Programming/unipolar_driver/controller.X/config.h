@@ -33,5 +33,10 @@
 
 #define _XTAL_FREQ 4000000
 
+
+// User Definned Configs
+#define DEBUG_MODE 0
+#define CONSTANT_STEPS 1
+
 #endif	/* CONFIG_HEADER_FILE */
 

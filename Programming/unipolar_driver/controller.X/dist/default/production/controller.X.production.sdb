@@ -3,32 +3,37 @@
 [d edition pro ]
 [d chip 12F675 ]
 [d frameptr 0 ]
-"10 C:\Program Files\Microchip\xc8\v2.36\pic\sources\c90\common\sprcadd.c
+"10 /opt/microchip/xc8/v2.36/pic/sources/c90/common/sprcadd.c
 [v ___fladd __fladd `(d  1 e 4 0 ]
-"4 C:\Program Files\Microchip\xc8\v2.36\pic\sources\c90\common\Umul8_16.c
+"4 /opt/microchip/xc8/v2.36/pic/sources/c90/common/Umul8_16.c
 [v __Umul8_16 _Umul8_16 `(ui  1 e 2 0 ]
-"6 C:\Program Files\Microchip\xc8\v2.36\pic\sources\c90\pic\__eeprom.c
+"6 /opt/microchip/xc8/v2.36/pic/sources/c90/pic/__eeprom.c
 [v ___eecpymem __eecpymem `(v  1 e 1 0 ]
 "39
 [v ___memcpyee __memcpyee `(v  1 e 1 0 ]
-"39 C:\Users\AbdulRahman\Projects\PCB Manufacturer\Programming\Unipolar Driver\controller.X\main.c
+"48 /home/abdulrahman/Projects/PCB_manufacturer/Programming/unipolar_driver/controller.X/main.c
+[v _retrieve_current_position retrieve_current_position `(v  1 e 1 0 ]
+"53
+[v _update_current_position update_current_position `(v  1 e 1 0 ]
+[v i1_update_current_position update_current_position `(v  1 e 1 0 ]
+"58
 [v _even_pins_set_clear even_pins_set_clear `(v  1 e 1 0 ]
-"44
+"63
 [v _even_pins_clear_set even_pins_clear_set `(v  1 e 1 0 ]
-"49
+"68
 [v _odd_pins_set_clear odd_pins_set_clear `(v  1 e 1 0 ]
-"54
+"73
 [v _odd_pins_clear_set odd_pins_clear_set `(v  1 e 1 0 ]
-"76
+"95
 [v _start_timer start_timer `(v  1 e 1 0 ]
-"85
+"122
 [v _reset_all_pins reset_all_pins `(v  1 e 1 0 ]
 [v i1_reset_all_pins reset_all_pins `(v  1 e 1 0 ]
-"93
+"130
 [v _main main `(v  1 e 1 0 ]
-"147
+"185
 [v _ISR ISR `II(v  1 e 1 0 ]
-"453 C:/Program Files/Microchip/MPLABX/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8\pic\include\proc\pic12f675.h
+"453 /opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h
 [v _TMR1 TMR1 `VEus  1 e 2 @14 ]
 [s S87 . 1 `uc 1 TMR1ON 1 0 :1:0 
 `uc 1 TMR1CS 1 0 :1:1 
@@ -113,65 +118,81 @@
 [v _TRISIO4 TRISIO4 `VEb  1 e 0 @1068 ]
 "1767
 [v _TRISIO5 TRISIO5 `VEb  1 e 0 @1069 ]
-"23 C:\Users\AbdulRahman\Projects\PCB Manufacturer\Programming\Unipolar Driver\controller.X\main.c
-[v _num_steps num_steps `[2]i  1 e 4 0 ]
-"29
+"26 /home/abdulrahman/Projects/PCB_manufacturer/Programming/unipolar_driver/controller.X/main.c
 [v _OF_num_TMR1 OF_num_TMR1 `i  1 e 2 0 ]
-"30
+"27
 [v _target_OF_num target_OF_num `i  1 e 2 0 ]
-"32
+"28
+[v _current_position current_position `i  1 e 2 0 ]
+"31
 [v _CW_CCW_select CW_CCW_select `a  1 e 1 0 ]
-"33
+"32
 [v _pair_select pair_select `a  1 e 1 0 ]
-"34
+"33
 [v _set_clear_sequence set_clear_sequence `a  1 e 1 0 ]
-"35
+"34
 [v _tmp_set_clear_sequence tmp_set_clear_sequence `a  1 e 1 0 ]
-"63
+"82
 [v _func_ptr func_ptr `[2][2][2]*.27(v  1 e 8 0 ]
-"93
+"130
 [v _main main `(v  1 e 1 0 ]
 {
-"144
+"182
 } 0
-"76
+"95
 [v _start_timer start_timer `(v  1 e 1 0 ]
 {
-[v start_timer@OF_num OF_num `i  1 p 2 9 ]
-"79
+"116
 } 0
-"85
+"53
+[v _update_current_position update_current_position `(v  1 e 1 0 ]
+{
+[v update_current_position@value value `i  1 p 2 11 ]
+"56
+} 0
+"48
+[v _retrieve_current_position retrieve_current_position `(v  1 e 1 0 ]
+{
+"51
+} 0
+"122
 [v _reset_all_pins reset_all_pins `(v  1 e 1 0 ]
 {
-"90
+"127
 } 0
-"147
+"185
 [v _ISR ISR `II(v  1 e 1 0 ]
 {
-"183
+"234
 } 0
-"85
+"53
+[v i1_update_current_position update_current_position `(v  1 e 1 0 ]
+{
+[v i1update_current_position@value value `i  1 p 2 0 ]
+"56
+} 0
+"122
 [v i1_reset_all_pins reset_all_pins `(v  1 e 1 0 ]
 {
-"90
+"127
 } 0
-"54
+"73
 [v _odd_pins_clear_set odd_pins_clear_set `(v  1 e 1 0 ]
 {
-"57
+"76
 } 0
-"44
+"63
 [v _even_pins_clear_set even_pins_clear_set `(v  1 e 1 0 ]
 {
-"47
+"66
 } 0
-"39
+"58
 [v _even_pins_set_clear even_pins_set_clear `(v  1 e 1 0 ]
 {
-"42
+"61
 } 0
-"49
+"68
 [v _odd_pins_set_clear odd_pins_set_clear `(v  1 e 1 0 ]
 {
-"52
+"71
 } 0
