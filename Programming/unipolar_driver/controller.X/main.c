@@ -23,10 +23,9 @@
 
 
 // Global Variables
-int OF_num_TMR1 = 0;
+int OF_num_TMR1 = 00;
 int target_OF_num = 1;
 int current_position;
-
 
 bool CW_CCW_select = false;  // defaulted to clockwise rotation
 bool pair_select = false;  // whether we will flip 0&2 or 1&3
@@ -34,9 +33,9 @@ bool set_clear_sequence = false;  // decide whether we will set,clear or clear,s
 bool tmp_set_clear_sequence = false; // a buffer to let set_sequence increment every 2 cycles
 
 #if CONSTANT_STEPS
-#define num_steps 750
+#define num_steps 790
 #else
-int num_steps[2] = {780, 805};  //anti-clockwise has more steps than clock-wise
+int num_steps[2] = {780, 805};  // anti-clockwise has more steps than clock-wise
                                 // this is because closing needs more torque
                                 // and to gaurantee it reaches the end (even if it
                                 // skips a couple of steps when it reaches the end)
@@ -96,7 +95,7 @@ void start_timer() {
     
     if (CW_CCW_select) {
         // updating current position
-        update_current_position(current_position + OF_num_TMR1);
+        update_current_position(current_position - OF_num_TMR1);
         // set new target overflow number
         target_OF_num = num_steps - current_position;
     
@@ -211,13 +210,13 @@ void __interrupt() ISR(void) {
             
             // cycle finished at CW then it's at maximum position
             // cycle finished at CCW then it's at minimum position
-            if (CW_CCW_select) {
-                update_current_position(num_steps);
-            } else {
-                update_current_position(0);
-            }
+//            if (CW_CCW_select) {
+//                update_current_position(num_steps);
+//            } else {
+//                update_current_position(0);
+//            }
             
-            OF_num_TMR1 = 0;
+//            OF_num_TMR1 = 0;
         }
         
         

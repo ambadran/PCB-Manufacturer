@@ -1169,16 +1169,15 @@ extern __bank0 __bit __timeout;
 #pragma config CPD = OFF
 # 13 "main.c" 2
 # 26 "main.c"
-int OF_num_TMR1 = 0;
+int OF_num_TMR1 = 00;
 int target_OF_num = 1;
 int current_position;
-
 
 _Bool CW_CCW_select = 0;
 _Bool pair_select = 0;
 _Bool set_clear_sequence = 0;
 _Bool tmp_set_clear_sequence = 0;
-# 48 "main.c"
+# 47 "main.c"
 void retrieve_current_position() {
 
     current_position = 0;
@@ -1230,9 +1229,9 @@ void start_timer() {
 
     if (CW_CCW_select) {
 
-        update_current_position(current_position + OF_num_TMR1);
+        update_current_position(current_position - OF_num_TMR1);
 
-        target_OF_num = 750 - current_position;
+        target_OF_num = 790 - current_position;
 
     } else {
 
@@ -1342,16 +1341,7 @@ void __attribute__((picinterrupt(("")))) ISR(void) {
         if (OF_num_TMR1 == target_OF_num) {
             TMR1ON = 0;
             reset_all_pins();
-
-
-
-            if (CW_CCW_select) {
-                update_current_position(750);
-            } else {
-                update_current_position(0);
-            }
-
-            OF_num_TMR1 = 0;
+# 220 "main.c"
         }
 
 

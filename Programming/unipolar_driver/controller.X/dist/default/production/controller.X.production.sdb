@@ -11,27 +11,26 @@
 [v ___eecpymem __eecpymem `(v  1 e 1 0 ]
 "39
 [v ___memcpyee __memcpyee `(v  1 e 1 0 ]
-"48 /home/abdulrahman/Projects/PCB_manufacturer/Programming/unipolar_driver/controller.X/main.c
+"47 /home/abdulrahman/Projects/PCB_manufacturer/Programming/unipolar_driver/controller.X/main.c
 [v _retrieve_current_position retrieve_current_position `(v  1 e 1 0 ]
-"53
+"52
 [v _update_current_position update_current_position `(v  1 e 1 0 ]
-[v i1_update_current_position update_current_position `(v  1 e 1 0 ]
-"58
+"57
 [v _even_pins_set_clear even_pins_set_clear `(v  1 e 1 0 ]
-"63
+"62
 [v _even_pins_clear_set even_pins_clear_set `(v  1 e 1 0 ]
-"68
+"67
 [v _odd_pins_set_clear odd_pins_set_clear `(v  1 e 1 0 ]
-"73
+"72
 [v _odd_pins_clear_set odd_pins_clear_set `(v  1 e 1 0 ]
-"95
+"94
 [v _start_timer start_timer `(v  1 e 1 0 ]
-"122
+"121
 [v _reset_all_pins reset_all_pins `(v  1 e 1 0 ]
 [v i1_reset_all_pins reset_all_pins `(v  1 e 1 0 ]
-"130
+"129
 [v _main main `(v  1 e 1 0 ]
-"185
+"184
 [v _ISR ISR `II(v  1 e 1 0 ]
 "453 /opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h
 [v _TMR1 TMR1 `VEus  1 e 2 @14 ]
@@ -124,75 +123,69 @@
 [v _target_OF_num target_OF_num `i  1 e 2 0 ]
 "28
 [v _current_position current_position `i  1 e 2 0 ]
-"31
+"30
 [v _CW_CCW_select CW_CCW_select `a  1 e 1 0 ]
-"32
+"31
 [v _pair_select pair_select `a  1 e 1 0 ]
-"33
+"32
 [v _set_clear_sequence set_clear_sequence `a  1 e 1 0 ]
-"34
+"33
 [v _tmp_set_clear_sequence tmp_set_clear_sequence `a  1 e 1 0 ]
-"82
+"81
 [v _func_ptr func_ptr `[2][2][2]*.27(v  1 e 8 0 ]
-"130
+"129
 [v _main main `(v  1 e 1 0 ]
 {
-"182
+"181
 } 0
-"95
+"94
 [v _start_timer start_timer `(v  1 e 1 0 ]
 {
-"116
+"115
 } 0
-"53
+"52
 [v _update_current_position update_current_position `(v  1 e 1 0 ]
 {
-[v update_current_position@value value `i  1 p 2 11 ]
-"56
+[v update_current_position@value value `i  1 p 2 9 ]
+"55
 } 0
-"48
+"47
 [v _retrieve_current_position retrieve_current_position `(v  1 e 1 0 ]
 {
-"51
+"50
 } 0
-"122
+"121
 [v _reset_all_pins reset_all_pins `(v  1 e 1 0 ]
 {
-"127
+"126
 } 0
-"185
+"184
 [v _ISR ISR `II(v  1 e 1 0 ]
 {
-"234
+"233
 } 0
-"53
-[v i1_update_current_position update_current_position `(v  1 e 1 0 ]
-{
-[v i1update_current_position@value value `i  1 p 2 0 ]
-"56
-} 0
-"122
+"121
 [v i1_reset_all_pins reset_all_pins `(v  1 e 1 0 ]
 {
-"127
+"126
 } 0
-"73
+"72
 [v _odd_pins_clear_set odd_pins_clear_set `(v  1 e 1 0 ]
 {
-"76
+"75
 } 0
-"63
+"62
 [v _even_pins_clear_set even_pins_clear_set `(v  1 e 1 0 ]
 {
-"66
+"65
 } 0
-"58
+"57
 [v _even_pins_set_clear even_pins_set_clear `(v  1 e 1 0 ]
 {
-"61
+"60
 } 0
-"68
+"67
 [v _odd_pins_set_clear odd_pins_set_clear `(v  1 e 1 0 ]
 {
-"71
+"70
 } 0

@@ -5,9 +5,9 @@ Linker command line:
 -W-3 --edf=/opt/microchip/xc8/v2.36/pic/dat/en_msgs.txt -cn \
   -h+dist/default/production/controller.X.production.sym \
   --cmf=dist/default/production/controller.X.production.cmf -z -Q12F675 \
-  -o/tmp/xcXbPllgL --defsym=__MPLAB_BUILD=1 \
+  -o/tmp/xcXPMPAPk --defsym=__MPLAB_BUILD=1 \
   -Mdist/default/production/controller.X.production.map \
-  --md=/tmp/xcXjPodLM.dat -E1 -ver=XC8 Compiler --acfsm=1493 \
+  --md=/tmp/xcXdPOplg.dat -E1 -ver=XC8 Compiler --acfsm=1493 \
   -ACODE=00h-03FEh -ASTRCODE=00h-03FEh -ASTRING=00h-0FFhx3,0300h-03FEh \
   -ACONST=00h-0FFhx3,0300h-03FEh -AENTRY=00h-0FFhx3,0300h-03FEh \
   -ABANK0=020h-05Dh -ARAM=020h-05Dh -AABS1=020h-05Fh -ACOMMON=05Eh-05Fh \
@@ -15,7 +15,7 @@ Linker command line:
   -AIDLOC=02000h-02003h -DIDLOC=2 -AEEDATA=00h-07Fh/02100h \
   -peeprom_data=EEDATA -DEEDATA=2 -DCODE=2 -DSTRCODE=2 -DSTRING=2 -DCONST=2 \
   -DENTRY=2 -preset_vec=00h,intentry=04h,init,end_init -ppowerup=CODE \
-  -pcinit=CODE -pfunctab=ENTRY -posccal=03FFh -k /tmp/xcXAgcdng.o \
+  -pcinit=CODE -pfunctab=ENTRY -posccal=03FFh -k /tmp/xcXKgoOMG.o \
   dist/default/production/controller.X.production.o 
 
 Object code version is 3.11
@@ -25,7 +25,7 @@ Machine type is 12F675
 
 
                 Name                               Link     Load   Length Selector   Space Scale
-/tmp/xcXAgcdng.o
+/tmp/xcXKgoOMG.o
                 end_init                              F        F        1        8       0
                 reset_vec                             0        0        1        0       0
                 config                             2007     2007        1        0       4
@@ -36,22 +36,21 @@ dist/default/production/controller.X.production.o
                 intentry                              4        4        B        8       0
                 config                             2007     2007        1        0       4
                 idloc                              2000     2000        4        0       5
-                text11                              141      141        4       72       0
-                text10                              13D      13D        4       72       0
-                text9                               139      139        4       72       0
-                text8                               135      135        4       72       0
-                text7                               12B      12B        6       72       0
-                text6                               125      125        6       72       0
-                text5                                39       39       69       72       0
-                text4                               11F      11F        6       72       0
-                text3                               131      131        4       72       0
-                text2                               119      119        6       72       0
-                text1                                E0       E0       2F       72       0
-                maintext                             A2       A2       3E       72       0
-                cstackBANK0                          20       20       12       20       1
-                dataBANK0                            32       32        A       20       1
-                bssBANK0                             3C       3C        8       20       1
-                idataBANK0                          10F      10F        A       72       0
+                text10                              129      129        4       72       0
+                text9                               125      125        4       72       0
+                text8                               121      121        4       72       0
+                text7                               11D      11D        4       72       0
+                text6                               113      113        6       72       0
+                text5                                39       39       57       72       0
+                text4                               10D      10D        6       72       0
+                text3                               119      119        4       72       0
+                text2                               107      107        6       72       0
+                text1                                CE       CE       2F       72       0
+                maintext                             90       90       3E       72       0
+                cstackBANK0                          20       20       10       20       1
+                dataBANK0                            30       30        A       20       1
+                bssBANK0                             3A       3A        8       20       1
+                idataBANK0                           FD       FD        A       72       0
 
 TOTAL           Name                               Link     Load   Length     Space
         CLASS   CODE           
@@ -59,19 +58,18 @@ TOTAL           Name                               Link     Load   Length     Sp
                 cinit                                10       10       1E         0
                 intentry                              4        4        B         0
                 reset_vec                             0        0        1         0
-                text11                              141      141        4         0
-                text10                              13D      13D        4         0
-                text9                               139      139        4         0
-                text8                               135      135        4         0
-                text7                               12B      12B        6         0
-                text6                               125      125        6         0
-                text5                                39       39       69         0
-                text4                               11F      11F        6         0
-                text3                               131      131        4         0
-                text2                               119      119        6         0
-                text1                                E0       E0       2F         0
-                maintext                             A2       A2       3E         0
-                idataBANK0                          10F      10F        A         0
+                text10                              129      129        4         0
+                text9                               125      125        4         0
+                text8                               121      121        4         0
+                text7                               11D      11D        4         0
+                text6                               113      113        6         0
+                text5                                39       39       57         0
+                text4                               10D      10D        6         0
+                text3                               119      119        4         0
+                text2                               107      107        6         0
+                text1                                CE       CE       2F         0
+                maintext                             90       90       3E         0
+                idataBANK0                           FD       FD        A         0
 
         CLASS   STRCODE        
 
@@ -83,9 +81,9 @@ TOTAL           Name                               Link     Load   Length     Sp
                 functab                              2E       2E        B         0
 
         CLASS   BANK0          
-                cstackBANK0                          20       20       12         1
-                dataBANK0                            32       32        A         1
-                bssBANK0                             3C       3C        8         1
+                cstackBANK0                          20       20       10         1
+                dataBANK0                            30       30        A         1
+                bssBANK0                             3A       3A        8         1
 
         CLASS   RAM            
 
@@ -114,9 +112,9 @@ TOTAL           Name                               Link     Load   Length     Sp
 
 SEGMENTS        Name                           Load    Length   Top    Selector   Space  Class     Delta
 
-                cstackBANK0                    000020  000024  000044        20       1  BANK0       1
+                cstackBANK0                    000020  000022  000042        20       1  BANK0       1
                 reset_vec                      000000  000001  000001         0       0  CODE        2
-                text5                          000039  00010C  000145        72       0  CODE        2
+                text5                          000039  0000F4  00012D        72       0  CODE        2
                 intentry                       000004  00002A  00002E         8       0  CODE        2
                 functab                        00002E  00000B  000039        5C       0  ENTRY       2
 
@@ -124,28 +122,28 @@ SEGMENTS        Name                           Load    Length   Top    Selector 
 UNUSED ADDRESS RANGES
 
         Name                Unused          Largest block    Delta
-        BANK0            0044-005D             1A           1
+        BANK0            0042-005D             1C           1
         CODE             0001-0003              3           2
-                         0145-03FE            2BA
+                         012D-03FE            2D2
         CONST            0001-0003              3           2
-                         0145-03FE            100
+                         012D-03FE            100
         EEDATA           2100-217F             80           2
         ENTRY            0001-0003              3           2
-                         0145-03FE            100
-        RAM              0044-005D             1A           1
+                         012D-03FE            100
+        RAM              0042-005D             1C           1
         SFR0             0000-001F             20           1
         SFR1             0080-00DD             5E           1
         STRCODE          0001-0003              3           2
-                         0145-03FE            2BA
+                         012D-03FE            2D2
         STRING           0001-0003              3           2
-                         0145-03FE            100
+                         012D-03FE            100
 
                                   Symbol Table
 
 _ADON                              (abs)        00F8
 _ANSELbits                         (abs)        009F
 _CMCONbits                         (abs)        0019
-_CW_CCW_select                     bssBANK0     0043
+_CW_CCW_select                     bssBANK0     0041
 _GIE                               (abs)        005F
 _GPIO0                             (abs)        0028
 _GPIO1                             (abs)        0029
@@ -154,7 +152,7 @@ _GPIO3                             (abs)        002B
 _GPIO4                             (abs)        002C
 _GPIO5                             (abs)        002D
 _ISR                               text5        0039
-_OF_num_TMR1                       bssBANK0     003E
+_OF_num_TMR1                       bssBANK0     003C
 _PEIE                              (abs)        005E
 _T1CONbits                         (abs)        0010
 _T1OSCEN                           (abs)        0083
@@ -238,8 +236,8 @@ __Lspace_4                         (abs)        0000
 __Lstack                           stack        07FE
 __Lstrings                         strings      07FE
 __Ltext                            text         07FE
-__S0                               (abs)        0145
-__S1                               (abs)        0044
+__S0                               (abs)        012D
+__S1                               (abs)        0042
 __S3                               (abs)        0000
 ___int_sp                          stack        07FE
 ___latbits                         (abs)        0000
@@ -247,68 +245,64 @@ ___osccal_val                      osccal       03FF
 ___sp                              stack        07FE
 ___stackhi                         (abs)        0000
 ___stacklo                         (abs)        0000
-__end_of_ISR                       text5        00A2
+__end_of_ISR                       text5        0090
 __end_of__i1fptable                functab      0039
 __end_of__initialization           cinit        002C
-__end_of_even_pins_clear_set       text9        013D
-__end_of_even_pins_set_clear       text10       0141
-__end_of_main                      maintext     00E0
-__end_of_odd_pins_clear_set        text8        0139
-__end_of_odd_pins_set_clear        text11       0145
-__end_of_reset_all_pins            text4        0125
-__end_of_retrieve_current_position text3        0135
-__end_of_start_timer               text1        010F
-__end_of_update_current_position   text2        011F
-__end_ofi1_reset_all_pins          text7        0131
-__end_ofi1_update_current_position text6        012B
+__end_of_even_pins_clear_set       text8        0125
+__end_of_even_pins_set_clear       text9        0129
+__end_of_main                      maintext     00CE
+__end_of_odd_pins_clear_set        text7        0121
+__end_of_odd_pins_set_clear        text10       012D
+__end_of_reset_all_pins            text4        0113
+__end_of_retrieve_current_position text3        011D
+__end_of_start_timer               text1        00FD
+__end_of_update_current_position   text2        010D
+__end_ofi1_reset_all_pins          text6        0119
 __i1fptable                        functab      002F
 __initialization                   cinit        0010
-__pbssBANK0                        bssBANK0     003C
+__pbssBANK0                        bssBANK0     003A
 __pcstackBANK0                     cstackBANK0  0020
 __pcstackCOMMON                    cstackCOMMON 0000
-__pdataBANK0                       dataBANK0    0032
+__pdataBANK0                       dataBANK0    0030
 __pfunctab                         functab      002E
-__pidataBANK0                      idataBANK0   010F
+__pidataBANK0                      idataBANK0   00FD
 __pintentry                        intentry     0004
-__pmaintext                        maintext     00A2
-__ptext1                           text1        00E0
-__ptext10                          text10       013D
-__ptext11                          text11       0141
-__ptext2                           text2        0119
-__ptext3                           text3        0131
-__ptext4                           text4        011F
+__pmaintext                        maintext     0090
+__ptext1                           text1        00CE
+__ptext10                          text10       0129
+__ptext2                           text2        0107
+__ptext3                           text3        0119
+__ptext4                           text4        010D
 __ptext5                           text5        0039
-__ptext6                           text6        0125
-__ptext7                           text7        012B
-__ptext8                           text8        0135
-__ptext9                           text9        0139
+__ptext6                           text6        0113
+__ptext7                           text7        011D
+__ptext8                           text8        0121
+__ptext9                           text9        0125
 __size_of__i1fptable               (abs)        0000
-_current_position                  bssBANK0     003C
-_even_pins_clear_set               text9        0139
-_even_pins_set_clear               text10       013D
-_func_ptr                          dataBANK0    0032
-_main                              maintext     00A2
-_odd_pins_clear_set                text8        0135
-_odd_pins_set_clear                text11       0141
-_pair_select                       bssBANK0     0042
-_reset_all_pins                    text4        011F
-_retrieve_current_position         text3        0131
-_set_clear_sequence                bssBANK0     0041
-_start_timer                       text1        00E0
-_target_OF_num                     dataBANK0    003A
-_tmp_set_clear_sequence            bssBANK0     0040
-_update_current_position           text2        0119
+_current_position                  bssBANK0     003A
+_even_pins_clear_set               text8        0121
+_even_pins_set_clear               text9        0125
+_func_ptr                          dataBANK0    0030
+_main                              maintext     0090
+_odd_pins_clear_set                text7        011D
+_odd_pins_set_clear                text10       0129
+_pair_select                       bssBANK0     0040
+_reset_all_pins                    text4        010D
+_retrieve_current_position         text3        0119
+_set_clear_sequence                bssBANK0     003F
+_start_timer                       text1        00CE
+_target_OF_num                     dataBANK0    0038
+_tmp_set_clear_sequence            bssBANK0     003E
+_update_current_position           text2        0107
 btemp                              (abs)        005E
 end_of_initialization              cinit        002C
 fpbase                             (abs)        0000
 fptable                            functab      002E
 fptotal                            (abs)        0000
-i1_reset_all_pins                  text7        012B
-i1_update_current_position         text6        0125
+i1_reset_all_pins                  text6        0113
 i1fpbase                           functab      0034
 i1fptable                          functab      002F
 i1fptotal                          (abs)        000C
-i1update_current_position@value    cstackBANK0  0020
 interrupt_function                 intentry     0004
 intlevel0                          functab      002E
 intlevel1                          functab      002E
@@ -320,7 +314,7 @@ reset_vec                          reset_vec    0000
 saved_w                            (abs)        005E
 start                              init         000F
 start_initialization               cinit        0010
-update_current_position@value      cstackBANK0  002B
+update_current_position@value      cstackBANK0  0029
 wtemp0                             (abs)        005E
 
 
@@ -329,23 +323,22 @@ MODULE INFORMATION
 Module		Function		Class		Link	Load	Size
 shared
 		__i1fptable    		ENTRY          	002F	0000	10
-		i1_update_current_position		CODE           	0125	0000	6
 		__initialization		CODE           	0010	0000	28
-		i1_reset_all_pins		CODE           	012B	0000	6
+		i1_reset_all_pins		CODE           	0113	0000	6
 
-shared estimated size: 50
+shared estimated size: 44
 
 main.c
-		_even_pins_clear_set		CODE           	0139	0000	4
-		_ISR           		CODE           	0039	0000	105
-		_start_timer   		CODE           	00E0	0000	47
-		_main          		CODE           	00A2	0000	62
-		_odd_pins_set_clear		CODE           	0141	0000	4
-		_update_current_position		CODE           	0119	0000	6
-		_odd_pins_clear_set		CODE           	0135	0000	4
-		_retrieve_current_position		CODE           	0131	0000	4
-		_reset_all_pins		CODE           	011F	0000	6
-		_even_pins_set_clear		CODE           	013D	0000	4
+		_even_pins_clear_set		CODE           	0121	0000	4
+		_ISR           		CODE           	0039	0000	87
+		_start_timer   		CODE           	00CE	0000	47
+		_main          		CODE           	0090	0000	62
+		_odd_pins_set_clear		CODE           	0129	0000	4
+		_update_current_position		CODE           	0107	0000	6
+		_odd_pins_clear_set		CODE           	011D	0000	4
+		_retrieve_current_position		CODE           	0119	0000	4
+		_reset_all_pins		CODE           	010D	0000	6
+		_even_pins_set_clear		CODE           	0125	0000	4
 
-main.c estimated size: 246
+main.c estimated size: 228
 

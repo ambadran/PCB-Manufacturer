@@ -9,12 +9,12 @@
 ### Memory Usage ###
  Intel Hex-file ranges:
   0h - 1h		(dist/default/production/controller.X.production.hex)
-  8h - 289h		(dist/default/production/controller.X.production.hex)
+  8h - 259h		(dist/default/production/controller.X.production.hex)
   4000h - 4007h		(dist/default/production/controller.X.production.hex)
   400Eh - 400Fh		(dist/default/production/controller.X.production.hex)
  Unused ranges:
   2h - 7h
-  28Ah - 3FFFh
+  25Ah - 3FFFh
   4008h - 400Dh
 
 ### Hex Memory Map ###
@@ -61,9 +61,6 @@
 00000220 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
 00000230 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
 00000240 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
-00000250 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
-00000260 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
-00000270 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
-00000280 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 -- -- -- -- -- --
+00000250 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 -- -- -- -- -- --
 ----------------------------------------------------------
 00004000 | H1 H1 H1 H1 H1 H1 H1 H1 -- -- -- -- -- -- H1 H1
