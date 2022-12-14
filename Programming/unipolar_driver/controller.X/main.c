@@ -164,7 +164,7 @@ void main(void) {
     reset_all_pins();
     
     // Initial delay
-    __delay_ms(1000); // waiting for voltage to stabilize
+    __delay_ms(2000); // waiting for voltage to stabilize
     retrieve_current_position();
     
     // Main Routine
