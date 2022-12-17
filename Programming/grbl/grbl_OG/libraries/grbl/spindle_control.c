@@ -86,8 +86,11 @@ void spindle_set_state(uint8_t state, float rpm)
       // TODO: Install the optional capability for frequency-based output for servos.
       #ifdef CPU_MAP_ATMEGA2560
       	TCCRA_REGISTER = (1<<COMB_BIT) | (1<<WAVE1_REGISTER) | (1<<WAVE0_REGISTER);
-        TCCRB_REGISTER = (TCCRB_REGISTER & 0b11111000) | 0x02 | (1<<WAVE2_REGISTER) | (1<<WAVE3_REGISTER); // set to 1/8 Prescaler
-        OCR4A = 0xFFFF; // set the top 16bit value
+        TCCRB_REGISTER = (TCCRB_REGISTER & 0b11111000) | 0x01 | (1<<WAVE2_REGISTER) | (1<<WAVE3_REGISTER); // set to 1/8 Prescaler // OVERWRITTEN
+        // NOW THE PRESCLAR is 0x01 which is just 1 prescalar
+        OCR4A = 0x3FFF; // set the top 16bit value, It was 0xFFFF I divided it by 4 and got frequency 976.35Hz (accounting for the change of prescalar)
+        // NOW THE MAXIMUM S value to be set is 250 instead of the original 1000
+        // WAVE bits are set to 
         uint16_t current_pwm;
       #else
         TCCRA_REGISTER = (1<<COMB_BIT) | (1<<WAVE1_REGISTER) | (1<<WAVE0_REGISTER);
