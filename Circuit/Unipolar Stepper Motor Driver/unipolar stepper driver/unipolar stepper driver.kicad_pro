@@ -381,7 +381,7 @@
       "idf": "",
       "netlist": "",
       "specctra_dsn": "",
-      "step": "",
+      "step": "STEP/unipolar stepper driver.step",
       "vrml": ""
     },
     "page_layout_descr_file": ""

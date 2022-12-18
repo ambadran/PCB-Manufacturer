@@ -1280,7 +1280,7 @@
   (symbol (lib_id "Connector:Conn_01x05_Female") (at 57.15 120.65 0) (unit 1)
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid 1e4b633a-1e18-472b-b95a-3c8b9a6871c1)
-    (property "Reference" "DebuggerPins" (id 0) (at 58.42 119.3799 0)
+    (property "Reference" "DebuggerPins1" (id 0) (at 58.42 119.3799 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "Conn_01x05_Female" (id 1) (at 58.42 121.9199 0)
@@ -1302,7 +1302,7 @@
   (symbol (lib_id "power:+12V") (at 83.82 114.3 0) (unit 1)
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid 2c68e754-48b7-4e80-a996-f241c915bf5e)
-    (property "Reference" "#PWR?" (id 0) (at 83.82 118.11 0)
+    (property "Reference" "#PWR0107" (id 0) (at 83.82 118.11 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "+12V" (id 1) (at 83.82 109.22 0))
@@ -1318,7 +1318,7 @@
   (symbol (lib_id "Regulator_Linear:LM7805_TO220") (at 96.52 119.38 0) (unit 1)
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid 2e1023b4-e8f1-4a23-af54-5e7547aa39be)
-    (property "Reference" "PowerRegulator" (id 0) (at 96.52 111.76 0))
+    (property "Reference" "PowerRegulator1" (id 0) (at 96.52 111.76 0))
     (property "Value" "LM7805_TO220" (id 1) (at 96.52 114.3 0))
     (property "Footprint" "Package_TO_SOT_THT:TO-220-3_Vertical" (id 2) (at 96.52 113.665 0)
       (effects (font (size 1.27 1.27) italic) hide)
@@ -1397,7 +1397,7 @@
   (symbol (lib_id "power:+5V") (at 49.53 111.76 0) (unit 1)
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid 51500517-830d-45f8-8448-0acbf43a695b)
-    (property "Reference" "#PWR?" (id 0) (at 49.53 115.57 0)
+    (property "Reference" "#PWR0114" (id 0) (at 49.53 115.57 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "+5V" (id 1) (at 49.53 106.68 0))
@@ -1491,7 +1491,7 @@
   (symbol (lib_id "MCU_Microchip_PIC12:PIC12F675-IP") (at 140.97 96.52 0) (unit 1)
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid 77cfe682-cc36-4979-823b-05ea5f187ba7)
-    (property "Reference" "uC" (id 0) (at 142.9894 81.28 0)
+    (property "Reference" "uC1" (id 0) (at 142.9894 81.28 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "PIC12F675-IP" (id 1) (at 142.9894 83.82 0)
@@ -1618,7 +1618,7 @@
   (symbol (lib_id "power:+12V") (at 88.9 83.82 0) (unit 1)
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid ae12c49a-ea46-48de-89a0-d17f075c5a04)
-    (property "Reference" "#PWR?" (id 0) (at 88.9 87.63 0)
+    (property "Reference" "#PWR0111" (id 0) (at 88.9 87.63 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "+12V" (id 1) (at 88.9 78.74 0))
@@ -1688,7 +1688,7 @@
   (symbol (lib_id "power:GND") (at 49.53 129.54 0) (unit 1)
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid c1eb79c8-c971-4813-8f4e-4ef413e23f8e)
-    (property "Reference" "#PWR?" (id 0) (at 49.53 135.89 0)
+    (property "Reference" "#PWR0115" (id 0) (at 49.53 135.89 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (id 1) (at 49.53 134.62 0))
@@ -1758,7 +1758,7 @@
   (symbol (lib_id "power:+5V") (at 109.22 115.57 0) (unit 1)
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid f011e4cb-4780-4f9e-b9d0-f1e5f067c44d)
-    (property "Reference" "#PWR?" (id 0) (at 109.22 119.38 0)
+    (property "Reference" "#PWR0112" (id 0) (at 109.22 119.38 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "+5V" (id 1) (at 109.22 110.49 0))
@@ -1789,7 +1789,7 @@
   (symbol (lib_id "power:GND") (at 96.52 130.81 0) (unit 1)
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid f8209c75-0a83-44fa-989f-484243aa7138)
-    (property "Reference" "#PWR?" (id 0) (at 96.52 137.16 0)
+    (property "Reference" "#PWR0113" (id 0) (at 96.52 137.16 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (id 1) (at 96.52 135.89 0))
@@ -1879,6 +1879,9 @@
     (path "/9fdd773f-6a9f-41e9-99f7-8c09f7d6b35a"
       (reference "#PWR0106") (unit 1) (value "GND") (footprint "")
     )
+    (path "/2c68e754-48b7-4e80-a996-f241c915bf5e"
+      (reference "#PWR0107") (unit 1) (value "+12V") (footprint "")
+    )
     (path "/3e074500-d08a-4ad5-bc11-4dbe6fbe24ff"
       (reference "#PWR0108") (unit 1) (value "GND") (footprint "")
     )
@@ -1888,23 +1891,20 @@
     (path "/9121a767-6cdf-41f1-b6f0-ae6ffd22af1e"
       (reference "#PWR0110") (unit 1) (value "+5V") (footprint "")
     )
-    (path "/2c68e754-48b7-4e80-a996-f241c915bf5e"
-      (reference "#PWR?") (unit 1) (value "+12V") (footprint "")
-    )
-    (path "/51500517-830d-45f8-8448-0acbf43a695b"
-      (reference "#PWR?") (unit 1) (value "+5V") (footprint "")
-    )
     (path "/ae12c49a-ea46-48de-89a0-d17f075c5a04"
-      (reference "#PWR?") (unit 1) (value "+12V") (footprint "")
-    )
-    (path "/c1eb79c8-c971-4813-8f4e-4ef413e23f8e"
-      (reference "#PWR?") (unit 1) (value "GND") (footprint "")
+      (reference "#PWR0111") (unit 1) (value "+12V") (footprint "")
     )
     (path "/f011e4cb-4780-4f9e-b9d0-f1e5f067c44d"
-      (reference "#PWR?") (unit 1) (value "+5V") (footprint "")
+      (reference "#PWR0112") (unit 1) (value "+5V") (footprint "")
     )
     (path "/f8209c75-0a83-44fa-989f-484243aa7138"
-      (reference "#PWR?") (unit 1) (value "GND") (footprint "")
+      (reference "#PWR0113") (unit 1) (value "GND") (footprint "")
+    )
+    (path "/51500517-830d-45f8-8448-0acbf43a695b"
+      (reference "#PWR0114") (unit 1) (value "+5V") (footprint "")
+    )
+    (path "/c1eb79c8-c971-4813-8f4e-4ef413e23f8e"
+      (reference "#PWR0115") (unit 1) (value "GND") (footprint "")
     )
     (path "/7c3df708-fb44-40cc-b435-cd67e8cec48a"
       (reference "C1") (unit 1) (value "10nF") (footprint "Capacitor_THT:C_Disc_D3.0mm_W2.0mm_P2.50mm")
@@ -1925,7 +1925,7 @@
       (reference "D4") (unit 1) (value "DIODE") (footprint "Diode_THT:D_DO-34_SOD68_P7.62mm_Horizontal")
     )
     (path "/1e4b633a-1e18-472b-b95a-3c8b9a6871c1"
-      (reference "DebuggerPins") (unit 1) (value "Conn_01x05_Female") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x05_P2.54mm_Vertical")
+      (reference "DebuggerPins1") (unit 1) (value "Conn_01x05_Female") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x05_P2.54mm_Vertical")
     )
     (path "/c7872803-5b3e-4e37-94ac-c4dc2bc4adfb"
       (reference "Input1") (unit 1) (value "Conn_01x03_Female") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical")
@@ -1934,7 +1934,7 @@
       (reference "Output1") (unit 1) (value "Conn_01x05_Female") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x05_P2.54mm_Vertical")
     )
     (path "/2e1023b4-e8f1-4a23-af54-5e7547aa39be"
-      (reference "PowerRegulator") (unit 1) (value "LM7805_TO220") (footprint "Package_TO_SOT_THT:TO-220-3_Vertical")
+      (reference "PowerRegulator1") (unit 1) (value "LM7805_TO220") (footprint "Package_TO_SOT_THT:TO-220-3_Vertical")
     )
     (path "/59fc765e-1357-4c94-9529-5635418c7d73"
       (reference "Q1") (unit 1) (value "S8050") (footprint "Package_TO_SOT_THT:TO-92_Inline")
@@ -1964,7 +1964,7 @@
       (reference "R5") (unit 1) (value "10k") (footprint "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal")
     )
     (path "/77cfe682-cc36-4979-823b-05ea5f187ba7"
-      (reference "uC") (unit 1) (value "PIC12F675-IP") (footprint "Package_DIP:DIP-8_W7.62mm")
+      (reference "uC1") (unit 1) (value "PIC12F675-IP") (footprint "Package_DIP:DIP-8_W7.62mm")
     )
   )
 )
