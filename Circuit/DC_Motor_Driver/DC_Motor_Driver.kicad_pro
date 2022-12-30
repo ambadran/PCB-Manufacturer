@@ -120,7 +120,6 @@
       },
       "track_widths": [
         0.0,
-        0.0,
         0.8,
         1.5
       ],
@@ -349,7 +348,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "DC Motor Driver.kicad_pro",
+    "filename": "n-channel v2.kicad_pro",
     "version": 1
   },
   "net_settings": {
@@ -428,7 +427,7 @@
   },
   "sheets": [
     [
-      "e63e39d7-6ac0-4ffd-8aa3-1841a4541b55",
+      "f5ea0da5-c191-4984-b9b5-8cae3da9b808",
       ""
     ]
   ],

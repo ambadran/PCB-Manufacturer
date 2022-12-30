@@ -1,6 +1,6 @@
 {
   "board": {
-    "active_layer": 0,
+    "active_layer": 44,
     "active_layer_preset": "",
     "auto_track_width": true,
     "hidden_nets": [],
@@ -62,11 +62,11 @@
       35,
       36
     ],
-    "visible_layers": "7fc1022_00000001",
+    "visible_layers": "ffc1020_7fffffff",
     "zone_display_mode": 0
   },
   "meta": {
-    "filename": "DC Motor Driver.kicad_prl",
+    "filename": "n-channel v2.kicad_prl",
     "version": 3
   },
   "project": {
