@@ -12,7 +12,9 @@
 void tool_select_init() {
 
   // Turning on the last 3 bits
-  TOOL_SELECT_DDR |= 0b00000111;
+  TOOL_SELECT_DDR |= (1<<TOOL_SELECT_BIT0);
+  TOOL_SELECT_DDR |= (1<<TOOL_SELECT_BIT1);
+  TOOL_SELECT_DDR |= (1<<TOOL_SELECT_BIT2);
 
   tool_select_set_state(TOOL0);
 
