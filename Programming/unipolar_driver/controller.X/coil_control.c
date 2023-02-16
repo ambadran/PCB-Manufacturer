@@ -1,5 +1,5 @@
 
-#include "unipolar_driver.h"
+#include "includes.h"
 
 // array of array of array of function address pointer
 // the first array is an array of clock-wise/anti-clock-wise 2-d array
@@ -26,8 +26,10 @@ void coil_init() {
     COIL3_TRIS = 0;
     COIL4_TRIS = 0;
     
+#ifndef ENABLE_SOFT_UART
     debug_pin_tris = 0;
     debug_pin = 0;   
+#endif
 }
 
 void even_pins_set_clear() {

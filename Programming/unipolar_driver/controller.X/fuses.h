@@ -5,8 +5,6 @@
 #ifndef FUSES_H
 #define	FUSES_H
 
-//#include "unipolar_driver.h"  // only for config header file
-
 // CONFIG
 #pragma config FOSC = INTRCIO   // Oscillator Selection bits (INTOSC oscillator: I/O function on GP4/OSC2/CLKOUT pin, I/O function on GP5/OSC1/CLKIN)
 #pragma config WDTE = OFF       // Watchdog Timer Enable bit (WDT disabled)

@@ -6,7 +6,7 @@
  */
 
 
-#include "unipolar_driver.h"
+#include "includes.h"
 
 void main(void) {
     
@@ -16,6 +16,9 @@ void main(void) {
     interrupt_init();
     TMR1_init();
     adc_deinit();
+#ifdef ENABLE_SOFT_UART
+    soft_uart_init();
+#endif
     
     // Initial Pin Setup
     reset_all_pins();
@@ -27,19 +30,14 @@ void main(void) {
     // Main Routine
     while(1) {
         
-        if(INPUT != CW_CCW_select) {
-            CW_CCW_select = INPUT;
-            start_timer();
-            __delay_ms(300);  //debouncing
-        }
+//        if(INPUT != CW_CCW_select) {
+//            CW_CCW_select = INPUT;
+//            start_timer();
+////            __delay_ms(300);  //debouncing
+//        }
         
-        if(current_position > num_steps) {
-            TMR1ON = 0;
-            current_position = num_steps;
-        } else if (current_position < 0) {
-            TMR1ON = 0;
-            current_position = 0;
-        }
+        soft_uart_send(153);
+        __delay_ms(300);
         
     }
     
@@ -49,11 +47,10 @@ void main(void) {
 
 void __interrupt() ISR(void) {
     
-    if(TMR1IF) {
-        TMR1_ISR();
-        TMR1IF = 0;
-    }
-    
+//    if(TMR1IF) {
+//        TMR1_ISR();
+//        TMR1IF = 0;
+//    }
     
     return;
     

@@ -15,5 +15,8 @@
 #include "interrupts.h"
 #include "tmr1_module.h"
 
+#ifdef ENABLE_SOFT_UART
+#include "software_uart.h"
+#endif
 
 #endif
