@@ -68,10 +68,12 @@ void TMR1_ISR() {
         
         (*func_ptr[CW_CCW_select][pair_select][set_clear_sequence])();  // executing correct motor sequence
 
+//        soft_uart_send_16bit(OF_num_TMR1);
         
         if (OF_num_TMR1 == target_OF_num) {
             TMR1ON = 0; // stops once number of steps is achieved
             reset_all_pins();
+            
         }
         
 #if DEBUG_MODE

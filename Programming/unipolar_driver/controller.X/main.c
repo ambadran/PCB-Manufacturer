@@ -30,14 +30,18 @@ void main(void) {
     // Main Routine
     while(1) {
         
-//        if(INPUT != CW_CCW_select) {
-//            CW_CCW_select = INPUT;
-//            start_timer();
-////            __delay_ms(300);  //debouncing
-//        }
+        if(INPUT != CW_CCW_select) {
+            CW_CCW_select = INPUT;
+            start_timer();
+        }
         
-        soft_uart_send(153);
-        __delay_ms(300);
+#ifdef ENABLE_SOFT_UART
+        soft_uart_send_16bit(OF_num_TMR1);
+        __delay_ms(5);
+        soft_uart_send_16bit(target_OF_num);
+        __delay_ms(5);
+#endif
+        
         
     }
     
@@ -47,10 +51,12 @@ void main(void) {
 
 void __interrupt() ISR(void) {
     
-//    if(TMR1IF) {
-//        TMR1_ISR();
-//        TMR1IF = 0;
-//    }
+    if(TMR1IF) {
+        TMR1_ISR();
+        TMR1IF = 0;
+        
+    }
+    
     
     return;
     
