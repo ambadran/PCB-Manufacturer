@@ -255,6 +255,8 @@ void limits_go_home(uint8_t cycle_mask)
       if (sys_rt_exec_state & (EXEC_SAFETY_DOOR | EXEC_RESET | EXEC_CYCLE_STOP)) {
         // Homing failure: Limit switches are still engaged after pull-off motion
         if ( (sys_rt_exec_state & (EXEC_SAFETY_DOOR | EXEC_RESET)) ||  // Safety door or reset issued
+          // NEWLY ADDED: when I commented this condition, indeed it didn't alarm when the motors pulled off and switch still
+          // didn't change. However, when i move the motors a little bit the limit switch change status and trigger alarm ;)
            (!approach && (limits_get_state() & cycle_mask)) ||  // Limit switch still engaged after pull-off motion 
            ( approach && (sys_rt_exec_state & EXEC_CYCLE_STOP)) ) { // Limit switch not found during approach.
           mc_reset(); // Stop motors, if they are running.
