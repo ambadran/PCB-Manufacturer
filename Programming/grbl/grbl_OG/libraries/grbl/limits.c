@@ -250,6 +250,16 @@ void limits_go_home(uint8_t cycle_mask)
       // NEWLY ADDED COMMENT: I want to put delay_ms() here to solve the limit switch high travel distance
       // basically, the limit switch button takes too much distance to travel in/out to toggle
       // so the bottom 'Limit switch still engaged after pull-off motion' condition is triggered and causes an error
+      //
+      // settings.homing_pulloff is the float value in mm. which tells grbl how much the stepper motors should
+      // back off after triggering the limit switch. This is EXTREMELY ESSENTIAL if you have limit switches with
+      // 'high-distance travel button' as I like to call it. 
+      //
+      // FINAL SOLUTION: we have to modify the 'settings.homing_pulloff' value by setting the $27 EEPROM value
+      // which is the actual value that will be used by the grbl as the pull-off value
+      // NOTE!!!! setting the default_generic DEFAULT_HOMING_PULLOFF doesn't freaking matter ;)
+      //
+      // after some testing settings.homing_pulloff is best at >=2 (mm)
 
       // Exit routines: No time to run protocol_execute_realtime() in this loop.
       if (sys_rt_exec_state & (EXEC_SAFETY_DOOR | EXEC_RESET | EXEC_CYCLE_STOP)) {
