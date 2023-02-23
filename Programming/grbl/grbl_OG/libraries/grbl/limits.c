@@ -247,11 +247,15 @@ void limits_go_home(uint8_t cycle_mask)
 
       st_prep_buffer(); // Check and prep segment buffer. NOTE: Should take no longer than 200us.
 
+      // NEWLY ADDED COMMENT: I want to put delay_ms() here to solve the limit switch high travel distance
+      // basically, the limit switch button takes too much distance to travel in/out to toggle
+      // so the bottom 'Limit switch still engaged after pull-off motion' condition is triggered and causes an error
+
       // Exit routines: No time to run protocol_execute_realtime() in this loop.
       if (sys_rt_exec_state & (EXEC_SAFETY_DOOR | EXEC_RESET | EXEC_CYCLE_STOP)) {
         // Homing failure: Limit switches are still engaged after pull-off motion
         if ( (sys_rt_exec_state & (EXEC_SAFETY_DOOR | EXEC_RESET)) ||  // Safety door or reset issued
-           (!approach && (limits_get_state() & cycle_mask)) ||  // Limit switch still engaged after pull-off motion
+           /* (!approach && (limits_get_state() & cycle_mask)) ||  // Limit switch still engaged after pull-off motion */ // NEWLY ADDED: I commented this condition to solve the problem described above
            ( approach && (sys_rt_exec_state & EXEC_CYCLE_STOP)) ) { // Limit switch not found during approach.
           mc_reset(); // Stop motors, if they are running.
           protocol_execute_realtime();
