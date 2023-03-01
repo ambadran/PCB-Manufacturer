@@ -105,7 +105,7 @@ def move(**kwargs) -> str:
     return gcode
 
 
-def get_tool_func(latch_offset_distance: int, tool_home_coordinates: dict[int: list[int, int, int]]) -> Callable:
+def get_tool_func(latch_offset_distance: int, tool_home_coordinates: dict[int: tuple[int, int, int]], tool_offsets: dict[int: tuple[int, int, int]]) -> Callable:
     '''
     Closure Function to define constant values for latch_offset_distance and tool_home_coordinates
     #NOTE latch_offset_distance and tool_home_coordinates are assumed to be absolute values!!!
@@ -125,6 +125,7 @@ def get_tool_func(latch_offset_distance: int, tool_home_coordinates: dict[int: l
         tool_home_coordinate = tool_home_coordinates[wanted_tool.value]
 
         if mode == Mode.Select:
+
             ### Go get the tool
             gcode += f"; Getting and Activating Tool-{wanted_tool.value}\n"
             # go to tool coordinate but male latch is just outside the female latch
@@ -137,6 +138,8 @@ def get_tool_func(latch_offset_distance: int, tool_home_coordinates: dict[int: l
             gcode += f"G4 P5000 ; Wait for Kinematic Mount to fully attach\n"  
             # now pull off the female kinematch mount off its hanger
             gcode += move(coordinate=tool_home_coordinate, comment='Exit Female Kinematic Mount Home Pos')
+
+            ### Fixing Current Coordinate according the new tool head
 
             ### Activate it by sending the corresponding tool number in the multiplexer
             gcode += f'C{wanted_tool.value} ; Choosing tool {wanted_tool.value} in the choose demultiplexer circuits\n'
