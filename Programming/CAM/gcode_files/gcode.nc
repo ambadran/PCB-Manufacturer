@@ -6,7 +6,13 @@ G94 ; To set the active feed rate mode to units per minute mode
 
 F600 ; setting default feedrate
 
-M5 ; disabling spindle PWM
+B1 ; Turn ON Machine
+
+$H ; Homing :)
+G10 P0 L20 X0 Y0 Z0 ; Force Reset current coordinates after homing
+
+A1 ; Latch on Kinematic Mount
+G4 P5000 ; Wait for Kinematic Mount to fully attachM5 ; disabling spindle PWM
 S230 ; sets pwm speed when we enable it
 C2 ; C2 chooses second tool in the choose PWM demultiplexer circuit I built
 
@@ -73,3 +79,5 @@ G01 Z20F10
 M5 ; Turn Motor OFF
 C0 ; PWM Tool select demultiplexer to select tool zero (which is nothing)
 
+A0 ; Latch OFF Kinematic Mount
+G4 P5000 ; Wait for Kinematic Mount to fully detachB0 ; Turn Machine OFF
