@@ -3,12 +3,17 @@ This file has function to generate the gcode we want
 '''
 from gerber_tools import *
 from enum import Enum
-from typing import Callable
+from typing import Callable, Optional
 
 
-class Mode(Enum):
+class ToolChange(Enum):
     Deselect = 0
     Select = 1
+
+
+class CoordMode(Enum):
+    ABSOLUTE = 0
+    INCREMENTAL = 1
 
 
 class Tool(Enum):
@@ -18,20 +23,17 @@ class Tool(Enum):
     Pen = 3
 
 
-def move(**kwargs) -> str:
+def get_coordinate_from_kwargs(**kwargs) -> str:
     '''
-    must input either coordinate=[x, y] or one of x=int, y=int, z=int or a combination of those three
-    must also input feedrate=int
-    return gcode line of the wanted inputs
+    reads the kwargs argument and return something like X_Y_ for gcode usage
+
+    :param kwargs: must input either coordinate=[x, y] or one of x=int, y=int, z=int or a combination of those three
+    :return: gcode coordinate string
     '''
+    gcode = ''
 
     coordinate_mode = False
     letter_mode = False
-
-    feedrate_available = False
-    comment_available = False
-
-    gcode = 'G01 '
 
     for key, value in kwargs.items():
 
@@ -86,36 +88,90 @@ def move(**kwargs) -> str:
 
             gcode += f'Z{value}'
 
-        elif key == 'feedrate':
-            feedrate_available = True  # will note assign now in case the arguments are not in order. feedrate must be in the end
-
-        elif key == 'comment':
-            comment_available = True
-
         else:
-            raise ValueError("Unknown keyword argument! Supported one: coordinate, x, y, z, feedrate")
+            raise ValueError("Unknown keyword argument! Supported keywords: coordinate, x, y, z")
 
-    if feedrate_available:
-        gcode += f"F{kwargs['feedrate']}"
-    if comment_available:
-        gcode += f" ; {kwargs['comment']}"
+    return gcode
+
+
+def set_grbl_coordinate(coordinate_mode: CoordMode, comment: Optional[str]=None, **coordinate) -> str:
+    '''
+    overwrites the current grbl working coordinate
+    :param kwargs: must input either coordinate=[x, y] or one of x=int, y=int, z=int or a combination of those three
+
+    :return: gcode line of the wanted inputs
+    '''
+    comment_available = False
+
+    if coordinate_mode == CoordMode.ABSOLUTE:
+        gcode = "G10 P0 L20 "
+    elif coordinate_mode == CoordMode.INCREMENTAL:
+        gcode = ''
+    else:
+        raise ValueError("Unsupported Mode!")
+
+    gcode += get_coordinate_from_kwargs(coordinate=coordinate)
+
+    if comment:
+        gcode += f" ; {comment}"
 
     gcode += '\n'
 
     return gcode
 
 
-def get_tool_func(latch_offset_distance: int, tool_home_coordinates: dict[int: tuple[int, int, int]], tool_offsets: dict[int: tuple[int, int, int]]) -> Callable:
+def move(coordinate_mode: CoordMode, feedrate: Optional[int]=None, comment: Optional[str]=None, **coordinates) -> str:
     '''
-    Closure Function to define constant values for latch_offset_distance and tool_home_coordinates
-    #NOTE latch_offset_distance and tool_home_coordinates are assumed to be absolute values!!!
+    must input either coordinate=[x, y] or one of x=int, y=int, z=int or a combination of those three
+    must also input feedrate=int
+    return gcode line of the wanted inputs
     '''
-    def tool(mode: Mode, wanted_tool: Tool) -> str:
+
+    if coordinate_mode == CoordMode.ABSOLUTE:
+        gcode = 'G01 '
+    elif coordinate_mode == CoordMode.INCREMENTAL:
+        gcode = ' ' #TODO:
+
+    gcode += get_coordinate_from_kwargs(coordinates)
+
+    if feedrate:
+        gcode += f"F{feedrate}"
+    if comment:
+        gcode += f" ; {comment}"
+
+    gcode += '\n'
+
+    return gcode
+
+
+def get_tool_func(latch_offset_distance_in: int, latch_offset_distance_out: int, tool_home_coordinates: dict[int: tuple[int, int, int]], tool_offsets: dict[int: tuple[int, int, int]]) -> Callable:
+    '''
+    Closure Function to define constant values for:
+    :param latch_offset_distance_in: the distance the male end kinematic mount has to move (+X) to enter female latch
+                                     #NOTE this value is INCREMENTAL
+
+    :param latch_offset_distance_out: after the male and female kinematic mount are joined, the distance to move
+                                      back to pull the female kinematic mount body off the hanger (-X)
+                                      #NOTE this value is INCREMENTAL
+
+    :param tool_home_coordinates: dictionary for each tool, where the value is the coordinate of the home position of the
+                                  corresponding tool
+                                  #NOTE this value is ABSOLUTE relative to origin (origin is zero when no head is there)
+
+    :param tool_offsets: dictionary for each tool, where the value is the coordinate offset to set the new exact
+                         end effector position relative from Origin (0, 0, 0)
+                         #NOTE this value is INCREMENTAL 
+
+    :returns: the actual tool changing gcode generator function with the proper setup values
+    '''
+    def tool(tool_change_mode: ToolChange, wanted_tool: Tool) -> str:
         '''
         #NOTE VERY VERY IMPORTANT, THIS FUNCTION ASSUMES TOOL HEAD IS EMPTY!!!
+        #NOTE VERY VERY IMPORTANT, THIS FUNCTION ASSUMES THE MACHINE IS HOMED!!!
+
         Generate Gcode to select/deselect wanted tool
-        :mode: select or deselect Mode Enum
-        wanted_tool: the wanted tool to select/deselect
+        :param tool_change_mode: select or deselect Mode Enum
+        :param wanted_tool: the wanted tool to select/deselect
 
         :return: gcode to select and activate the tool
         #TODO: implement eeprom tool select memory in microcontroller, read it to know last tool selected
@@ -123,43 +179,52 @@ def get_tool_func(latch_offset_distance: int, tool_home_coordinates: dict[int: t
         gcode = ''
         
         tool_home_coordinate = tool_home_coordinates[wanted_tool.value]
+        tool_offset = tool_offsets[wanted_tool.value]
 
-        if mode == Mode.Select:
+        if tool_change_mode == ToolChange.Select:
+
+            gcode += f"; Getting and Activating Tool-{wanted_tool.value}\n"
 
             ### Go get the tool
-            gcode += f"; Getting and Activating Tool-{wanted_tool.value}\n"
             # go to tool coordinate but male latch is just outside the female latch
-            gcode += move(coordinate=tool_home_coordinate, comment=f'Go to Tool-{wanted_tool.value} Home Pos')
-            # Now male latch inside female latch
-            gcode += move(x=latch_offset_distance, comment='Enter Female Kinematic Mount Home Pos')
+            gcode += move(CoordMode.ABSOLUTE, comment=f'Go to Tool-{wanted_tool.value} Home Pos', coordinate=tool_home_coordinate)
+            # Now male latch inside female latch, using incremental gcode
+            gcode += move(CoordMode.INCREMENTAL, comment='Enter Female Kinematic Mount Home Pos', x=latch_offset_distance_in)
             # now male latch twisting and locking on
             gcode += f"A1 ; Latch on Kinematic Mount\n"  
             # Wait until male latch is fully locked on
             gcode += f"G4 P5000 ; Wait for Kinematic Mount to fully attach\n"  
-            # now pull off the female kinematch mount off its hanger
-            gcode += move(coordinate=tool_home_coordinate, comment='Exit Female Kinematic Mount Home Pos')
+            # now pull off the female kinematch mount off its hanger, using incremental gcode
+            gcode += move(CoordMode.INCREMENTAL, comment='Exit Female Kinematic Mount Home Pos', x=latch_offset_distance_out)
 
             ### Fixing Current Coordinate according the new tool head
+            gcode += set_grbl_coordinates(CoordMode.INCREMENTAL, commment=' ;Add tool offset coordinate', coordinate=tool_offset)
 
             ### Activate it by sending the corresponding tool number in the multiplexer
             gcode += f'C{wanted_tool.value} ; Choosing tool {wanted_tool.value} in the choose demultiplexer circuits\n'
 
-        elif mode == Mode.Deselect:
-            ### Deactivate it by selecting the empty tool in the multiplexer
+        elif tool_change_mode == ToolChange.Deselect:
+
             gcode += f"; Returning the Deactivating Tool-{wanted_tool.value}"
+
+            ### Selecting empty tool slot in the multiplexer to stop any potential end effector action.
+            gcode += 'C0 ; PWM Tool select demultiplexer to select tool zero which is the empty tool slot in multiplexers\n'
+
+            ### Overide current coordinate to go to tool home pos relative to origin by inversing the tool_offset
+            tool_offset = [i*-1 for i in tool_offset]
+            gcode += set_grbl_coordinates(CoordMode.INCREMANTAL, comment=' ;Remove tool offset coordinate', coordinate=tool_offset)
+
+            ### Deactivate it by selecting the empty tool in the multiplexer
             # go to tool coordinate but male latch is just outside the female latch
-            gcode += move(coordinate=tool_home_coordinate, comment=f'Go to Tool-{wanted_tool.value} Home Pos')
-            # Now male latch inside female latch
-            gcode += move(x=latch_offset_distance, comment='Enter Female Kinematic Mount Home Pos')  
+            gcode += move(CoordMode.ABSOLUTE, comment=f'Go to Tool-{wanted_tool.value} Home Pos', coordinate=tool_home_coordinate)
+            # Put the tool back to it's hanger
+            gcode += move(CoordMode.INCREMENTAL, comment='Enter Female Kinematic Mount Home Pos', x=latch_offset_distance_out)
             # male latch untwisting from female latch and locking off
             gcode += f"A0 ; Latch OFF Kinematic Mount\n" 
             # Wait until male latch is fully locked off
             gcode += f"G4 P5000 ; Wait for Kinematic Mount to fully detach\n"
-            # now pull off the female kinematch mount off its hanger
-            gcode += move(coordinate=tool_home_coordinate, comment='Exit Female Kinematic Mount Home Pos')  
-
-            ### Go put the the tool back, now we know for sure when C0 is selected, no tool is there
-            gcode += 'C0 ; PWM Tool select demultiplexer to select tool zero which is the empty tool slot in multiplexers\n'
+            # Now pull off the male kinematic mount away from the female kinematic mount
+            gcode += move(CoordMode.INCREMENTAL, comment='Exit Female Kinematic Mount Home Pos', x=latch_offset_distance_out)
 
         else:
             raise ValueError("Mode unknown")
@@ -172,6 +237,8 @@ def get_tool_func(latch_offset_distance: int, tool_home_coordinates: dict[int: t
 
 def generate_holes_gcode(gerber_file: str, tool: Callable, motor_up_z_position: int, motor_down_z_position: int, feedrate_XY: int, feedrate_Z: int, spindle_speed: int, terminate_after=True) -> str:
     '''
+    Takes in String gerber file content, identifies the PCB holes and generates the Gcode to drill the holes from begging to end!
+
     :param gerber_file: the file that we want to get the holes coordinate from
     :param tool: The tool function defined inside the get_tool_func closure function, it generates gcode to select wanted tool
     :param motor_up_z_position: position the drill bit is not touching the PCB is off a reasonable offset above the PCB
@@ -204,10 +271,12 @@ def generate_holes_gcode(gerber_file: str, tool: Callable, motor_up_z_position: 
 
     # HOMING, machine is at (0, 0, 0) now
     gcode += f"$H ; Homing :)\n"
-    gcode += f"G10 P0 L20 X0 Y0 Z0 ; Force Reset current coordinates after homing\n\n"
+
+    # Make sure grbl understands it's at zero now
+    gcode += set_grbl_coordinate(CoordMode.ABSOLUTE,comment="Force Reset current coordinates after homing\n", coordinate=[0, 0, 0])
 
     # Activiate Tool number 2, The Spindle
-    gcode += tool(Mode.Select, Tool.Spindle)
+    gcode += tool(ToolChange.Select, Tool.Spindle)
 
     # setting the S value which sets pwm speed when we enable it, 
     if spindle_speed < 0 or spindle_speed > 250:
@@ -234,7 +303,7 @@ def generate_holes_gcode(gerber_file: str, tool: Callable, motor_up_z_position: 
     gcode += 'M5 ; Turn Motor OFF\n\n'
 
     # Get the tool back to its place and deactivate the tool
-    gcode += tool(Mode.Deselect, Tool.Spindle)
+    gcode += tool(ToolChange.Deselect, Tool.Spindle)
 
     # Turn Machine Off
     if terminate_after:

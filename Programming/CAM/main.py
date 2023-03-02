@@ -4,6 +4,7 @@ PCB manufacturer CAM program
 
 My custom Gcode Generator :)))
 '''
+
 from gerber_tools import *
 from gcode_tools import *
 
@@ -23,7 +24,8 @@ if __name__ == '__main__':
     latch_offset_distance_in = 5  #TODO: find this value ASAP
     latch_offset_distance_out = 15  #TODO: find this value ASAP
     tool_home_coordinates = {0: [0, 0, 0], 1: [0, 0, 0], 2: [0, 0, 0]}  #TODO: find this value ASAP
-    tool = get_tool_func(latch_offset_distance, tool_home_coordinates)
+    tool_offsets = {0: [0, 0, 0], 1: [0, 0, 0], 2: [0, 0, 0]}  #TODO: find this value ASAP
+    tool = get_tool_func(latch_offset_distance_in, latch_offset_distance_out, tool_home_coordinates, tool_offsets)
 
     ### spindle tweaking values
     # Z positions
@@ -57,8 +59,10 @@ if __name__ == '__main__':
     # Recenter Gerber File with wanted Offset
     recentered_gerber_file = recenter_gerber_file(gerber_file, user_x_offset, user_y_offset)
 
+    gcode = ''
+
     # Creating the holes_gcode
-    gcode = generate_holes_gcode(recentered_gerber_file, tool, router_Z_up_position, router_Z_down_position, router_feedrate_XY, router_feedrate_Z, spindle_speed, terminate_after = False)
+    gcode += generate_holes_gcode(recentered_gerber_file, tool, router_Z_up_position, router_Z_down_position, router_feedrate_XY, router_feedrate_Z, spindle_speed, terminate_after = False)
 
     # Creating the PCB ink laying Gcode
     gcode += generate_ink_laying_gcode(recentered_gerber_file, tool, pen_down_position, ink_laying_feedrate, terminate_after = False)
