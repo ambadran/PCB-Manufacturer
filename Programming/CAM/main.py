@@ -21,10 +21,11 @@ if __name__ == '__main__':
     user_y_offset = 2
 
     ### Tool Home positions and latch offset (as absolute values)
-    latch_offset_distance_in = 5  #TODO: find this value ASAP
-    latch_offset_distance_out = 15  #TODO: find this value ASAP
-    tool_home_coordinates = {0: [0, 0, 0], 1: [0, 0, 0], 2: [0, 0, 0]}  #TODO: find this value ASAP
-    tool_offsets = {0: [0, 0, 0], 1: [0, 0, 0], 2: [0, 0, 0]}  #TODO: find this value ASAP
+    latch_offset_distance_in = 5  #TODO: find this value ASAP, NOTE that this value is INCREMANTAL
+    latch_offset_distance_out = -10  #TODO: find this value ASAP, NOTE that this value is INCREMENTAL
+    tool_home_coordinates = {0: [0, 0, 0], 1: [0, 0, 0], 2: [0, 0, 0]}  #TODO: find this value ASAP, NOTE this value is ABSOLUTE
+    # NOTE this value is INCREMENTAL, it's absolute relative to origin when machine is homed.
+    tool_offsets = {0: [0, 0, 0], 1: [0, 0, 0], 2: [0, 0, 0]}  #TODO: find this value ASAP, 
     tool = get_tool_func(latch_offset_distance_in, latch_offset_distance_out, tool_home_coordinates, tool_offsets)
 
     ### spindle tweaking values

@@ -1,3 +1,7 @@
+'''
+This files contains functions to parse gerber files and deal with them
+'''
+
 
 def check_GerberFile(gerber_file: str) -> None:
     '''
@@ -6,6 +10,7 @@ def check_GerberFile(gerber_file: str) -> None:
     raises error if it's not a gerber file
     '''
     pass
+
 
 def read_gerber_file(file_path: str) -> str:
     '''
@@ -21,7 +26,6 @@ def read_gerber_file(file_path: str) -> str:
     return gerber_file
 
 
-# finding the all x and y values, then getting the min of each, then getting the offset value
 def get_XY(line: str) -> list[int, int]:
     '''
     :param line: line string from gerber file
@@ -103,6 +107,37 @@ def extract_block_coordinates(gerber_file: str, block_name: str) -> list[list[in
 
     return coordinates
 
+
+def get_min_max(coordinates: list[list[float, float]]) -> tuple[float, float, float, float]:
+    '''
+    finds the Min, Max of X and Y coordinates from input list of coordinates
+
+    :param coordinates: list of coordinates (x, y)
+    :return: (x_min, y_min, x_max, y_max)
+    '''
+
+    x_min, y_min = coordinates[0]
+    x_max, y_max = x_min, y_min
+
+    for coordinate in coordinates:
+
+        new_x, new_y = coordinate
+
+        if new_x < x_min:
+            x_min = new_x
+
+        elif new_x > x_max:
+            x_max = new_x
+
+        if new_y < y_min:
+            y_min = new_y
+
+        elif new_y > y_max:
+            y_max = new_y
+
+    return x_min, x_max, y_min, y_max
+
+
 def generate_line(line: str, coordinates: list[int, int]) -> str:
     '''
     :param line: the old line
@@ -117,6 +152,7 @@ def generate_line(line: str, coordinates: list[int, int]) -> str:
 
     return line
 
+
 def recenter_gerber_file(gerber_file: str, user_x_offset: int=2, user_y_offset: int=2) -> str:
     '''
     :param gerber_file: the gerber file read, checked and returned as string
@@ -127,49 +163,34 @@ def recenter_gerber_file(gerber_file: str, user_x_offset: int=2, user_y_offset: 
     '''
     g_file_lines = gerber_file.split('\n')
 
-    # getting the AperFunction,Profile definition. It contains the definition of the PCB edges
-    for line_num, line in enumerate(g_file_lines):
-        if 'Profile' in line:
-            wanted_line = g_file_lines[line_num+1]
+    #TODO: delete this after testing the function works fine
+    coordinates = extract_block_coordinates(gerber_file, 'Profile')
+    # # getting the AperFunction,Profile definition. It contains the definition of the PCB edges
+    # for line_num, line in enumerate(g_file_lines):
+    #     if 'Profile' in line:
+    #         wanted_line = g_file_lines[line_num+1]
 
-    # getting the D number of the profile definition
-    start_wanted_index = wanted_line.find('%ADD') + 4
-    for char_num, char in enumerate(wanted_line[start_wanted_index:]):
-        if not char.isdigit():
-            end_wanted_index = 4 + char_num
-            break
-    d_num = wanted_line[start_wanted_index:end_wanted_index] 
+    # # getting the D number of the profile definition
+    # start_wanted_index = wanted_line.find('%ADD') + 4
+    # for char_num, char in enumerate(wanted_line[start_wanted_index:]):
+    #     if not char.isdigit():
+    #         end_wanted_index = 4 + char_num
+    #         break
+    # d_num = wanted_line[start_wanted_index:end_wanted_index] 
 
-    # finding the D block of the profile definition
-    for line_num, line in enumerate(g_file_lines):
-        if line.startswith('D' + d_num):
-            D_block_start_line = line_num + 1
+    # # finding the D block of the profile definition
+    # for line_num, line in enumerate(g_file_lines):
+    #     if line.startswith('D' + d_num):
+    #         D_block_start_line = line_num + 1
 
-    for line_num, line in enumerate(g_file_lines[D_block_start_line:]):
-        if line.startswith('D'):
-            D_block_end_line = D_block_start_line + line_num
-            break
+    # for line_num, line in enumerate(g_file_lines[D_block_start_line:]):
+    #     if line.startswith('D'):
+    #         D_block_end_line = D_block_start_line + line_num
+    #         break
 
-    edge_coordinates_block = g_file_lines[D_block_start_line:D_block_end_line]
+    # edge_coordinates_block = g_file_lines[D_block_start_line:D_block_end_line]
 
-
-    x_min, y_min = get_XY(edge_coordinates_block[0])
-    x_max, y_max = x_min, y_min
-    for line in edge_coordinates_block:
-
-        new_x, new_y = get_XY(line)
-
-        if new_x < x_min:
-            x_min = new_x
-
-        elif new_x > x_max:
-            x_max = new_x
-
-        if new_y < y_min:
-            y_min = new_y
-
-        elif new_y > y_max:
-            y_max = new_y
+    x_min, y_min, x_max, y_max = get_min_max(coordinates)
 
     start_ind = gerber_file.index("%FSLA") + 5
     end_ind = start_ind + gerber_file[start_ind:].index('\n')
@@ -207,6 +228,7 @@ def recenter_gerber_file(gerber_file: str, user_x_offset: int=2, user_y_offset: 
     new_file = "\n".join(g_file_lines)
 
     return new_file
+
 
 def create_gerber_file(gerber_file: str, gerber_file_name: str) -> None:
     """

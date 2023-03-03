@@ -12,14 +12,15 @@ C0 ; Choosing the empty tool slot in the multiplexer circuits
 B1 ; Turn ON Machine
 
 $H ; Homing :)
-G10 P0 L20 X0 Y0 Z0 ; Force Reset current coordinates after homing
+G10 P0 L20 X0Y0Z0 ; Force Reset current coordinates after homing
 
 ; Getting and Activating Tool-2
 G01 X0Y0Z0 ; Go to Tool-2 Home Pos
-G01 X5 ; Enter Female Kinematic Mount Home Pos
+#TODO X5 ; Enter Female Kinematic Mount Home Pos
 A1 ; Latch on Kinematic Mount
 G4 P5000 ; Wait for Kinematic Mount to fully attach
-G01 X0Y0Z0 ; Exit Female Kinematic Mount Home Pos
+#TODO X-10 ; Exit Female Kinematic Mount Home Pos
+#TODO X0Y0Z0 ;  ;Add tool offset coordinate
 C2 ; Choosing tool 2 in the choose demultiplexer circuits
 
 S230 ; sets pwm speed when we enable it
@@ -91,10 +92,11 @@ G01 Z20F10
 
 M5 ; Turn Motor OFF
 
-; Returning the Deactivating Tool-2G01 X0Y0Z0 ; Go to Tool-2 Home Pos
-G01 X5 ; Enter Female Kinematic Mount Home Pos
+; Returning the Deactivating Tool-2C0 ; PWM Tool select demultiplexer to select tool zero which is the empty tool slot in multiplexers
+#TODO X0Y0Z0 ;  ;Remove tool offset coordinate
+G01 X0Y0Z0 ; Go to Tool-2 Home Pos
+#TODO X10 ; Enter Female Kinematic Mount Home Pos
 A0 ; Latch OFF Kinematic Mount
 G4 P5000 ; Wait for Kinematic Mount to fully detach
-G01 X0Y0Z0 ; Exit Female Kinematic Mount Home Pos
-C0 ; PWM Tool select demultiplexer to select tool zero which is the empty tool slot in multiplexers
+#TODO X-5 ; Exit Female Kinematic Mount Home Pos
 

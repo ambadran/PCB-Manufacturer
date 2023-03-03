@@ -23,7 +23,7 @@ class Tool(Enum):
     Pen = 3
 
 
-def get_coordinate_from_kwargs(**kwargs) -> str:
+def get_coordinate_from_kwargs(kwargs) -> str:
     '''
     reads the kwargs argument and return something like X_Y_ for gcode usage
 
@@ -106,11 +106,11 @@ def set_grbl_coordinate(coordinate_mode: CoordMode, comment: Optional[str]=None,
     if coordinate_mode == CoordMode.ABSOLUTE:
         gcode = "G10 P0 L20 "
     elif coordinate_mode == CoordMode.INCREMENTAL:
-        gcode = ''
+        gcode = '#TODO '
     else:
         raise ValueError("Unsupported Mode!")
 
-    gcode += get_coordinate_from_kwargs(coordinate=coordinate)
+    gcode += get_coordinate_from_kwargs(coordinate)
 
     if comment:
         gcode += f" ; {comment}"
@@ -130,7 +130,7 @@ def move(coordinate_mode: CoordMode, feedrate: Optional[int]=None, comment: Opti
     if coordinate_mode == CoordMode.ABSOLUTE:
         gcode = 'G01 '
     elif coordinate_mode == CoordMode.INCREMENTAL:
-        gcode = ' ' #TODO:
+        gcode = '#TODO ' #TODO:
 
     gcode += get_coordinate_from_kwargs(coordinates)
 
@@ -198,7 +198,7 @@ def get_tool_func(latch_offset_distance_in: int, latch_offset_distance_out: int,
             gcode += move(CoordMode.INCREMENTAL, comment='Exit Female Kinematic Mount Home Pos', x=latch_offset_distance_out)
 
             ### Fixing Current Coordinate according the new tool head
-            gcode += set_grbl_coordinates(CoordMode.INCREMENTAL, commment=' ;Add tool offset coordinate', coordinate=tool_offset)
+            gcode += set_grbl_coordinate(CoordMode.INCREMENTAL, comment=' ;Add tool offset coordinate', coordinate=tool_offset)
 
             ### Activate it by sending the corresponding tool number in the multiplexer
             gcode += f'C{wanted_tool.value} ; Choosing tool {wanted_tool.value} in the choose demultiplexer circuits\n'
@@ -212,19 +212,21 @@ def get_tool_func(latch_offset_distance_in: int, latch_offset_distance_out: int,
 
             ### Overide current coordinate to go to tool home pos relative to origin by inversing the tool_offset
             tool_offset = [i*-1 for i in tool_offset]
-            gcode += set_grbl_coordinates(CoordMode.INCREMANTAL, comment=' ;Remove tool offset coordinate', coordinate=tool_offset)
+            gcode += set_grbl_coordinate(CoordMode.INCREMENTAL, comment=' ;Remove tool offset coordinate', coordinate=tool_offset)
 
             ### Deactivate it by selecting the empty tool in the multiplexer
             # go to tool coordinate but male latch is just outside the female latch
             gcode += move(CoordMode.ABSOLUTE, comment=f'Go to Tool-{wanted_tool.value} Home Pos', coordinate=tool_home_coordinate)
             # Put the tool back to it's hanger
-            gcode += move(CoordMode.INCREMENTAL, comment='Enter Female Kinematic Mount Home Pos', x=latch_offset_distance_out)
+            inverse_latch_offset_distance_out = -1*latch_offset_distance_out
+            gcode += move(CoordMode.INCREMENTAL, comment='Enter Female Kinematic Mount Home Pos', x=inverse_latch_offset_distance_out)
             # male latch untwisting from female latch and locking off
             gcode += f"A0 ; Latch OFF Kinematic Mount\n" 
             # Wait until male latch is fully locked off
             gcode += f"G4 P5000 ; Wait for Kinematic Mount to fully detach\n"
             # Now pull off the male kinematic mount away from the female kinematic mount
-            gcode += move(CoordMode.INCREMENTAL, comment='Exit Female Kinematic Mount Home Pos', x=latch_offset_distance_out)
+            inverse_latch_offset_distance_in = -1*latch_offset_distance_in
+            gcode += move(CoordMode.INCREMENTAL, comment='Exit Female Kinematic Mount Home Pos', x=inverse_latch_offset_distance_in)
 
         else:
             raise ValueError("Mode unknown")
@@ -284,7 +286,7 @@ def generate_holes_gcode(gerber_file: str, tool: Callable, motor_up_z_position: 
     gcode += f'S{spindle_speed} ; sets pwm speed when we enable it\n'
 
     # Moving Motor to proper up Z position and home position
-    gcode += move(z=motor_up_z_position, feedrate=feedrate_Z)
+    gcode += move(CoordMode.ABSOLUTE, z=motor_up_z_position, feedrate=feedrate_Z)
     gcode += '\n'
 
     # Turn the DC motor on and wait two seconds
@@ -294,9 +296,9 @@ def generate_holes_gcode(gerber_file: str, tool: Callable, motor_up_z_position: 
     # Cutting starts here :)
     coordinates = extract_block_coordinates(gerber_file, 'ComponentPad')
     for coordinate in coordinates:
-        gcode += move(coordinate=coordinate, feedrate=feedrate_XY)
-        gcode += move(z=motor_down_z_position, feedrate=feedrate_Z)
-        gcode += move(z=motor_up_z_position, feedrate=feedrate_Z)
+        gcode += move(CoordMode.ABSOLUTE, coordinate=coordinate, feedrate=feedrate_XY)
+        gcode += move(CoordMode.ABSOLUTE, z=motor_down_z_position, feedrate=feedrate_Z)
+        gcode += move(CoordMode.ABSOLUTE, z=motor_up_z_position, feedrate=feedrate_Z)
     gcode += '\n'
 
     # deactivating the tool PWM
@@ -322,6 +324,10 @@ def generate_ink_laying_gcode(gerber_file: str, tool: Callable, pen_down_positio
 
     :return: This function creates the gcode content as string according to the input coordinates
     '''
+
+    coordinates = extract_block_coordinates(gerber_file, 'Profile')
+    print(coordinates)
+
     return ''
 
 
@@ -349,4 +355,56 @@ def export_gcode(gcode: str, file_name: str) -> None:
         g_file.write(gcode)
 
 
+if __name__ == '__main__':
 
+    #NOTE!!!! The gerber file is assumed to be mirrorred!!!!!
+    gerber_file_path = 'gerber_files/default.gbr'
+    gcode_file_path = 'gcode_files/default.gcode'
+
+    ##### Tweaking Arguments #####
+
+    # Offset PCB from (0, 0)
+    user_x_offset = 2
+    user_y_offset = 2
+
+    ### Tool Home positions and latch offset (as absolute values)
+    latch_offset_distance_in = 5  #TODO: find this value ASAP, NOTE that this value is INCREMANTAL
+    latch_offset_distance_out = -10  #TODO: find this value ASAP, NOTE that this value is INCREMENTAL
+    tool_home_coordinates = {0: [0, 0, 0], 1: [0, 0, 0], 2: [0, 0, 0]}  #TODO: find this value ASAP, NOTE this value is ABSOLUTE
+    # NOTE this value is INCREMENTAL, it's absolute relative to origin when machine is homed.
+    tool_offsets = {0: [0, 0, 0], 1: [0, 0, 0], 2: [0, 0, 0]}  #TODO: find this value ASAP, 
+    tool = get_tool_func(latch_offset_distance_in, latch_offset_distance_out, tool_home_coordinates, tool_offsets)
+
+    ### spindle tweaking values
+    # Z positions
+    router_Z_up_position = 20
+    router_Z_down_position = 25
+    # Feedrates
+    router_feedrate_XY = 700
+    router_feedrate_Z = 10
+    # Power intensities
+    spindle_speed = 230
+
+    ### Pen Tweaking Values
+    # Z positions
+    pen_down_position = 10 
+    # Feedrates
+    ink_laying_feedrate = 100
+
+    ### Laser Module Tweaking Values
+    # Z positions
+    optimum_laser_Z_position = 16  # 44mm from laser head to PCB
+    # Feedrates
+    pcb_trace_feedrate = 600
+    # Power intensities
+    laser_power = 150 
+
+
+
+    gerber_file = read_gerber_file(gerber_file_path)
+
+    recentered_gerber_file = recenter_gerber_file(gerber_file, user_x_offset, user_y_offset)
+
+    gcode = generate_ink_laying_gcode(recentered_gerber_file, tool, pen_down_position, ink_laying_feedrate, terminate_after = False)
+
+    print(gcode)
