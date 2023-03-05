@@ -1,0 +1,14 @@
+platform=1660108856000
+cluster.etc=1660108856000
+cluster.extra=1660108856000
+cluster.ugsplatform=1660108856000
+cluster.bin=1660108856000
+cluster.ide=1660108856000
+cluster.java=1660108856000
+cluster.platform=1660108856000
+user=1660108856000
+crc=7
+locale=en_US
+branding=ugsplatform
+java.version=1.8.0_275
+java.vm.version=25.275-b01

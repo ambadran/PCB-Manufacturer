@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><module codename="com.willwinder.ugs.platform.plugin.cloud.storage">
+    <module_version install_time="1660108676093" last="true" origin="installer" specification_version="2.0.0.2022.08.10.05.14">
+        <file crc="1528335688" name="config/Modules/com-willwinder-ugs-platform-plugin-cloud-storage.xml"/>
+        <file crc="619834537" name="modules/com-willwinder-ugs-platform-plugin-cloud-storage.jar"/>
+        <file crc="876966247" name="modules/ext/com.willwinder.ugs-platform-plugin-cloud-storage/com-fasterxml-jackson-core/jackson-annotations.jar"/>
+        <file crc="3347975468" name="modules/ext/com.willwinder.ugs-platform-plugin-cloud-storage/com-fasterxml-jackson-core/jackson-core.jar"/>
+        <file crc="1132373718" name="modules/ext/com.willwinder.ugs-platform-plugin-cloud-storage/com-fasterxml-jackson-core/jackson-databind.jar"/>
+        <file crc="389931586" name="modules/ext/com.willwinder.ugs-platform-plugin-cloud-storage/com-google-code-findbugs/annotations.jar"/>
+        <file crc="541077999" name="modules/ext/com.willwinder.ugs-platform-plugin-cloud-storage/com-google-code-findbugs/jsr305.jar"/>
+        <file crc="2979725238" name="modules/ext/com.willwinder.ugs-platform-plugin-cloud-storage/com-google-errorprone/error_prone_annotations.jar"/>
+        <file crc="1487061312" name="modules/ext/com.willwinder.ugs-platform-plugin-cloud-storage/com-google-guava/guava.jar"/>
+        <file crc="844412801" name="modules/ext/com.willwinder.ugs-platform-plugin-cloud-storage/com-google-http-client/google-http-client-xml.jar"/>
+        <file crc="1282502953" name="modules/ext/com.willwinder.ugs-platform-plugin-cloud-storage/com-google-http-client/google-http-client.jar"/>
+        <file crc="3332531509" name="modules/ext/com.willwinder.ugs-platform-plugin-cloud-storage/com-google-j2objc/j2objc-annotations.jar"/>
+        <file crc="2861260078" name="modules/ext/com.willwinder.ugs-platform-plugin-cloud-storage/com-squareup-okhttp3/okhttp.jar"/>
+        <file crc="1824520000" name="modules/ext/com.willwinder.ugs-platform-plugin-cloud-storage/com-squareup-okio/okio.jar"/>
+        <file crc="3280865456" name="modules/ext/com.willwinder.ugs-platform-plugin-cloud-storage/commons-codec/commons-codec.jar"/>
+        <file crc="2400076699" name="modules/ext/com.willwinder.ugs-platform-plugin-cloud-storage/io-minio/minio.jar"/>
+        <file crc="1296054818" name="modules/ext/com.willwinder.ugs-platform-plugin-cloud-storage/joda-time/joda-time.jar"/>
+        <file crc="3771856038" name="modules/ext/com.willwinder.ugs-platform-plugin-cloud-storage/net-jcip/jcip-annotations.jar"/>
+        <file crc="2944052681" name="modules/ext/com.willwinder.ugs-platform-plugin-cloud-storage/org-apache-httpcomponents/httpclient.jar"/>
+        <file crc="2335420510" name="modules/ext/com.willwinder.ugs-platform-plugin-cloud-storage/org-apache-httpcomponents/httpcore.jar"/>
+        <file crc="2674136380" name="modules/ext/com.willwinder.ugs-platform-plugin-cloud-storage/org-checkerframework/checker-qual.jar"/>
+        <file crc="3155375578" name="modules/ext/com.willwinder.ugs-platform-plugin-cloud-storage/org-codehaus-mojo/animal-sniffer-annotations.jar"/>
+        <file crc="838389737" name="modules/ext/com.willwinder.ugs-platform-plugin-cloud-storage/xpp3/xpp3.jar"/>
+    </module_version>
+</module>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module codename="jai_imageio_core">
+    <module_version install_time="1660108676675" last="true" origin="installer" specification_version="1.4.0">
+        <file crc="616629490" name="config/Modules/jai_imageio_core.xml"/>
+        <file crc="3057353881" name="modules/jai_imageio_core.jar"/>
+    </module_version>
+</module>

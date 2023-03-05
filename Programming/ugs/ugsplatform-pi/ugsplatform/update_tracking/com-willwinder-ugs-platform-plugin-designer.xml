@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?><module codename="com.willwinder.ugs.platform.plugin.designer">
+    <module_version install_time="1660108676319" last="true" origin="installer" specification_version="2.0.0.2022.08.10.05.14">
+        <file crc="400552558" name="config/Modules/com-willwinder-ugs-platform-plugin-designer.xml"/>
+        <file crc="3386433575" name="modules/com-willwinder-ugs-platform-plugin-designer.jar"/>
+        <file crc="83254382" name="modules/ext/com.willwinder.ugs-platform-plugin-designer/com-formdev/jide-oss.jar"/>
+        <file crc="2192529993" name="modules/ext/com.willwinder.ugs-platform-plugin-designer/com-google-code-gson/gson.jar"/>
+        <file crc="2449403980" name="modules/ext/com.willwinder.ugs-platform-plugin-designer/commons-io/commons-io.jar"/>
+        <file crc="3420158953" name="modules/ext/com.willwinder.ugs-platform-plugin-designer/commons-logging/commons-logging.jar"/>
+        <file crc="22301118" name="modules/ext/com.willwinder.ugs-platform-plugin-designer/org-apache-commons/commons-lang3.jar"/>
+        <file crc="1629825203" name="modules/ext/com.willwinder.ugs-platform-plugin-designer/org-apache-xmlgraphics/batik-anim.jar"/>
+        <file crc="1971098077" name="modules/ext/com.willwinder.ugs-platform-plugin-designer/org-apache-xmlgraphics/batik-awt-util.jar"/>
+        <file crc="3573338053" name="modules/ext/com.willwinder.ugs-platform-plugin-designer/org-apache-xmlgraphics/batik-bridge.jar"/>
+        <file crc="246628674" name="modules/ext/com.willwinder.ugs-platform-plugin-designer/org-apache-xmlgraphics/batik-constants.jar"/>
+        <file crc="919426328" name="modules/ext/com.willwinder.ugs-platform-plugin-designer/org-apache-xmlgraphics/batik-css.jar"/>
+        <file crc="139263416" name="modules/ext/com.willwinder.ugs-platform-plugin-designer/org-apache-xmlgraphics/batik-dom.jar"/>
+        <file crc="2370999284" name="modules/ext/com.willwinder.ugs-platform-plugin-designer/org-apache-xmlgraphics/batik-ext.jar"/>
+        <file crc="2521898368" name="modules/ext/com.willwinder.ugs-platform-plugin-designer/org-apache-xmlgraphics/batik-gui-util.jar"/>
+        <file crc="1630802165" name="modules/ext/com.willwinder.ugs-platform-plugin-designer/org-apache-xmlgraphics/batik-gvt.jar"/>
+        <file crc="3259433212" name="modules/ext/com.willwinder.ugs-platform-plugin-designer/org-apache-xmlgraphics/batik-i18n.jar"/>
+        <file crc="2001137234" name="modules/ext/com.willwinder.ugs-platform-plugin-designer/org-apache-xmlgraphics/batik-parser.jar"/>
+        <file crc="1981620855" name="modules/ext/com.willwinder.ugs-platform-plugin-designer/org-apache-xmlgraphics/batik-script.jar"/>
+        <file crc="2976960052" name="modules/ext/com.willwinder.ugs-platform-plugin-designer/org-apache-xmlgraphics/batik-shared-resources.jar"/>
+        <file crc="2500695356" name="modules/ext/com.willwinder.ugs-platform-plugin-designer/org-apache-xmlgraphics/batik-svg-dom.jar"/>
+        <file crc="3055538999" name="modules/ext/com.willwinder.ugs-platform-plugin-designer/org-apache-xmlgraphics/batik-swing.jar"/>
+        <file crc="562397695" name="modules/ext/com.willwinder.ugs-platform-plugin-designer/org-apache-xmlgraphics/batik-util.jar"/>
+        <file crc="1895364530" name="modules/ext/com.willwinder.ugs-platform-plugin-designer/org-apache-xmlgraphics/batik-xml.jar"/>
+        <file crc="1824859418" name="modules/ext/com.willwinder.ugs-platform-plugin-designer/org-apache-xmlgraphics/xmlgraphics-commons.jar"/>
+        <file crc="3037956568" name="modules/ext/com.willwinder.ugs-platform-plugin-designer/org-locationtech-jts/jts-core.jar"/>
+        <file crc="3959464191" name="modules/ext/com.willwinder.ugs-platform-plugin-designer/xalan/serializer.jar"/>
+        <file crc="2356488793" name="modules/ext/com.willwinder.ugs-platform-plugin-designer/xalan/xalan.jar"/>
+        <file crc="2268634152" name="modules/ext/com.willwinder.ugs-platform-plugin-designer/xml-apis/xml-apis-ext.jar"/>
+        <file crc="3203011316" name="modules/ext/com.willwinder.ugs-platform-plugin-designer/xml-apis/xml-apis.jar"/>
+    </module_version>
+</module>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module codename="org.objectweb.asm.tree.analysis">
+    <module_version install_time="1660108676660" last="true" origin="installer" specification_version="8.0.1">
+        <file crc="1554441883" name="config/Modules/org-objectweb-asm-tree-analysis.xml"/>
+        <file crc="4280402074" name="modules/org-objectweb-asm-tree-analysis.jar"/>
+    </module_version>
+</module>

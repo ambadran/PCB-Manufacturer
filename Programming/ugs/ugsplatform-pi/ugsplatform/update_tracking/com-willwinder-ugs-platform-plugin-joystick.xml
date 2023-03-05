@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?><module codename="com.willwinder.ugs.platform.plugin.joystick">
+    <module_version install_time="1660108676011" last="true" origin="installer" specification_version="2.0.0.2022.08.10.05.14">
+        <file crc="391446483" name="config/Modules/com-willwinder-ugs-platform-plugin-joystick.xml"/>
+        <file crc="3439936425" name="modules/com-willwinder-ugs-platform-plugin-joystick.jar"/>
+        <file crc="3636727664" name="modules/ext/com.willwinder.ugs-platform-plugin-joystick/com-badlogicgames-gdx/gdx-jnigen.jar"/>
+        <file crc="1458080250" name="modules/ext/com.willwinder.ugs-platform-plugin-joystick/com-github-javaparser/javaparser-core.jar"/>
+        <file crc="385887944" name="modules/ext/com.willwinder.ugs-platform-plugin-joystick/com-miglayout/miglayout.jar"/>
+        <file crc="3199525882" name="modules/ext/com.willwinder.ugs-platform-plugin-joystick/com-xenoamess/Jamepad.jar"/>
+        <file crc="22301118" name="modules/ext/com.willwinder.ugs-platform-plugin-joystick/org-apache-commons/commons-lang3.jar"/>
+    </module_version>
+</module>
