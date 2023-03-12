@@ -1,6 +1,32 @@
 '''
 This files contains functions to parse gerber files and deal with them
 '''
+from dataclasses import dataclass
+
+@dataclass
+Class Coordinate:
+    x: float
+    y: float
+    z: float = None
+
+
+class Block:
+    def __init__(self, name: str, miniblocks: list[MiniBlock]):
+        self.name = name
+        self.miniblocks = miniblocks
+
+    def __str__(self):
+        return f"{self.name} Block with {[miniblock for miniblock in self.miniblocks]}"
+
+
+class MiniBlock:
+    def __init__(self, parent_block: Block, D_num: int, coordinates: list[Coordinate]):
+        self.parent_block = parent_block
+        self.D_num = D_num
+        self.coordinates = coordiantes
+
+    def __str__(self):
+        return self.D_num
 
 
 def check_GerberFile(gerber_file: str) -> None:
@@ -93,35 +119,34 @@ def extract_block_coordinates(gerber_file: str, block_name: str, with_multiplier
 
     g_file_lines = gerber_file.split('\n')
 
-
-    # getting the AperFunction,ComponentPad definition. It contains the definition of the PCB holes
     coordinates = []
+
+    # getting the Dxx of the block we want
+    d_nums = []
     for line_num, line in enumerate(g_file_lines):
         if block_name in line:
             wanted_line = g_file_lines[line_num+1]
 
-    # getting the D number of the profile definition
-    start_wanted_index = wanted_line.find('%ADD') + 4
-    for char_num, char in enumerate(wanted_line[start_wanted_index:]):
-        if not char.isdigit():
-            end_wanted_index = 4 + char_num
-            break
-    d_num = wanted_line[start_wanted_index:end_wanted_index] 
+            # getting the D number of the profile definition, by finding the last char that is a digit
+            start_wanted_index = wanted_line.find('%ADD') + 4
+            for char_num, char in enumerate(wanted_line[start_wanted_index:]):
+                if not char.isdigit():
+                    end_wanted_index = 4 + char_num
+                    break
+            d_nums.append(wanted_line[start_wanted_index:end_wanted_index])
 
-    # finding the D block of the profile definition
-    for line_num, line in enumerate(g_file_lines):
-        if line.startswith('D' + d_num):
-            D_block_start_line = line_num + 1
+    # getting all the gerber coordinates under the wanted Dxx
+    take_lines = False
+    g_file_lines_start_ind = gerber_file[:gerber_file.find('D')].count('\n')  # coordinates start from first 'D' occurance
+    for line_num, line in enumerate(g_file_lines[g_file_lines_start_ind:]):
 
-    for line_num, line in enumerate(g_file_lines[D_block_start_line:]):
-        if line.startswith('D'):
-            D_block_end_line = D_block_start_line + line_num
-            break
+        #TODO: ASSUMPTION!! Here I am assuming start of a block always looks like this 'Dxyz', where x is int, y int or nothing and z is any character
+        if line.startswith('D'):  # decide on whether to take lines or not
+            take_lines = line[1:-1] in d_nums
+            continue
 
-    edge_coordinates_block = g_file_lines[D_block_start_line:D_block_end_line]
-
-    for line in edge_coordinates_block:
-        coordinates.append(get_XY(line))
+        if take_lines:
+            coordinates.append(get_XY(line))
 
     # Get multiplier if user wants to remove it
     if not with_multiplier:
@@ -232,6 +257,35 @@ def recenter_gerber_file(gerber_file: str, user_x_offset: int, user_y_offset: in
 
     return new_file
 
+
+def extract_block_drawing_width(gerber_file: str, D_num: int) -> float:
+    '''
+    Extracts the width of drawings of a specific block D number from gerber file. 
+        e.g- D16 is a 'ComponentPad' and is thickness 0.8mm
+
+    :param gerber_file: gerber_file to read from
+    :param D_num: D number of the wanted block to get the thickness of
+
+    :return: float value of the thickness of the D number block
+    '''
+    thickness: float
+    return thickness
+
+
+def get_laser_coordinates(gerber_file: str) -> list[list[list[float, float]]]:
+    '''
+    Get list of list of coordinates to move through to burn one continious piece of trace.
+        Meant to go first coordinate in a list, turn laser on, go to all coordinates, then laser OFF, then
+        go to first coordinate in the next list, turn laser on , go to all coordiantes, then laser OFF, etc..
+
+    :param gerber_file: The string of the gerber file that has the PCB
+    :return: list of list of coordinates of one continious trace
+    '''
+    coordinates_list = []
+
+
+
+    return coordinates
 
 if __name__ == '__main__':
 

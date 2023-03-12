@@ -70,10 +70,10 @@ if __name__ == '__main__':
     gcode += generate_holes_gcode(recentered_gerber_file, tool, router_Z_up_position, router_Z_down_position, router_feedrate_XY, router_feedrate_Z, spindle_speed, terminate_after = False)
 
     # Creating the PCB ink laying Gcode
-    gcode += generate_ink_laying_gcode(recentered_gerber_file, tool, tip_thickness, pen_down_position, ink_laying_feedrate, terminate_after = False)
+    gcode += generate_ink_laying_gcode(recentered_gerber_file, tool, tip_thickness, pen_down_position, ink_laying_feedrate, initiated_before=True, terminate_after = False)
 
     # Creating the PCB trace laser Toner Transfer Gcode
-    gcode += generate_pcb_trace_gcode(recentered_gerber_file, tool, optimum_laser_Z_position, pcb_trace_feedrate, laser_power)
+    gcode += generate_pcb_trace_gcode(recentered_gerber_file, tool, optimum_laser_Z_position, pcb_trace_feedrate, laser_power, initiated_before=True)
 
     # exporting the created Gcode
     export_gcode(gcode, gcode_file_path)
