@@ -12,4 +12,6 @@ references/
 *cache/
 __pychache__/
 __pychache__
+*/__pychache__/
+*/__pychache__
 
