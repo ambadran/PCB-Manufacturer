@@ -17,8 +17,12 @@ void start_timer() {
         // updating current position
         update_current_position(current_position - OF_num_TMR1);
         // set new target overflow number
+#if CONSTANT_STEPS
         target_OF_num = num_steps - current_position;
-    
+#else
+        target_OF_num = num_steps[CW_CCW_select] - current_position;
+#endif
+        
     } else {
         // updating current position
         update_current_position(current_position + OF_num_TMR1);

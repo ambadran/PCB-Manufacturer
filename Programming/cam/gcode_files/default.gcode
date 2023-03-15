@@ -19,10 +19,12 @@ G10 P0 L20 X0Y0Z0 ; Force Reset current coordinates after homing
 
 ; Getting and Activating Tool-2, The Tool.Spindle
 G01 X0Y0Z0 ; Go to Tool-2 Home Pos
-#TODO X5 ; Enter Female Kinematic Mount Home Pos
+G21G90G01X25 ; Enter Female Kinematic Mount Home Pos
+G21G90
 A1 ; Latch on Kinematic Mount
 G4 P5000 ; Wait for Kinematic Mount to fully attach
-#TODO X-10 ; Exit Female Kinematic Mount Home Pos
+G21G90G01X-98 ; Exit Female Kinematic Mount Home Pos
+G21G90
 #TODO X0Y0Z0 ;  ;Add tool offset coordinate
 C2 ; Choosing tool 2 in the choose demultiplexer circuits
 
@@ -147,10 +149,12 @@ M5 ; disabling spindle PWM
 C0 ; PWM Tool select demultiplexer to select tool zero which is the empty tool slot in multiplexers
 #TODO X0Y0Z0 ;  ;Remove tool offset coordinate
 G01 X0Y0Z0 ; Go to Tool-2 Home Pos
-#TODO X10 ; Enter Female Kinematic Mount Home Pos
+G21G90G01X98 ; Enter Female Kinematic Mount Home Pos
+G21G90
 A0 ; Latch OFF Kinematic Mount
 G4 P5000 ; Wait for Kinematic Mount to fully detach
-#TODO X-5 ; Exit Female Kinematic Mount Home Pos
+G21G90G01X-25 ; Exit Female Kinematic Mount Home Pos
+G21G90
 
 
 ; The following gcode is the ink laying gcode
@@ -158,10 +162,12 @@ G4 P5000 ; Wait for Kinematic Mount to fully detach
 
 ; Getting and Activating Tool-3, The Tool.Pen
 G01 X0Y0Z0 ; Go to Tool-3 Home Pos
-#TODO X5 ; Enter Female Kinematic Mount Home Pos
+G21G90G01X25 ; Enter Female Kinematic Mount Home Pos
+G21G90
 A1 ; Latch on Kinematic Mount
 G4 P5000 ; Wait for Kinematic Mount to fully attach
-#TODO X-10 ; Exit Female Kinematic Mount Home Pos
+G21G90G01X-98 ; Exit Female Kinematic Mount Home Pos
+G21G90
 #TODO X0Y0Z0 ;  ;Add tool offset coordinate
 C3 ; Choosing tool 3 in the choose demultiplexer circuits
 
@@ -199,20 +205,24 @@ M5 ; Disable End-Effector Signal
 C0 ; PWM Tool select demultiplexer to select tool zero which is the empty tool slot in multiplexers
 #TODO X0Y0Z0 ;  ;Remove tool offset coordinate
 G01 X0Y0Z0 ; Go to Tool-3 Home Pos
-#TODO X10 ; Enter Female Kinematic Mount Home Pos
+G21G90G01X98 ; Enter Female Kinematic Mount Home Pos
+G21G90
 A0 ; Latch OFF Kinematic Mount
 G4 P5000 ; Wait for Kinematic Mount to fully detach
-#TODO X-5 ; Exit Female Kinematic Mount Home Pos
+G21G90G01X-25 ; Exit Female Kinematic Mount Home Pos
+G21G90
 
 
 ; The following gcode is the PCB trace laser marking gcode
 
 ; Getting and Activating Tool-1, The Tool.Laser
-G01 X0Y0Z0 ; Go to Tool-1 Home Pos
-#TODO X5 ; Enter Female Kinematic Mount Home Pos
+G01 X165Y0Z9 ; Go to Tool-1 Home Pos
+G21G90G01X25 ; Enter Female Kinematic Mount Home Pos
+G21G90
 A1 ; Latch on Kinematic Mount
 G4 P5000 ; Wait for Kinematic Mount to fully attach
-#TODO X-10 ; Exit Female Kinematic Mount Home Pos
+G21G90G01X-98 ; Exit Female Kinematic Mount Home Pos
+G21G90
 #TODO X0Y0Z0 ;  ;Add tool offset coordinate
 C1 ; Choosing tool 1 in the choose demultiplexer circuits
 
@@ -229,11 +239,13 @@ M5 ; Disable End-Effector Signal
 ; Returning the Deactivating Tool-1
 C0 ; PWM Tool select demultiplexer to select tool zero which is the empty tool slot in multiplexers
 #TODO X0Y0Z0 ;  ;Remove tool offset coordinate
-G01 X0Y0Z0 ; Go to Tool-1 Home Pos
-#TODO X10 ; Enter Female Kinematic Mount Home Pos
+G01 X165Y0Z9 ; Go to Tool-1 Home Pos
+G21G90G01X98 ; Enter Female Kinematic Mount Home Pos
+G21G90
 A0 ; Latch OFF Kinematic Mount
 G4 P5000 ; Wait for Kinematic Mount to fully detach
-#TODO X-5 ; Exit Female Kinematic Mount Home Pos
+G21G90G01X-25 ; Exit Female Kinematic Mount Home Pos
+G21G90
 
 G00X0Y0Z0
 B0 ; Turn Machine OFF

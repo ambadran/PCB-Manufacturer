@@ -234,10 +234,9 @@ def move(coordinate_mode: CoordMode, feedrate: Optional[int]=None, use_00: bool=
             gcode = 'G01 '
     elif coordinate_mode == CoordMode.INCREMENTAL:
         if use_00:
-            pass
+            gcode = 'G21G91G00'
         else:
-            pass
-        gcode = '#TODO ' #TODO:
+            gcode = 'G21G91G01'
 
     gcode += get_coordinate_from_kwargs(coordinates)
 
@@ -247,11 +246,14 @@ def move(coordinate_mode: CoordMode, feedrate: Optional[int]=None, use_00: bool=
         gcode += f" ; {comment}"
 
     gcode += '\n'
+    
+    if coordinate_mode == CoordMode.INCREMENTAL:
+        gcode += 'G21G90\n'
 
     return gcode
 
 
-def get_tool_func(latch_offset_distance_in: int, latch_offset_distance_out: int, tool_home_coordinates: dict[int: tuple[int, int, int]], tool_offsets: dict[int: tuple[int, int, int]]) -> Callable:
+def get_tool_func(latch_offset_distance_in: int, latch_offset_distance_out: int, tool_home_coordinates: dict[int: tuple[int, int, int]], tool_offsets: dict[int: tuple[int, int, int]], attach_detach_time: int) -> Callable:
     '''
     Closure Function to define constant values for:
     :param latch_offset_distance_in: the distance the male end kinematic mount has to move (+X) to enter female latch
@@ -268,6 +270,8 @@ def get_tool_func(latch_offset_distance_in: int, latch_offset_distance_out: int,
     :param tool_offsets: dictionary for each tool, where the value is the coordinate offset to set the new exact
                          end effector position relative from Origin (0, 0, 0)
                          #NOTE this value is INCREMENTAL 
+
+    :param attach_detach_time: time for kinematic latch to engage or disengage (in ms)!!!
 
     :returns: the actual tool changing gcode generator function with the proper setup values
     '''
@@ -300,7 +304,7 @@ def get_tool_func(latch_offset_distance_in: int, latch_offset_distance_out: int,
             # now male latch twisting and locking on
             gcode += f"A1 ; Latch on Kinematic Mount\n"  
             # Wait until male latch is fully locked on
-            gcode += f"G4 P5000 ; Wait for Kinematic Mount to fully attach\n"  
+            gcode += f"G4 P{attach_detach_time} ; Wait for Kinematic Mount to fully attach\n"  
             # now pull off the female kinematch mount off its hanger, using incremental gcode
             gcode += move(CoordMode.INCREMENTAL, comment='Exit Female Kinematic Mount Home Pos', x=latch_offset_distance_out)
 
@@ -330,7 +334,7 @@ def get_tool_func(latch_offset_distance_in: int, latch_offset_distance_out: int,
             # male latch untwisting from female latch and locking off
             gcode += f"A0 ; Latch OFF Kinematic Mount\n" 
             # Wait until male latch is fully locked off
-            gcode += f"G4 P5000 ; Wait for Kinematic Mount to fully detach\n"
+            gcode += f"G4 P{attach_detach_time} ; Wait for Kinematic Mount to fully detach\n"
             # Now pull off the male kinematic mount away from the female kinematic mount
             inverse_latch_offset_distance_in = -1*latch_offset_distance_in
             gcode += move(CoordMode.INCREMENTAL, comment='Exit Female Kinematic Mount Home Pos', x=inverse_latch_offset_distance_in)

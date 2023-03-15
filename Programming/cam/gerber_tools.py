@@ -4,29 +4,29 @@ This files contains functions to parse gerber files and deal with them
 from dataclasses import dataclass
 
 @dataclass
-Class Coordinate:
+class Coordinate:
     x: float
     y: float
     z: float = None
 
 
-class Block:
-    def __init__(self, name: str, miniblocks: list[MiniBlock]):
-        self.name = name
-        self.miniblocks = miniblocks
+# class Block:
+#     def __init__(self, name: str, miniblocks: list[MiniBlock]):
+#         self.name = name
+#         self.miniblocks = miniblocks
 
-    def __str__(self):
-        return f"{self.name} Block with {[miniblock for miniblock in self.miniblocks]}"
+#     def __str__(self):
+#         return f"{self.name} Block with {[miniblock for miniblock in self.miniblocks]}"
 
 
-class MiniBlock:
-    def __init__(self, parent_block: Block, D_num: int, coordinates: list[Coordinate]):
-        self.parent_block = parent_block
-        self.D_num = D_num
-        self.coordinates = coordiantes
+# class MiniBlock:
+    # def __init__(self, parent_block: Block, D_num: int, coordinates: list[Coordinate]):
+    #     self.parent_block = parent_block
+    #     self.D_num = D_num
+    #     self.coordinates = coordiantes
 
-    def __str__(self):
-        return self.D_num
+    # def __str__(self):
+    #     return self.D_num
 
 
 def check_GerberFile(gerber_file: str) -> None:
