@@ -23,13 +23,14 @@ if __name__ == '__main__':
     user_y_offset = 2
 
     ### Tool Home positions and latch offset (as absolute values)
-    latch_offset_distance_in = 25 
-    latch_offset_distance_out = -98
+    X_latch_offset_distance_in = 188  # ABSOLUTE value
+    X_latch_offset_distance_out = 92  # ABSOLUTE value
     attach_detach_time = 5 # the P attribute in Gcode is in seconds
-    tool_home_coordinates = {1: [165, 0, 9], 2: [0, 0, 0], 3: [0, 0, 0]}  #TODO: find this value ASAP, NOTE this value is ABSOLUTE
-    # NOTE this value is INCREMENTAL, it's absolute relative to origin when machine is homed.
+    tool_home_coordinates = {1: [165, 0, 11], 2: [165, 91, 12], 3: [165, 185.5, 12]}  # ABSOLUTE values
+
     tool_offsets = {0: [0, 0, 0], 1: [0, 0, 0], 2: [0, 0, 0], 3: [0, 0, 0]}  #TODO: find this value ASAP, 
-    tool = get_tool_func(latch_offset_distance_in, latch_offset_distance_out, tool_home_coordinates, tool_offsets, attach_detach_time)
+
+    tool = get_tool_func(X_latch_offset_distance_in, X_latch_offset_distance_out, tool_home_coordinates, tool_offsets, attach_detach_time)
 
     ### spindle tweaking values
     # Z positions

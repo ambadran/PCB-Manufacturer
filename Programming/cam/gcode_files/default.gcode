@@ -18,13 +18,11 @@ G10 P0 L20 X0Y0Z0 ; Force Reset current coordinates after homing
 ; The following gcode is the PCB holes drill gcode
 
 ; Getting and Activating Tool-2, The Tool.Spindle
-G01 X0Y0Z0 ; Go to Tool-2 Home Pos
-G21G90G01X25 ; Enter Female Kinematic Mount Home Pos
-G21G90
+G01 X165Y91Z12 ; Go to Tool-2 Home Pos
+G01 X188 ; Enter Female Kinematic Mount Home Pos
 A1 ; Latch on Kinematic Mount
-G4 P5000 ; Wait for Kinematic Mount to fully attach
-G21G90G01X-98 ; Exit Female Kinematic Mount Home Pos
-G21G90
+G4 P5 ; Wait for Kinematic Mount to fully attach
+G01 X92 ; Exit Female Kinematic Mount Home Pos
 #TODO X0Y0Z0 ;  ;Add tool offset coordinate
 C2 ; Choosing tool 2 in the choose demultiplexer circuits
 
@@ -148,26 +146,22 @@ M5 ; disabling spindle PWM
 ; Returning the Deactivating Tool-2
 C0 ; PWM Tool select demultiplexer to select tool zero which is the empty tool slot in multiplexers
 #TODO X0Y0Z0 ;  ;Remove tool offset coordinate
-G01 X0Y0Z0 ; Go to Tool-2 Home Pos
-G21G90G01X98 ; Enter Female Kinematic Mount Home Pos
-G21G90
+G01 X165Y91Z12 ; Go to Tool-2 Home Pos
+G01 X92 ; Enter Female Kinematic Mount Home Pos
 A0 ; Latch OFF Kinematic Mount
-G4 P5000 ; Wait for Kinematic Mount to fully detach
-G21G90G01X-25 ; Exit Female Kinematic Mount Home Pos
-G21G90
+G4 P5 ; Wait for Kinematic Mount to fully detach
+G01 X188 ; Exit Female Kinematic Mount Home Pos
 
 
 ; The following gcode is the ink laying gcode
 ; According to input gerber file it will have 11 number of y iterations and Over-lapping distance is 1.2
 
 ; Getting and Activating Tool-3, The Tool.Pen
-G01 X0Y0Z0 ; Go to Tool-3 Home Pos
-G21G90G01X25 ; Enter Female Kinematic Mount Home Pos
-G21G90
+G01 X165Y185.5Z12 ; Go to Tool-3 Home Pos
+G01 X188 ; Enter Female Kinematic Mount Home Pos
 A1 ; Latch on Kinematic Mount
-G4 P5000 ; Wait for Kinematic Mount to fully attach
-G21G90G01X-98 ; Exit Female Kinematic Mount Home Pos
-G21G90
+G4 P5 ; Wait for Kinematic Mount to fully attach
+G01 X92 ; Exit Female Kinematic Mount Home Pos
 #TODO X0Y0Z0 ;  ;Add tool offset coordinate
 C3 ; Choosing tool 3 in the choose demultiplexer circuits
 
@@ -204,25 +198,21 @@ M5 ; Disable End-Effector Signal
 ; Returning the Deactivating Tool-3
 C0 ; PWM Tool select demultiplexer to select tool zero which is the empty tool slot in multiplexers
 #TODO X0Y0Z0 ;  ;Remove tool offset coordinate
-G01 X0Y0Z0 ; Go to Tool-3 Home Pos
-G21G90G01X98 ; Enter Female Kinematic Mount Home Pos
-G21G90
+G01 X165Y185.5Z12 ; Go to Tool-3 Home Pos
+G01 X92 ; Enter Female Kinematic Mount Home Pos
 A0 ; Latch OFF Kinematic Mount
-G4 P5000 ; Wait for Kinematic Mount to fully detach
-G21G90G01X-25 ; Exit Female Kinematic Mount Home Pos
-G21G90
+G4 P5 ; Wait for Kinematic Mount to fully detach
+G01 X188 ; Exit Female Kinematic Mount Home Pos
 
 
 ; The following gcode is the PCB trace laser marking gcode
 
 ; Getting and Activating Tool-1, The Tool.Laser
-G01 X165Y0Z9 ; Go to Tool-1 Home Pos
-G21G90G01X25 ; Enter Female Kinematic Mount Home Pos
-G21G90
+G01 X165Y0Z11 ; Go to Tool-1 Home Pos
+G01 X188 ; Enter Female Kinematic Mount Home Pos
 A1 ; Latch on Kinematic Mount
-G4 P5000 ; Wait for Kinematic Mount to fully attach
-G21G90G01X-98 ; Exit Female Kinematic Mount Home Pos
-G21G90
+G4 P5 ; Wait for Kinematic Mount to fully attach
+G01 X92 ; Exit Female Kinematic Mount Home Pos
 #TODO X0Y0Z0 ;  ;Add tool offset coordinate
 C1 ; Choosing tool 1 in the choose demultiplexer circuits
 
@@ -239,13 +229,11 @@ M5 ; Disable End-Effector Signal
 ; Returning the Deactivating Tool-1
 C0 ; PWM Tool select demultiplexer to select tool zero which is the empty tool slot in multiplexers
 #TODO X0Y0Z0 ;  ;Remove tool offset coordinate
-G01 X165Y0Z9 ; Go to Tool-1 Home Pos
-G21G90G01X98 ; Enter Female Kinematic Mount Home Pos
-G21G90
+G01 X165Y0Z11 ; Go to Tool-1 Home Pos
+G01 X92 ; Enter Female Kinematic Mount Home Pos
 A0 ; Latch OFF Kinematic Mount
-G4 P5000 ; Wait for Kinematic Mount to fully detach
-G21G90G01X-25 ; Exit Female Kinematic Mount Home Pos
-G21G90
+G4 P5 ; Wait for Kinematic Mount to fully detach
+G01 X188 ; Exit Female Kinematic Mount Home Pos
 
 G00X0Y0Z0
 B0 ; Turn Machine OFF

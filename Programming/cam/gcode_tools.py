@@ -300,13 +300,13 @@ def get_tool_func(latch_offset_distance_in: int, latch_offset_distance_out: int,
             # go to tool coordinate but male latch is just outside the female latch
             gcode += move(CoordMode.ABSOLUTE, comment=f'Go to Tool-{wanted_tool.value} Home Pos', coordinate=tool_home_coordinate)
             # Now male latch inside female latch, using incremental gcode
-            gcode += move(CoordMode.INCREMENTAL, comment='Enter Female Kinematic Mount Home Pos', x=latch_offset_distance_in)
+            gcode += move(CoordMode.ABSOLUTE, comment='Enter Female Kinematic Mount Home Pos', x=latch_offset_distance_in)
             # now male latch twisting and locking on
             gcode += f"A1 ; Latch on Kinematic Mount\n"  
             # Wait until male latch is fully locked on
             gcode += f"G4 P{attach_detach_time} ; Wait for Kinematic Mount to fully attach\n"  
             # now pull off the female kinematch mount off its hanger, using incremental gcode
-            gcode += move(CoordMode.INCREMENTAL, comment='Exit Female Kinematic Mount Home Pos', x=latch_offset_distance_out)
+            gcode += move(CoordMode.ABSOLUTE, comment='Exit Female Kinematic Mount Home Pos', x=latch_offset_distance_out)
 
             ### Fixing Current Coordinate according the new tool head
             gcode += set_grbl_coordinate(CoordMode.INCREMENTAL, comment=' ;Add tool offset coordinate', coordinate=tool_offset)
@@ -329,15 +329,13 @@ def get_tool_func(latch_offset_distance_in: int, latch_offset_distance_out: int,
             # go to tool coordinate but male latch is just outside the female latch
             gcode += move(CoordMode.ABSOLUTE, comment=f'Go to Tool-{wanted_tool.value} Home Pos', coordinate=tool_home_coordinate)
             # Put the tool back to it's hanger
-            inverse_latch_offset_distance_out = -1*latch_offset_distance_out
-            gcode += move(CoordMode.INCREMENTAL, comment='Enter Female Kinematic Mount Home Pos', x=inverse_latch_offset_distance_out)
+            gcode += move(CoordMode.ABSOLUTE, comment='Enter Female Kinematic Mount Home Pos', x=latch_offset_distance_out)
             # male latch untwisting from female latch and locking off
             gcode += f"A0 ; Latch OFF Kinematic Mount\n" 
             # Wait until male latch is fully locked off
             gcode += f"G4 P{attach_detach_time} ; Wait for Kinematic Mount to fully detach\n"
             # Now pull off the male kinematic mount away from the female kinematic mount
-            inverse_latch_offset_distance_in = -1*latch_offset_distance_in
-            gcode += move(CoordMode.INCREMENTAL, comment='Exit Female Kinematic Mount Home Pos', x=inverse_latch_offset_distance_in)
+            gcode += move(CoordMode.ABSOLUTE, comment='Exit Female Kinematic Mount Home Pos', x=latch_offset_distance_in)
 
         else:
             raise ValueError("Mode unknown")
@@ -391,7 +389,7 @@ def generate_holes_gcode(gerber_file: str, tool: Callable, motor_up_z_position: 
 
     # Turn the DC motor on and wait two seconds
     gcode += 'M3 ; Turn Motor ON\n'
-    gcode += 'G4 P2000 ; dwell for 2 seconds so motor reaches full RPM\n\n'
+    gcode += 'G4 P2 ; dwell for 2 seconds so motor reaches full RPM\n\n'
 
     # Cutting starts here :)
     coordinates = extract_block_coordinates(gerber_file, 'ComponentPad')
@@ -533,6 +531,29 @@ def generate_ink_laying_gcode(gerber_file: str, tool: Callable, tip_thickness: f
     return gcode
 
 
+def get_laser_coordinates_lists(gerber_file: str) -> list[list[Coordinate]]:
+    '''
+    Get list of list of coordinates, each list is one continious piece of trace.
+
+    Meant to go to first coordinate in a list, turn laser on, go to all coordinates, then laser OFF, then
+    go to first coordinate in the next list, turn laser on , go to all coordiantes, then laser OFF, etc..
+
+    :param gerber_file: The string of the gerber file that has the PCB
+    :return: list of list of coordinates of one continious trace
+    '''
+    coordinates_list = []
+
+    coordinates = extract_block_coordinates(gerber_file, 'Conductor')
+
+
+
+    debug = True
+    if debug:
+        print(coordinates)
+
+    return coordinates_list
+
+
 def generate_pcb_trace_gcode(gerber_file: str, tool: Callable, optimum_focal_distance: int, feedrate: int, laser_power: int, initiated_before: bool=False, terminate_after=True) -> str:
     '''
     :param gerber_file: the file that we want to get the holes coordinate from
@@ -548,8 +569,6 @@ def generate_pcb_trace_gcode(gerber_file: str, tool: Callable, optimum_focal_dis
     '''
     check_GerberFile(gerber_file)
 
-    # Getting Offset Coordinates for laser module to burn in 
-    #TODO:
 
     gcode = ''
 
@@ -559,6 +578,7 @@ def generate_pcb_trace_gcode(gerber_file: str, tool: Callable, optimum_focal_dis
     gcode += '\n; The following gcode is the PCB trace laser marking gcode\n\n'
 
     # Activiate Tool number 1, The Laser Module
+    gcode += f"M5 ; Being extra sure it won't light up before activation"
     gcode += tool(ToolChange.Select, Tool.Laser)
     
     # Setting the laser module movment feedrate
@@ -570,9 +590,17 @@ def generate_pcb_trace_gcode(gerber_file: str, tool: Callable, optimum_focal_dis
     # Setting the correct laser Power
     gcode += f"S{laser_power} ; Setting Laser Power\n\n"
 
-    # PCB trace laser marking Gcode
-    #TODO:
-    gcode += '#TODO\n\n'
+    ### PCB trace laser marking Gcode
+    # Getting Offset Coordinates for laser module to burn in 
+    coordinate_lists = get_laser_coordinates_lists(gerber_file)
+    for coordinate_list in coordinate_lists:
+        gcode += move(CoordMode=ABSOLUTE, coordinate=coordinate_list[0])
+        gcode += "M3"
+        for coordinate in coordinate_list[1:]:
+            gcode += move(CoordMode.ABSOLUTE, coordinate=coordinate)
+        gcode += "M5"
+
+    gcode += '\n'
 
     # Deactivate End Effector Signal
     gcode += f'M5 ; Disable End-Effector Signal\n\n'
