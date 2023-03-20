@@ -4,6 +4,7 @@ This files contains functions to parse gerber files and deal with them
 from __future__ import annotations
 from enum import Enum
 from dataclasses import dataclass
+from typing import Optional
 
 
 class BlockType(Enum):
@@ -11,11 +12,16 @@ class BlockType(Enum):
     ComponentPad = 'ComponentPad'
     Profile = 'Profile'
 
+class ShapeType(Enum):
+    Circle = 'C'
+    Rectangle = 'R'
+    Oval = 'O'
+
 @dataclass
 class Coordinate:
-    x: float
-    y: float
-    z: float = None
+    x: int | float
+    y: int | float
+    z: Optional[int | float] = None
 
     def __getitem__(self, index) -> float:
         '''
@@ -30,36 +36,36 @@ class Coordinate:
         else:
             raise IndexError("Only X, Y, Z values available")
 
+    @classmethod
+    def get_min_max(cls, coordinates_list: list[Coordinate]) -> tuple[Coordinate, Coordinate]:
+        '''
+        finds the Min, Max of X and Y coordinates from input list of coordinates
 
-def get_min_max(coordinates: list[Coordinate]) -> tuple[Coordinate, Coordinate]:
-    '''
-    finds the Min, Max of X and Y coordinates from input list of coordinates
+        :param coordinates: list of coordinates [(x, y), ..]
+        :return: ((x_min, y_min), (x_max, y_max))
+        '''
 
-    :param coordinates: list of coordinates [(x, y), ..]
-    :return: ((x_min, y_min), (x_max, y_max))
-    '''
+        x_min, y_min = coordinates_list[0].x, coordinates_list[0].y
+        x_max, y_max = x_min, y_min
 
-    x_min, y_min = coordinates[0]
-    x_max, y_max = x_min, y_min
+        for coordinate in coordinates_list:
 
-    for coordinate in coordinates:
+            new_x, new_y = coordinate.x, coordinate.y
 
-        new_x, new_y = coordinate.x, coordinate.y
+            if new_x < x_min:
+                x_min = new_x
 
-        if new_x < x_min:
-            x_min = new_x
+            elif new_x > x_max:
+                x_max = new_x
 
-        elif new_x > x_max:
-            x_max = new_x
+            if new_y < y_min:
+                y_min = new_y
 
-        if new_y < y_min:
-            y_min = new_y
+            elif new_y > y_max:
+                y_max = new_y
 
-        elif new_y > y_max:
-            y_max = new_y
-
-    return Coordiante((x_min, x_max)), (Coordiante(y_min, y_max))
-        
+        return Coordinate(x_min, y_min), Coordinate(x_max, y_max)
+            
 
 class Block:
     '''
@@ -69,40 +75,34 @@ class Block:
     each block has a thickness assigned to it
     each block has it's own set of coordinates
     '''
-    def __init__(self, D_num: int, coordinates: list[Coordinate], block_type: BlockType, thickness: float):
-        self.parent_block = parent_block
+    def __init__(self, D_num: int, coordinates: list[Coordinate], block_type: BlockType, shape_type: ShapeType, thickness: float, thickness2: Optional[float]=None):
         self.D_num = D_num
-        self.coordinates = coordiantes
+        self.coordinates = coordinates
+        self.block_type = block_type
+        self.shape_type = shape_type
+        self.thickness = thickness
+        self.thickness2 = thickness2
 
     @classmethod
-    def from_gerber(cls, gerber_file: str, block_type: BlockType) -> list[Block]:
+    def from_gerber(cls, gerber_object: Gerber, block_type: BlockType) -> list[Block]:
         '''
         :param gerber_file: gerber file in string form
         :param block_type: what block type wanted to be extracted from the gerber file
 
         :returns: a list of ALL Block objects of a specific BlockType found in a gerber file 
         '''
-        pass
-
-    def extract_block_coordinates(gerber_file: str, block_name: str, with_multiplier:bool = False) -> list[list[int, int]]:
-        '''
-        :param gerber_file: gerber_file as a single string
-        :param block_name: usually gerber block names are 'ComponentPad' for PCB holes, 
-                            'Profile' for PCB cutout and 'Conductor' for traces
-        :param with_multiplier: gerber file coordinate values are usually intger values of mm values 
-                                multiplied by a huge mutiplier, e.g 10**6
-        :return: list of coordinate list, coordinate list is an x and y values 
-        '''
-
-
+        gerber_file = gerber_object.gerber_file
         g_file_lines = gerber_file.split('\n')
 
-        coordinates = []
-
-        # getting the Dxx of the block we want
-        d_nums = []
+        d_nums: list[ind] = []
+        coordinates: dict[int: list[Coordinate]] = {}  # key is index and value is value
+        shape_types: list[ShapeType] = []
+        thicknesses: list[float] = []
+        thicknesses2: list[float] = []
+        # getting the Dxx of the block we want and shape types
+        to_ShapeType = {shape_type.value: shape_type for shape_type in ShapeType}
         for line_num, line in enumerate(g_file_lines):
-            if block_name in line:
+            if block_type.value in line:
                 wanted_line = g_file_lines[line_num+1]
 
                 # getting the D number of the profile definition, by finding the last char that is a digit
@@ -112,6 +112,20 @@ class Block:
                         end_wanted_index = 4 + char_num
                         break
                 d_nums.append(wanted_line[start_wanted_index:end_wanted_index])
+                coordinates[d_nums[-1]] = []
+                shape_types.append(to_ShapeType[wanted_line[end_wanted_index]])
+
+                if shape_types[-1] == ShapeType.Rectangle or shape_types[-1] == ShapeType.Oval: 
+                    # two thickness values; length and width
+                    thickness, thickness2 = wanted_line[end_wanted_index+2:wanted_line.index('*')].split('X')
+                    thicknesses.append(float(thickness))
+                    thicknesses2.append(float(thickness2))
+
+                elif shape_types[-1] == ShapeType.Circle:
+                    # one thickness value
+                    thicknesses.append(float(wanted_line[end_wanted_index+2:wanted_line.index('*')]))
+                    thicknesses2.append(None)
+
 
         # getting all the gerber coordinates under the wanted Dxx
         take_lines = False
@@ -120,40 +134,50 @@ class Block:
 
             #TODO: ASSUMPTION!! Here I am assuming start of a block always looks like this 'Dxyz', where x is int, y int or nothing and z is any character
             if line.startswith('D'):  # decide on whether to take lines or not
-                take_lines = line[1:-1] in d_nums
+                current_dnum = line[1:-1]
+                take_lines = current_dnum in d_nums
                 continue
 
             if take_lines:
-                coordinate = get_XY(line)
+                coordinate = Gerber.get_XY(line)
                 if coordinate is not None:
-                    coordinates.append(coordinate)
+                    coordinate.x /= gerber_object.x_multiplier
+                    coordinate.y /= gerber_object.y_multiplier
+                    coordinates[current_dnum].append(coordinate)
 
-        # Get multiplier if user wants to remove it
-        if not with_multiplier:
-            x_multiplier, y_multiplier = get_x_y_multiplier(gerber_file)
+        debug = False
+        if debug:
+            print(len(d_nums))
+            print(len(shape_types))
+            print(len(thicknesses))
+            print(len(coordinates))
+            print(len(thicknesses2))
+            print()
 
-            # converting coordinates to mm
-            for ind, coordinate in enumerate(coordinates):
-                coordinates[ind][0] /= x_multiplier
-                coordinates[ind][1] /= y_multiplier
+            print(d_nums)
+            print(shape_types)
+            print(thicknesses)
+            print(coordinates)
+            print(thicknesses2)
+            print()
 
-        return coordinates
+        blocks = []
+        for ind in range(len(d_nums)):
+            blocks.append(Block(d_nums[ind], coordinates[d_nums[ind]], block_type, shape_types[ind], thicknesses[ind], thicknesses2[ind])) 
 
-    def extract_block_drawing_width(gerber_file: str, D_num: int) -> float:
+        return blocks
+
+
+    @property
+    def coordinates_with_multiplier(self) -> list[Coordinate]:
         '''
-        Extracts the width of drawings of a specific block D number from gerber file. 
-            e.g- D16 is a 'ComponentPad' and is thickness 0.8mm
-
-        :param gerber_file: gerber_file to read from
-        :param D_num: D number of the wanted block to get the thickness of
-
-        :return: float value of the thickness of the D number block
+        :returns the coordinates attribute but with multiplier of gerber file
         '''
-        thickness: float
-        return thickness
+        pass #TODO
 
     def __str__(self):
-        return f"D{self.D_num} of thickness {self.thickness} and {len(self.coordinates)} coordinates"
+        thickness2_str =  "" if self.thickness2 is None else f"x{self.thickness2}"
+        return f"D{self.D_num} of shape {self.shape_type}, thickness {self.thickness}{thickness2_str} and {len(self.coordinates)} coordinates"
 
 
 class Gerber:
@@ -163,9 +187,27 @@ class Gerber:
     def __init__(self, file_path: str):
         self.gerber_file = self.read_gerber_file(file_path)
         self.x_multiplier, self.y_multiplier = self.get_x_y_multiplier()
-        self.edge_blocks: List[Block] = 
-        self.trace_blocks: list[Block]
-        self.
+
+        self.blocks: dict[BlockType: list[Block]] = {
+
+                        BlockType.Profile: Block.from_gerber(self, BlockType.Profile), 
+
+                        BlockType.Conductor: Block.from_gerber(self, BlockType.Conductor),
+
+                        BlockType.ComponentPad: Block.from_gerber(self, BlockType.ComponentPad)
+                }
+
+        self.coordinates: dict[BlockType: list[Coordinate]] = {
+
+                     BlockType.Profile:
+                             [coordinate for block in self.blocks[BlockType.Profile] for coordinate in block.coordinates],
+
+                     BlockType.Conductor:
+                             [coordinate for block in self.blocks[BlockType.Conductor] for coordinate in block.coordinates],
+
+                     BlockType.ComponentPad:
+                             [coordinate for block in self.blocks[BlockType.ComponentPad] for coordinate in block.coordinates],
+                }
 
     def read_gerber_file(self, file_path: str) -> str:
         '''
@@ -186,21 +228,22 @@ class Gerber:
         '''
         pass
 
-    def create_gerber_file(gerber_file_name: str) -> None:
+    def create_gerber_file(self, gerber_file_name: str) -> None:
         """
         This function just writes the string input gerber file content to a <file_name>.gbr
         :gerber_file_name: name of the file to be created/overwritten
         """
         gerber_file = self.gerber_file
-        self.check_GerberFile(gerber_file)
+        self.check_GerberFile()
 
         with open(gerber_file_name, 'w') as g_file:
             g_file.write(gerber_file)
 
-    def get_XY(self, line: str) -> list[int, int]:
+    @classmethod
+    def get_XY(cls, line: str) -> Coordinate:
         '''
         :param line: line string from gerber file
-        :return: a 2 value list of x and y 
+        :return: a Coordinate object
         '''
 
         if not line.startswith('X'):
@@ -216,23 +259,26 @@ class Gerber:
         except ValueError:  # it's a float not an integer
             y = float(line[line.index('Y')+1 : line.index('D')])
 
-        return [x, y]
+        return Coordinate(x, y)
 
-    def generate_line(self, line: str, coordinates: list[int, int]) -> str:
+    def generate_line(self, line: str, coordinate: Coordinate) -> str:
         '''
-        :param line: the old line
+        :param line: the old line, #NOTE: it's wanted to get the D value at the end of each gerber coordinate line
         :param coordinates: list of x value and y value
         :return: line string with update coordinates values
         '''
         # Make sure it's indeed a coorindate gerber line
         if not line.startswith('X'):
             raise ValueError("the input line doesn't start with X. This is not a coordinate line.")
+
+        if type(coordinate.x)!= int or type(coordinate.y) != int:
+            raise ValueError("Coordinates to be written to gerber file MUST be integers NOT floats")
         
         # Get Index of x coordinate value and y coordinate value
         D_value = line[line.index('D'):]
-        
+
         # Creating the new line 
-        new_line = f"X{str(coordinates[0])}Y{str(coordinates[1])}{D_value}"
+        new_line = f"X{str(coordinate.x)}Y{str(coordinate.y)}{D_value}"
 
         return new_line
 
@@ -264,6 +310,23 @@ class Gerber:
 
         return x_multiplier, y_multiplier
 
+    def apply_multiplier(self, coordinates: list[Coordinate]) -> list[Coordinate]:
+        '''
+        applies to gerber multiplier to a list of coordinates
+            e.g: 1.36 -> 1360000000
+
+        :param coordinates: list of coordinates to apply multiplier to
+        :return: list of coordinates with applied multiplier
+        '''
+        new_coordinates = []
+        for coordinate in coordinates:
+            coordinate.x *= self.x_multiplier
+            coordinate.y *= self.y_multiplier
+            new_coordinates.append(coordinate)
+
+        return new_coordinates
+
+
     def recenter_gerber_file(self, user_x_offset: int, user_y_offset: int) -> None:
         '''
         self.gerber_file is recentered according to input offsets
@@ -271,51 +334,46 @@ class Gerber:
         :param user_x_offset: wanted x offset from origin. if 0 then pcb will start at 0
         :param user_y_offset: wanted y offset from origin. if 0 then pcb will start at 0
         '''
-        gerber_file = self.gerber_file
 
         # Get the all coordinates that relate to the Edge of the PCB
-        coordinates = extract_block_coordinates(gerber_file, 'Profile', with_multiplier=True)
+        coordinates = self.coordinates[BlockType.Profile]
+        coordinates = self.apply_multiplier(coordinates)
 
         # Get X and Y, min and max
-        x_min_max, y_min_max = get_min_max(coordinates)
-        x_min = x_min_max[0]
-        y_min = y_min_max[0]
-
-        # Get X and Y multiplier
-        x_multiplier, y_multiplier = get_x_y_multiplier(gerber_file)    
+        min_coordinate, max_coordinate = Coordinate.get_min_max(coordinates)
+        x_min = min_coordinate.x
+        y_min = min_coordinate.y
 
         # Calculating the offset to be added to each coordinate in the gerber file
-        x_offset = -x_min + user_x_offset * x_multiplier 
-        y_offset = -y_min + user_y_offset * y_multiplier
+        x_offset = int(-x_min + user_x_offset * self.x_multiplier)
+        y_offset = int(-y_min + user_y_offset * self.y_multiplier)
 
         # Generating the new gerber file with the offset added to every line of coordinates
-        g_file_lines = gerber_file.split('\n')
+        g_file_lines = self.gerber_file.split('\n')
         for line_num, line in enumerate(g_file_lines):
 
-            coordinates = get_XY(line)
+            coordinates = Gerber.get_XY(line)
             if coordinates:
-                coordinates[0] += x_offset
-                coordinates[1] += y_offset
+                coordinates.x += x_offset
+                coordinates.y += y_offset
 
-                g_file_lines[line_num] = generate_line(line, coordinates)
+                g_file_lines[line_num] = self.generate_line(line, coordinates)
 
         new_file = "\n".join(g_file_lines)
 
         self.gerber_file = new_file
 
-    def __str__(self):
-        return self.gerber_file
 
 if __name__ == '__main__':
 
     gerber_file_path = 'gerber_files/default.gbr'
     # gerber_file_path = 'gerber_files/test.gbr'
 
-    new_file_name = 'test2.gbr'
+    new_file_name = 'gerber_files/test2.gbr'
 
     # Offset PCB from (0, 0)
-    user_x_offset = 3
-    user_y_offset = 6
+    user_x_offset = 3.5
+    user_y_offset = 4.5
 
     # Initializing GerberFile Object
     gerber_object = Gerber(gerber_file_path)
@@ -323,6 +381,7 @@ if __name__ == '__main__':
     # Recenter Gerber File with wanted Offset
     gerber_object.recenter_gerber_file(user_x_offset, user_y_offset)
     
+    # Writing a new gerber file for current gerber file content
     gerber_object.create_gerber_file(new_file_name)
 
 
