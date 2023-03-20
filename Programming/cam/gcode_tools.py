@@ -71,8 +71,8 @@ def get_coordinate_from_kwargs(kwargs) -> str:
                 raise ValueError("Can't have both coordinate argument and x, y or z arguments")
             coordinate_mode = True
 
-            if type(value) != list:
-                raise ValueError("Coordinate value must a list of two integer/float (x and y) or three integers/float (x, y, z)")
+            if type(value) != Coordinate:
+                raise ValueError("Coordinate value must be of type Coordinate")
 
             if len(value) == 2:
                 if not(type(value[0]) == int or type(value[1]) == int or type(value[0]) == float or type(value[1]) == float):
@@ -210,7 +210,9 @@ def general_machine_init() -> str:
     gcode += f"$H ; Homing :)\n"
 
     # Make sure grbl understands it's at zero now
-    gcode += set_grbl_coordinate(CoordMode.ABSOLUTE,comment="Force Reset current coordinates after homing\n", coordinate=[0, 0, 0])
+    gcode += set_grbl_coordinate(CoordMode.ABSOLUTE,
+            comment="Force Reset current coordinates after homing\n", 
+            coordinate=Coordinate(0, 0, 0))
     
     return gcode
 
@@ -322,7 +324,7 @@ def get_tool_func(latch_offset_distance_in: int, latch_offset_distance_out: int,
             gcode += 'C0 ; PWM Tool select demultiplexer to select tool zero which is the empty tool slot in multiplexers\n'
 
             ### Overide current coordinate to go to tool home pos relative to origin by inversing the tool_offset
-            tool_offset = [i*-1 for i in tool_offset]
+            tool_offset = Coordinate(tool_offset.x*-1, tool_offset.y*-1, tool_offset.z*-1)
             gcode += set_grbl_coordinate(CoordMode.INCREMENTAL, comment=' ;Remove tool offset coordinate', coordinate=tool_offset)
 
             ### Deactivate it by selecting the empty tool in the multiplexer
@@ -346,11 +348,11 @@ def get_tool_func(latch_offset_distance_in: int, latch_offset_distance_out: int,
     return tool
 
 
-def generate_holes_gcode(gerber_file: str, tool: Callable, motor_up_z_position: int, motor_down_z_position: int, feedrate_XY: int, feedrate_Z: int, spindle_speed: int, initiated_before:bool=False, terminate_after: bool=True) -> str:
+def generate_holes_gcode(gerber: Gerber, tool: Callable, motor_up_z_position: int, motor_down_z_position: int, feedrate_XY: int, feedrate_Z: int, spindle_speed: int, initiated_before:bool=False, terminate_after: bool=True) -> str:
     '''
     Takes in String gerber file content, identifies the PCB holes and generates the Gcode to drill the holes from begging to end!
 
-    :param gerber_file: the file that we want to get the holes coordinate from
+    :param gerber: Gerber object
     :param tool: The tool function defined inside the get_tool_func closure function, it generates gcode to select wanted tool
     :param motor_up_z_position: position the drill bit is not touching the PCB is off a reasonable offset above the PCB
     :param motor_down_z_position: position the drill bit has completely drilled through the PCB 
@@ -363,8 +365,6 @@ def generate_holes_gcode(gerber_file: str, tool: Callable, motor_up_z_position: 
 
     :return: This function creates the gcode content as string according to the input coordinates
     '''
-    check_GerberFile(gerber_file)
-
     gcode = ''
 
     if not initiated_before:
@@ -392,7 +392,7 @@ def generate_holes_gcode(gerber_file: str, tool: Callable, motor_up_z_position: 
     gcode += 'G4 P2 ; dwell for 2 seconds so motor reaches full RPM\n\n'
 
     # Cutting starts here :)
-    coordinates = extract_block_coordinates(gerber_file, 'ComponentPad')
+    coordinates = gerber.coordinates[BlockType.ComponentPad]
     for coordinate in coordinates:
         gcode += move(CoordMode.ABSOLUTE, coordinate=coordinate, feedrate=feedrate_XY)
         gcode += move(CoordMode.ABSOLUTE, z=motor_down_z_position, feedrate=feedrate_Z)
@@ -413,9 +413,10 @@ def generate_holes_gcode(gerber_file: str, tool: Callable, motor_up_z_position: 
     return gcode
 
 
-def generate_ink_laying_gcode(gerber_file: str, tool: Callable, tip_thickness: float, pen_down_position: int, feedrate: int, initiated_before: bool=False, terminate_after: bool=True) -> str:
+def generate_ink_laying_gcode(gerber: Gerber, tool: Callable, tip_thickness: float, pen_down_position: int, 
+        feedrate: int, initiated_before: bool=False, terminate_after: bool=True) -> str:
     '''
-    :param gerber_file: the file that we want to get the holes coordinate from
+    :param gerber: Gerber Object
     :param tool: The tool function defined inside the get_tool_func closure function, it generates gcode to select wanted tool
     :param tip_thickness: number to convey thickness of pen tip in mm
     :param pen_down_position: position that pen touches PCB in Z axis
@@ -426,16 +427,14 @@ def generate_ink_laying_gcode(gerber_file: str, tool: Callable, tip_thickness: f
 
     :return: This function creates the gcode content as string according to the input coordinates
     '''
-    check_GerberFile(gerber_file)
-
     ### Working out the variables ###
     # Get min/max of PCB outline
-    edge_coordinates = extract_block_coordinates(gerber_file, 'Profile')
-    x_min_max, y_min_max = get_min_max(edge_coordinates)
+    edge_coordinates = gerber.coordinates[BlockType.Profile]
+    min_coord, max_coord = Coordinate.get_min_max(edge_coordinates)
 
     # Finding num_ys and overlapping_distance
     #NOTE: Detailed description of what i am doing here is in the iPad notes
-    y_length = round(y_min_max[1] - y_min_max[0], 2)
+    y_length = round(max_coord.y - min_coord.y, 2)
 
     OD_min_value = 1
     OD_max_value = tip_thickness - 1
@@ -455,9 +454,9 @@ def generate_ink_laying_gcode(gerber_file: str, tool: Callable, tip_thickness: f
     overlapping_distance = list(results.values())[0]  # Choosing the value with least amount of num_ys
     
     # Finding the rest of the values
-    x_start_pos = x_min_max[0] + 0.5*tip_thickness - overlapping_distance
-    x_end_pos = x_min_max[1] - 0.5*tip_thickness + overlapping_distance
-    y_start_pos = y_min_max[0] + 0.5*tip_thickness - overlapping_distance
+    x_start_pos = min_coord.x + 0.5*tip_thickness - overlapping_distance
+    x_end_pos = max_coord.x - 0.5*tip_thickness + overlapping_distance
+    y_start_pos = min_coord.y + 0.5*tip_thickness - overlapping_distance
 
     y_increment = tip_thickness - overlapping_distance
 
@@ -531,20 +530,19 @@ def generate_ink_laying_gcode(gerber_file: str, tool: Callable, tip_thickness: f
     return gcode
 
 
-def get_laser_coordinates_lists(gerber_file: str) -> list[list[Coordinate]]:
+def get_laser_coordinates_lists(gerber: Gerber) -> list[list[Coordinate]]:
     '''
     Get list of list of coordinates, each list is one continious piece of trace.
 
     Meant to go to first coordinate in a list, turn laser on, go to all coordinates, then laser OFF, then
     go to first coordinate in the next list, turn laser on , go to all coordiantes, then laser OFF, etc..
 
-    :param gerber_file: The string of the gerber file that has the PCB
+    :param gerber: Gerber Object
     :return: list of list of coordinates of one continious trace
     '''
     coordinates_list = []
 
-    coordinates = extract_block_coordinates(gerber_file, 'Conductor')
-
+    coordinates = gerber.coordinates[BlockType.Conductor]
 
 
     debug = True
@@ -567,9 +565,6 @@ def generate_pcb_trace_gcode(gerber_file: str, tool: Callable, optimum_focal_dis
 
     :return: This function creates the gcode content as string according to the input coordinates
     '''
-    check_GerberFile(gerber_file)
-
-
     gcode = ''
 
     if not initiated_before:
@@ -610,7 +605,7 @@ def generate_pcb_trace_gcode(gerber_file: str, tool: Callable, optimum_focal_dis
 
     # Turn Machine Off
     if terminate_after:
-        gcode += move(CoordMode.ABSOLUTE, use_00=True, coordinate=[0, 0, 0])
+        gcode += move(CoordMode.ABSOLUTE, use_00=True, coordinate=Coordinate(0, 0, 0))
         gcode += 'B0 ; Turn Machine OFF\n'
 
     return gcode

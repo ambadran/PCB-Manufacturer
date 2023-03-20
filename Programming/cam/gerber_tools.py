@@ -36,6 +36,15 @@ class Coordinate:
         else:
             raise IndexError("Only X, Y, Z values available")
 
+    def __len__(self) -> int:
+        '''
+        return whether it's x,y or x,y,z
+        '''
+        if self.z is None:
+            return 2
+        else:
+            return 3
+
     @classmethod
     def get_min_max(cls, coordinates_list: list[Coordinate]) -> tuple[Coordinate, Coordinate]:
         '''
@@ -75,13 +84,18 @@ class Block:
     each block has a thickness assigned to it
     each block has it's own set of coordinates
     '''
-    def __init__(self, D_num: int, coordinates: list[Coordinate], block_type: BlockType, shape_type: ShapeType, thickness: float, thickness2: Optional[float]=None):
+    def __init__(self, D_num: int, coordinates: list[Coordinate], block_type: BlockType, shape_type: ShapeType, 
+                    thickness: float, thickness2: Optional[float]=None, 
+                    coordinates_with_multiplier: Optional[list[Coordinate]]=None):
         self.D_num = D_num
         self.coordinates = coordinates
         self.block_type = block_type
         self.shape_type = shape_type
         self.thickness = thickness
         self.thickness2 = thickness2
+        self.coordinates_with_multiplier = coordinates_with_multiplier
+
+
 
     @classmethod
     def from_gerber(cls, gerber_object: Gerber, block_type: BlockType) -> list[Block]:
@@ -96,6 +110,7 @@ class Block:
 
         d_nums: list[ind] = []
         coordinates: dict[int: list[Coordinate]] = {}  # key is index and value is value
+        coordinates_with_multiplier: dict[int: list[Coordinate]] = {}  # key is index and value is value
         shape_types: list[ShapeType] = []
         thicknesses: list[float] = []
         thicknesses2: list[float] = []
@@ -113,6 +128,7 @@ class Block:
                         break
                 d_nums.append(wanted_line[start_wanted_index:end_wanted_index])
                 coordinates[d_nums[-1]] = []
+                coordinates_with_multiplier[d_nums[-1]] = []
                 shape_types.append(to_ShapeType[wanted_line[end_wanted_index]])
 
                 if shape_types[-1] == ShapeType.Rectangle or shape_types[-1] == ShapeType.Oval: 
@@ -141,6 +157,7 @@ class Block:
             if take_lines:
                 coordinate = Gerber.get_XY(line)
                 if coordinate is not None:
+                    coordinates_with_multiplier[current_dnum].append(coordinate)
                     coordinate.x /= gerber_object.x_multiplier
                     coordinate.y /= gerber_object.y_multiplier
                     coordinates[current_dnum].append(coordinate)
@@ -151,6 +168,7 @@ class Block:
             print(len(shape_types))
             print(len(thicknesses))
             print(len(coordinates))
+            print(len(coordinates_with_multiplier))
             print(len(thicknesses2))
             print()
 
@@ -158,22 +176,17 @@ class Block:
             print(shape_types)
             print(thicknesses)
             print(coordinates)
+            print(coordinates_with_multiplier)
             print(thicknesses2)
             print()
 
         blocks = []
         for ind in range(len(d_nums)):
-            blocks.append(Block(d_nums[ind], coordinates[d_nums[ind]], block_type, shape_types[ind], thicknesses[ind], thicknesses2[ind])) 
+            blocks.append(Block(d_nums[ind], coordinates[d_nums[ind]], block_type, shape_types[ind], 
+                            thicknesses[ind], thicknesses2[ind], 
+                            coordinates_with_multiplier[d_nums[ind]]))
 
         return blocks
-
-
-    @property
-    def coordinates_with_multiplier(self) -> list[Coordinate]:
-        '''
-        :returns the coordinates attribute but with multiplier of gerber file
-        '''
-        pass #TODO
 
     def __str__(self):
         thickness2_str =  "" if self.thickness2 is None else f"x{self.thickness2}"
@@ -199,15 +212,29 @@ class Gerber:
 
         self.coordinates: dict[BlockType: list[Coordinate]] = {
 
-                     BlockType.Profile:
-                             [coordinate for block in self.blocks[BlockType.Profile] for coordinate in block.coordinates],
+            BlockType.Profile:
+                [coordinate for block in self.blocks[BlockType.Profile] for coordinate in block.coordinates],
 
-                     BlockType.Conductor:
-                             [coordinate for block in self.blocks[BlockType.Conductor] for coordinate in block.coordinates],
+            BlockType.Conductor:
+                [coordinate for block in self.blocks[BlockType.Conductor] for coordinate in block.coordinates],
 
-                     BlockType.ComponentPad:
-                             [coordinate for block in self.blocks[BlockType.ComponentPad] for coordinate in block.coordinates],
-                }
+            BlockType.ComponentPad:
+                [coordinate for block in self.blocks[BlockType.ComponentPad] for coordinate in block.coordinates],
+        }
+
+        self.coordinates_with_multiplier: dict[BlockType: list[Coordinate]] = {
+
+            BlockType.Profile:
+                [coordinate for block in self.blocks[BlockType.Profile] for coordinate in block.coordinates_with_multiplier],
+
+            BlockType.Conductor:
+                [coordinate for block in self.blocks[BlockType.Conductor] for coordinate in block.coordinates_with_multiplier],
+
+            BlockType.ComponentPad:
+                [coordinate for block in self.blocks[BlockType.ComponentPad] for coordinate in block.coordinates_with_multiplier],
+        }
+
+
 
     def read_gerber_file(self, file_path: str) -> str:
         '''
@@ -310,21 +337,15 @@ class Gerber:
 
         return x_multiplier, y_multiplier
 
-    def apply_multiplier(self, coordinates: list[Coordinate]) -> list[Coordinate]:
+    def apply_multiplier(self, coordinate: Coordinate) -> Coordinate:
         '''
         applies to gerber multiplier to a list of coordinates
             e.g: 1.36 -> 1360000000
 
-        :param coordinates: list of coordinates to apply multiplier to
-        :return: list of coordinates with applied multiplier
+        :param coordinate: coordinates to apply multiplier to
+        :return: coordinate with applied multiplier
         '''
-        new_coordinates = []
-        for coordinate in coordinates:
-            coordinate.x *= self.x_multiplier
-            coordinate.y *= self.y_multiplier
-            new_coordinates.append(coordinate)
-
-        return new_coordinates
+        return Coordinate(int(coordinate.x * self.x_multiplier), int(coordinate.y * self.y_multiplier))
 
 
     def recenter_gerber_file(self, user_x_offset: int, user_y_offset: int) -> None:
@@ -336,8 +357,7 @@ class Gerber:
         '''
 
         # Get the all coordinates that relate to the Edge of the PCB
-        coordinates = self.coordinates[BlockType.Profile]
-        coordinates = self.apply_multiplier(coordinates)
+        coordinates = self.coordinates_with_multiplier[BlockType.Profile]
 
         # Get X and Y, min and max
         min_coordinate, max_coordinate = Coordinate.get_min_max(coordinates)
