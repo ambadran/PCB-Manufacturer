@@ -155,12 +155,12 @@ class Block:
                 continue
 
             if take_lines:
-                coordinate = Gerber.get_XY(line)
-                if coordinate is not None:
-                    coordinates_with_multiplier[current_dnum].append(coordinate)
-                    coordinate.x /= gerber_object.x_multiplier
-                    coordinate.y /= gerber_object.y_multiplier
-                    coordinates[current_dnum].append(coordinate)
+                coordinate_with_multiplier = Gerber.get_XY(line)
+                if coordinate_with_multiplier is not None:
+                    coordinates_with_multiplier[current_dnum].append(coordinate_with_multiplier)
+
+                    coordinates[current_dnum].append(Coordinate(coordinate_with_multiplier.x / gerber_object.x_multiplier,
+                            coordinate_with_multiplier.y / gerber_object.y_multiplier))
 
         debug = False
         if debug:
@@ -233,8 +233,6 @@ class Gerber:
             BlockType.ComponentPad:
                 [coordinate for block in self.blocks[BlockType.ComponentPad] for coordinate in block.coordinates_with_multiplier],
         }
-
-
 
     def read_gerber_file(self, file_path: str) -> str:
         '''
@@ -346,7 +344,6 @@ class Gerber:
         :return: coordinate with applied multiplier
         '''
         return Coordinate(int(coordinate.x * self.x_multiplier), int(coordinate.y * self.y_multiplier))
-
 
     def recenter_gerber_file(self, user_x_offset: int, user_y_offset: int) -> None:
         '''
