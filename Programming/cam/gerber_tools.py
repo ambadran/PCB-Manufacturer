@@ -5,6 +5,8 @@ from __future__ import annotations
 from enum import Enum
 from dataclasses import dataclass
 from typing import Optional
+from data_structures import *
+from copy import deepcopy
 
 
 class BlockType(Enum):
@@ -17,64 +19,6 @@ class ShapeType(Enum):
     Rectangle = 'R'
     Oval = 'O'
 
-@dataclass
-class Coordinate:
-    x: int | float
-    y: int | float
-    z: Optional[int | float] = None
-
-    def __getitem__(self, index) -> float:
-        '''
-        Enable slicing of coordinate objects
-        '''
-        if index == 0:
-            return self.x
-        elif index == 1:
-            return self.y
-        elif index == 2:
-            return self.z
-        else:
-            raise IndexError("Only X, Y, Z values available")
-
-    def __len__(self) -> int:
-        '''
-        return whether it's x,y or x,y,z
-        '''
-        if self.z is None:
-            return 2
-        else:
-            return 3
-
-    @classmethod
-    def get_min_max(cls, coordinates_list: list[Coordinate]) -> tuple[Coordinate, Coordinate]:
-        '''
-        finds the Min, Max of X and Y coordinates from input list of coordinates
-
-        :param coordinates: list of coordinates [(x, y), ..]
-        :return: ((x_min, y_min), (x_max, y_max))
-        '''
-
-        x_min, y_min = coordinates_list[0].x, coordinates_list[0].y
-        x_max, y_max = x_min, y_min
-
-        for coordinate in coordinates_list:
-
-            new_x, new_y = coordinate.x, coordinate.y
-
-            if new_x < x_min:
-                x_min = new_x
-
-            elif new_x > x_max:
-                x_max = new_x
-
-            if new_y < y_min:
-                y_min = new_y
-
-            elif new_y > y_max:
-                y_max = new_y
-
-        return Coordinate(x_min, y_min), Coordinate(x_max, y_max)
-            
 
 class Block:
     '''
@@ -94,8 +38,6 @@ class Block:
         self.thickness = thickness
         self.thickness2 = thickness2
         self.coordinates_with_multiplier = coordinates_with_multiplier
-
-
 
     @classmethod
     def from_gerber(cls, gerber_object: Gerber, block_type: BlockType) -> list[Block]:
@@ -160,7 +102,7 @@ class Block:
                     coordinates_with_multiplier[current_dnum].append(coordinate_with_multiplier)
 
                     coordinates[current_dnum].append(Coordinate(coordinate_with_multiplier.x / gerber_object.x_multiplier,
-                            coordinate_with_multiplier.y / gerber_object.y_multiplier))
+                            coordinate_with_multiplier.y / gerber_object.y_multiplier, None, coordinate_with_multiplier.d))
 
         debug = False
         if debug:
@@ -234,6 +176,8 @@ class Gerber:
                 [coordinate for block in self.blocks[BlockType.ComponentPad] for coordinate in block.coordinates_with_multiplier],
         }
 
+        self.traces: list[Graph] = self.trace_coordinates_to_graph()
+
     def read_gerber_file(self, file_path: str) -> str:
         '''
         :param file_path: path to a gerber file
@@ -284,7 +228,9 @@ class Gerber:
         except ValueError:  # it's a float not an integer
             y = float(line[line.index('Y')+1 : line.index('D')])
 
-        return Coordinate(x, y)
+        d = int(line[line.index('D')+1 : line.index('*')])
+
+        return Coordinate(x, y, None, d)
 
     def generate_line(self, line: str, coordinate: Coordinate) -> str:
         '''
@@ -380,6 +326,61 @@ class Gerber:
 
         self.gerber_file = new_file
 
+    def trace_coordinates_to_graph(self) -> list[Graph]:
+        '''
+        creates a graph data structure of the available pcb traces
+
+        :return: list of graph data structure each is a different continious trace
+        '''
+        # Getting the necessary variables to form the graph
+        vertices: list[Coordinate] = []
+        edge_by_2_vertices: list[list[Coordinate, Coordinate]] = []
+
+        prev_coord: Coordinate
+        prev_dnum: int
+
+        for block in self.blocks[BlockType.Conductor]:
+            for coord in block.coordinates:
+
+                if coord not in vertices:
+                    vertices.append(deepcopy(coord))
+
+                if coord.d == 1:
+                    edge_by_2_vertices.append((deepcopy(prev_coord), deepcopy(coord), block.thickness))
+
+                prev_coord = coord
+                prev_dnum = coord.d
+
+            # Creating the graph
+            traces = Graph(vertices)
+            for edge in edge_by_2_vertices:
+                traces.add_edge_by_vertices(edge[0], edge[1], edge[2])
+
+        # making traces one_sided
+        return traces
+        #TODO: the ultimate goal is have list of trace variables of datatype graph, each has is a continious trace
+        # i edited the __str__ func of Graph to display the funcs I defined as single_dir_...
+        #       I have a graph that has all the vertices(it's a Coordinate) pointing to one or more vertices 
+        #       without pointing back (as the original functions does)
+        # I have traces ready in this 'traces' variables
+        # The ONLY thing left is the order. now they are not ordered, meaning- it's like
+                                                    # coord2 -> coord1
+                                                    # coord4 -> coord3
+                                                    # coord1 -> NOTHING
+                                                    # coord3 -> coord2
+                                            # but i have to order it
+                                                    # coord4 -> coord3
+                                                    # coord3 -> coord2
+                                                    # coord2 -> coord1
+                                                    # coord1 -> NOTHING
+
+        # after that i can easily extract each trace by finding the coord that points to nothing:
+                # I know that this is the start of a new trace and the end of a previous trace 
+
+        # next up is to return the proper coordinate list for each trace with two important features:
+            # 1- offset the coordinates two times with the wanted thickness
+            # 2- find holes and incorporate them in the trace somehow ;)
+
 
 if __name__ == '__main__':
 
@@ -400,5 +401,7 @@ if __name__ == '__main__':
     
     # Writing a new gerber file for current gerber file content
     gerber_object.create_gerber_file(new_file_name)
+
+    print(gerber_object.traces)
 
 

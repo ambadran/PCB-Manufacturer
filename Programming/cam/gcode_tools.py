@@ -540,15 +540,13 @@ def get_laser_coordinates_lists(gerber: Gerber) -> list[list[Coordinate]]:
     :param gerber: Gerber Object
     :return: list of list of coordinates of one continious trace
     '''
-    coordinates_list = []
-
-    coordinates = gerber.coordinates[BlockType.Conductor]
-
+    blocks = gerber.blocks[BlockType.Conductor]
 
     debug = True
     if debug:
-        print(coordinates)
+        print(blocks[0].coordinates)
 
+    coordinates_list = []
     return coordinates_list
 
 
@@ -625,7 +623,9 @@ if __name__ == '__main__':
 
     #NOTE!!!! The gerber file is assumed to be mirrorred!!!!!
     gerber_file_path = 'gerber_files/default.gbr'
+    # gerber_file_path = 'gerber_files/test.gbr'
     gcode_file_path = 'gcode_files/default.gcode'
+    new_file_name = 'test2.gbr'
 
     ##### Tweaking Arguments #####
 
@@ -634,12 +634,14 @@ if __name__ == '__main__':
     user_y_offset = 2
 
     ### Tool Home positions and latch offset (as absolute values)
-    latch_offset_distance_in = 5  #TODO: find this value ASAP, NOTE that this value is INCREMANTAL
-    latch_offset_distance_out = -10  #TODO: find this value ASAP, NOTE that this value is INCREMENTAL
-    tool_home_coordinates = {0: [0, 0, 0], 1: [0, 0, 0], 2: [0, 0, 0], 3: [0, 0, 0]}  #TODO: find this value ASAP, NOTE this value is ABSOLUTE
-    # NOTE this value is INCREMENTAL, it's absolute relative to origin when machine is homed.
-    tool_offsets = {0: [0, 0, 0], 1: [0, 0, 0], 2: [0, 0, 0], 3: [0, 0, 0]}  #TODO: find this value ASAP, 
-    tool = get_tool_func(latch_offset_distance_in, latch_offset_distance_out, tool_home_coordinates, tool_offsets)
+    X_latch_offset_distance_in = 188  # ABSOLUTE value
+    X_latch_offset_distance_out = 92  # ABSOLUTE value
+    attach_detach_time = 5 # the P attribute in Gcode is in seconds
+    tool_home_coordinates = {1: Coordinate(165, 0, 11), 2: Coordinate(165, 91, 12), 3: Coordinate(165, 185.5, 12)}  # ABSOLUTE values
+
+    tool_offsets = {0: Coordinate(0, 0, 0), 1: Coordinate(0, 0, 0), 2: Coordinate(0, 0, 0), 3: Coordinate(0, 0, 0)}  #TODO: find this value ASAP, 
+
+    tool = get_tool_func(X_latch_offset_distance_in, X_latch_offset_distance_out, tool_home_coordinates, tool_offsets, attach_detach_time)
 
     ### spindle tweaking values
     # Z positions
@@ -657,7 +659,7 @@ if __name__ == '__main__':
     # Feedrates
     ink_laying_feedrate = 100
     # Tip Thickness in mm
-    tip_thickness = 3
+    tip_thickness = 4
 
     ### Laser Module Tweaking Values
     # Z positions
@@ -668,16 +670,26 @@ if __name__ == '__main__':
     laser_power = 150 
 
 
+    ### Main Code ###
+    # Read the gerber file
+    gerber = Gerber(gerber_file_path)
 
-    gerber_file = read_gerber_file(gerber_file_path)
+    # Recenter Gerber File with wanted Offset
+    gerber.recenter_gerber_file(user_x_offset, user_y_offset)
 
-    recentered_gerber_file = recenter_gerber_file(gerber_file, user_x_offset, user_y_offset)
+    gcode = ''
 
-    gcode = generate_holes_gcode(recentered_gerber_file, tool, router_Z_up_position, router_Z_down_position, router_feedrate_XY, router_feedrate_Z, spindle_speed)
+#     # Creating the holes_gcode
+#     gcode += generate_holes_gcode(gerber, tool, router_Z_up_position, router_Z_down_position, router_feedrate_XY, router_feedrate_Z, spindle_speed, terminate_after = False)
 
-    # gcode = generate_ink_laying_gcode(recentered_gerber_file, tool, tip_thickness, pen_down_position, ink_laying_feedrate, terminate_after = False)
+#     # Creating the PCB ink laying Gcode
+#     gcode += generate_ink_laying_gcode(gerber, tool, tip_thickness, pen_down_position, ink_laying_feedrate, initiated_before=True, terminate_after = False)
 
-    print(gcode)
+    # Creating the PCB trace laser Toner Transfer Gcode
+    gcode += generate_pcb_trace_gcode(gerber, tool, optimum_laser_Z_position, pcb_trace_feedrate, laser_power, initiated_before=True)
+
+    # exporting the created Gcode
+    export_gcode(gcode, gcode_file_path)
 
 
 
