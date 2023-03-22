@@ -18,6 +18,10 @@ class Coordinate:
     def __hash__(self):
         return hash(str(self))
 
+    def __str__(self):
+        z = "" if self.z is None else f"Z{self.z}"
+        return f"(X{self.x}Y{self.y}{z})"
+
     def __getitem__(self, index) -> float:
         '''
         Enable slicing of coordinate objects
@@ -70,108 +74,195 @@ class Coordinate:
 
         return Coordinate(x_min, y_min), Coordinate(x_max, y_max)
  
-
 @dataclass
 class Edge:
-    u: int # the "from" vertex
-    v: int # the "to" vertex
+    start: Coordinate
+    end: Coordinate
     thickness: float
 
     def reversed(self) -> Edge:
-        return Edge(self.v, self.u, self.thickness)
+        '''
+        return the reversed Edge
+        '''
+        return Edge(self.end, self.start, self.thickness)
 
     def __str__(self) -> str:
-        return f"{self.u} -> {self.v}, with thickness {self.thickness}"
-
+        '''
+        string representation of the edge
+        '''
+        return f"{self.start} -> {self.end} : thickness{self.thickness}"
 
 class Graph:
-    def __init__(self, vertices: list[Coordinate] = []) -> None:
-        self._vertices: list[Coordinate] = vertices
-        self._edges: list[list[Edge]] = [[] for _ in vertices]
-        self._single_direction_edge: list[list[Edge]] = [[] for _ in vertices]
+    '''
+    Graph Data structure
+    
+    It is made out of vertices (Coordinates) 
+    and Edges which represents connections between vertices
+
+    #NOTE: each connection is made out of TWO edges assigned to each vertix
+        one edge assigned to vertix1 which is 1->2
+        second edge assigned to vertix2 which is 2->1
+
+    The Underlying Datastructures:
+    1- Dictionary of key vertices(Coordinate) and value list of Edges GOING OUT from the vertex key
+
+    '''
+    def __init__(self, vertices: list[Coordinate] = []):
+
+        # Dictionary to relate each vertices to its edges
+        self.vertex_edge: dict[Coordinate: list[Edge]] = {vertex: [] for vertex in vertices}
+        # Dictionary to relate each vertices to the vertices it is attached to in the other end
+        self.vertex_vertices: dict[Coordinate: list[Coordinate]] = {vertex: [] for vertex in vertices}
 
     @property
     def vertex_count(self) -> int:
-        return len(self._vertices) # Number of vertices
+        '''
+        return number of vertices in this graph
+        '''
+        return len(self.vertex_edge)
 
     @property
     def edge_count(self) -> int:
-        return sum(map(len, self._edges)) # Number of edges
+        '''
+        return number of edges in this graph
+        '''
+        return sum(len(edges) for edges in self.vertex_edge.values())
 
-    # Add a vertex to the graph and return its index
-    def add_vertex(self, vertex: Coordinate) -> int:
-        self._vertices.append(vertex)
-        self._edges.append([]) # add empty list for containing edges
-        
-        self._single_direction_edge.append([])
+    def add_vertex(self, vertex: Coordinate) -> None:
+        '''
+        adds the new vertex to the underlying data structures of the graph
 
-        return self.vertex_count - 1 # return index of added vertex
+        :param vertex: the new vertex to be added to our graph
+        '''
+        self.vertex_edge[vertex] = []
+        self.vertex_vertices[vertex] = []
 
-    # This is an undirected graph,
-    # so we always add edges in both directions
     def add_edge(self, edge: Edge) -> None:
-        self._edges[edge.u].append(edge)
-        self._edges[edge.v].append(edge.reversed())
+        '''
+        adds the new edge to the underlying data structures of the graph
 
-        self._single_direction_edge[edge.u].append(edge)
+        :param edge: the new edge to be added to the graph
+        '''
 
-    # Add an edge using vertex indices (convenience method)
-    def add_edge_by_indices(self, u: int, v: int, thickness: float) -> None:
-        edge: Edge = Edge(u, v, thickness)
-        self.add_edge(edge)
-        
+        self.vertex_edge[edge.start].append(edge)
+        self.vertex_edge[edge.end].append(edge.reversed())
 
-    # Add an edge by looking up vertex indices (convenience method)
-    def add_edge_by_vertices(self, first: Coordinate, second: Coordinate, thickness: float) -> None:
-        u: int = self._vertices.index(first)
-        v: int = self._vertices.index(second)
+        self.vertex_vertices[edge.start].append(edge.end)
+        self.vertex_vertices[edge.end].append(edge.start)
 
-        self.add_edge_by_indices(u, v, thickness)
+    def __contains__(self, vertex: Coordinate) -> bool:
+        '''
+        checks if given vertex is already added to the graph or not
 
-    # Find the vertex at a specific index
-    def vertex_at(self, index: int) -> Coordinate:
-        return self._vertices[index]
+        :param vertex: vertex to check if it's in the graph or not
+        :return: whether given vertex is in the graph or not
+        '''
+        return vertex in list(self.vertex_vertices.keys())
 
-    # Find the index of a vertex in the graph
-    def index_of(self, vertex: Coordinate) -> int:
-        return self._vertices.index(vertex)
-
-    # Find the vertices that a vertex at some index is connected to
-    def neighbors_for_index(self, index: int) -> list[Coordinate]:
-        return list(map(self.vertex_at, [e.v for e in self._edges[index]]))
-
-    def single_dir_neighbors_for_index(self, index: int) -> list[Coordinate]:
-        return list(map(self.vertex_at, [e.v for e in self._single_direction_edge[index]]))
-
-    # Lookup a vertice's index and find its neighbors (convenience method)
-    def neighbors_for_vertex(self, vertex: Coordinate) -> list[Coordinate]:
-        return self.neighbors_for_index(self.index_of(vertex))
-
-    def single_dir_neighbors_for_vertex(self, vertex: Coordinate) -> list[Coordinate]:
-        return self.single_dir_neighbors_for_index(self.index_of(vertex))
-
-
-    # Return all of the edges associated with a vertex at some index
-    def edges_for_index(self, index: int) -> list[Edge]:
-        return self._edges[index]
-
-    def single_dir_edges_for_index(self, index: int) -> list[Edge]:
-        return self._single_direction_edge[index]
-
-
-    # Lookup the index of a vertex and return its edges (convenience method)
-    def edges_for_vertex(self, vertex: Coordinate) -> list[Edge]:
-        return self.edges_for_index(self.index_of(vertex))
-
-    def single_dir_edges_for_vertex(self, vertex: Coordinate) -> list[Edge]:
-        return self.single_dir_edges_for_index(self.index_of(vertex))
-
-
-    # Make it easy to pretty-print a Graph
     def __str__(self) -> str:
-        desc: str = ""
-        for i in range(self.vertex_count):
-            desc += f"{self.vertex_at(i)} -> {self.single_dir_neighbors_for_index(i)} with thickness {self.edges_for_vertex(self.vertex_at(i))[0].thickness}\n"
+        '''
+        string representation of the graph
+        '''
+        desc = ""
+        for vertex, vertices in self.vertex_vertices.items():
+            desc += f"{vertex} -> {[str(vertex) for vertex in vertices]}\n"  # could of just written vertices as it is 
+                                                                            # I want str() not repr()
+        desc += '\n'
+
         return desc
+
+    def seperate(self) -> list[Graph]:
+        '''
+        Uses a DP algorithm to seperate one big graph into list of graphs which contain one continious trace
+
+        :return: list of continious trace graph
+        '''
+        seperated_graphs = []
+        current_ind = 0
+
+        visited = set()
+        
+        for vertex in list(self.vertex_edge.keys()):
+
+            if vertex not in visited:
+                new_graph = Graph(vertex)
+                visited.add(vertex)
+
+                for edge in self.vertex_edge[vertex]:
+                    new_graph.add_edge(edge)
+
+                for vertex in self.vertex_vertices[vertex]:
+                    visited.add(vertex)
+
+                seperated_graphs[current_ind].append(new_graph)
+
+            else:
+                # finding the graph that has this vertex
+                for ind, graph in enumerate(seperated_graphs):
+                    if vertex in graph:
+                        wanted_ind = ind
+
+                for edge in self.vertex_edge[vertex]:
+                    seperated_graphs[wanted_ind].add_edge(edge)
+
+                for vertex in self.vertex_vertices[vertex]:
+                    visited.add(vertex)
+
+        return seperated_graphs
+
+    def apply_offset(self) -> list[Graph]:
+        '''
+        apply thickness offset to each graph.
+
+        :return list of graph containing the coord, edge values of one continious trace with offset
+        '''
+        return []
+
+    def to_coordinate(self) -> list[Coordinate]:
+        '''
+
+        '''
+        return []
+
+    def resolve_conflicts(self) -> list[Graph]:
+        '''
+        after applying offset to graph
+        '''
+        return []
+
+    @classmethod
+    def join(cls, *graphs) -> Graph:
+        '''
+
+
+        :graphs: undefined number of graphs
+        :return: one graph joined from the all the graphs given from *graphs attribute
+        '''
+        return Graph()
+
+
+        
+#TODO: the ultimate goal is have list of trace variables of datatype graph, each has is a continious trace
+# i edited the __str__ func of Graph to display the funcs I defined as single_dir_...
+#       I have a graph that has all the vertices(it's a Coordinate) pointing to one or more vertices 
+#       without pointing back (as the original functions does)
+# I have traces ready in this 'traces' variables
+# The ONLY thing left is the order. now they are not ordered, meaning- it's like
+                                            # coord2 -> coord1
+                                            # coord4 -> coord3
+                                            # coord1 -> NOTHING
+                                            # coord3 -> coord2
+                                    # but i have to order it
+                                            # coord4 -> coord3
+                                            # coord3 -> coord2
+                                            # coord2 -> coord1
+                                            # coord1 -> NOTHING
+
+# after that i can easily extract each trace by finding the coord that points to nothing:
+        # I know that this is the start of a new trace and the end of a previous trace 
+
+# next up is to return the proper coordinate list for each trace with two important features:
+    # 1- offset the coordinates two times with the wanted thickness
+    # 2- find holes and incorporate them in the trace somehow ;)
 
 

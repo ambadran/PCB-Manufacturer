@@ -176,7 +176,6 @@ class Gerber:
                 [coordinate for block in self.blocks[BlockType.ComponentPad] for coordinate in block.coordinates_with_multiplier],
         }
 
-        self.traces: list[Graph] = self.trace_coordinates_to_graph()
 
     def read_gerber_file(self, file_path: str) -> str:
         '''
@@ -326,60 +325,51 @@ class Gerber:
 
         self.gerber_file = new_file
 
-    def trace_coordinates_to_graph(self) -> list[Graph]:
+    def blocks_to_graph(self, blocks: Block) -> Graph:
         '''
-        creates a graph data structure of the available pcb traces
+        creates a graph data structure from the given block objects
 
-        :return: list of graph data structure each is a different continious trace
+        :param block: Block objects to convert their coordinates to a graph
+        :return: graph data structure of given blocks coordinates
         '''
-        # Getting the necessary variables to form the graph
-        vertices: list[Coordinate] = []
-        edge_by_2_vertices: list[list[Coordinate, Coordinate]] = []
+        all_traces = Graph()
 
-        prev_coord: Coordinate
-        prev_dnum: int
+        edge_start_available = False
+        edge_end_available = False
+        encountered_one_edge_start = False
 
-        for block in self.blocks[BlockType.Conductor]:
+        for block in blocks:
             for coord in block.coordinates:
+                if coord not in all_traces:
+                    all_traces.add_vertex(coord)
 
-                if coord not in vertices:
-                    vertices.append(deepcopy(coord))
+                if coord.d == 2: #  edge start coordinate
+                    edge_start = coord
+                    edge_start_available = True
+                elif coord.d == 1:  # edge end coordinate
+                    edge_end = coord
+                    edge_end_available = True
+                    encountered_one_edge_start = False
+                else:
+                    raise ValueError("Never seen this before!!")
 
-                if coord.d == 1:
-                    edge_by_2_vertices.append((deepcopy(prev_coord), deepcopy(coord), block.thickness))
+                if edge_start_available and encountered_one_edge_start:
+                    raise ValueError("TWO consecutive start coordinates")
 
-                prev_coord = coord
-                prev_dnum = coord.d
+                if not edge_start_available and edge_end_available:
+                    raise ValueError("End coordinate then start coordinate")
+                elif edge_start_available and edge_end_available:
+                    all_traces.add_edge(Edge(edge_start, edge_end, block.thickness))
+                    edge_start_available = False
+                    edge_end_available = False
+                elif edge_start_available and not edge_end_available:
+                    encountered_one_edge_start = True
+                else:
+                    raise ValueError("HOW THE FUCK DID IT END UP HERE?!?!?!?!!")
+                    
+                    
+        return all_traces
 
-            # Creating the graph
-            traces = Graph(vertices)
-            for edge in edge_by_2_vertices:
-                traces.add_edge_by_vertices(edge[0], edge[1], edge[2])
-
-        # making traces one_sided
-        return traces
-        #TODO: the ultimate goal is have list of trace variables of datatype graph, each has is a continious trace
-        # i edited the __str__ func of Graph to display the funcs I defined as single_dir_...
-        #       I have a graph that has all the vertices(it's a Coordinate) pointing to one or more vertices 
-        #       without pointing back (as the original functions does)
-        # I have traces ready in this 'traces' variables
-        # The ONLY thing left is the order. now they are not ordered, meaning- it's like
-                                                    # coord2 -> coord1
-                                                    # coord4 -> coord3
-                                                    # coord1 -> NOTHING
-                                                    # coord3 -> coord2
-                                            # but i have to order it
-                                                    # coord4 -> coord3
-                                                    # coord3 -> coord2
-                                                    # coord2 -> coord1
-                                                    # coord1 -> NOTHING
-
-        # after that i can easily extract each trace by finding the coord that points to nothing:
-                # I know that this is the start of a new trace and the end of a previous trace 
-
-        # next up is to return the proper coordinate list for each trace with two important features:
-            # 1- offset the coordinates two times with the wanted thickness
-            # 2- find holes and incorporate them in the trace somehow ;)
 
 
 if __name__ == '__main__':
@@ -401,6 +391,8 @@ if __name__ == '__main__':
     
     # Writing a new gerber file for current gerber file content
     gerber_object.create_gerber_file(new_file_name)
+
+    # print(repr(list(gerber_object.traces.vertex_vertices.keys())[0]))
 
     print(gerber_object.traces)
 

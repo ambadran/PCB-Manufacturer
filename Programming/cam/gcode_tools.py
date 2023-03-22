@@ -540,14 +540,36 @@ def get_laser_coordinates_lists(gerber: Gerber) -> list[list[Coordinate]]:
     :param gerber: Gerber Object
     :return: list of list of coordinates of one continious trace
     '''
-    blocks = gerber.blocks[BlockType.Conductor]
 
-    debug = True
-    if debug:
-        print(blocks[0].coordinates)
+    # converting trace gerber blocks to one big graph 
+    trace_graph_unseperated_unoffseted: Graph = gerber.blocks_to_graph(gerber.blocks[BlockType.Conductor])
+    # holes_graph_unseperated_unoffseted: Graph = gerber.blocks_to_graph(gerber.blocks[BlockType.ComponentPad])
+    holes_graph_unseperated_unoffseted: Graph = Graph()  #TODO: complete blocks_to_graph development for 'BlockType.ComponentPad'
 
-    coordinates_list = []
-    return coordinates_list
+    # seperating continious traces each into it's own graph
+    trace_graphs_seperated_unoffseted: list[Graph] = trace_graph_unseperated_unoffseted.seperate()
+    print(trace_graphs_seperated_unoffseted)
+
+    holes_graphs_seperated_unoffseted: list[Graph] = holes_graph_unseperated_unoffseted.seperate()
+
+    # apply thickness offset to the graphs
+    trace_graphs_seperated_offseted: list[Graph] = [graph.apply_offsets() for graph in trace_graphs_seperated_unoffseted]
+    holes_graphs_seperated_offseted: list[Graph] = [graph.apply_offsets() for graph in holes_graphs_seperated_unoffseted]
+
+    ### Resolve conflicts after applying the offsets
+    # Firstly, join traces and holes graphs 
+    unresolved_graph: Graph = Graph.join(trace_graphs_seperated_offseted, holes_graphs_seperated_offseted)
+
+    # Secondly, seperate them to get list of continious traces WITH holes
+    unresolved_graphs: list[Graph] = unresolved_graph.seperate()
+
+    # lastly, resolve conflict for each trace
+    graphs: list[Graph] = [graph.resolve() for graph in unresolved_graphs] 
+
+    # get the coordinate sequence that will be given to gcode
+    trace_coordinates_lists: list[list[Coordinate]] = [graph.to_coordinates() for graph in graphs]
+
+    return trace_coordinates_lists
 
 
 def generate_pcb_trace_gcode(gerber_file: str, tool: Callable, optimum_focal_distance: int, feedrate: int, laser_power: int, initiated_before: bool=False, terminate_after=True) -> str:
