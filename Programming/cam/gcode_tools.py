@@ -548,17 +548,23 @@ def get_laser_coordinates_lists(gerber: Gerber) -> list[list[Coordinate]]:
 
     # seperating continious traces each into it's own graph
     trace_graphs_seperated_unoffseted: list[Graph] = trace_graph_unseperated_unoffseted.seperate()
-    print(trace_graphs_seperated_unoffseted)
-
     holes_graphs_seperated_unoffseted: list[Graph] = holes_graph_unseperated_unoffseted.seperate()
 
     # apply thickness offset to the graphs
-    trace_graphs_seperated_offseted: list[Graph] = [graph.apply_offsets() for graph in trace_graphs_seperated_unoffseted]
-    holes_graphs_seperated_offseted: list[Graph] = [graph.apply_offsets() for graph in holes_graphs_seperated_unoffseted]
+    # trace_graphs_seperated_offseted: list[Graph] = [graph.apply_offsets() for graph in trace_graphs_seperated_unoffseted]
+    # holes_graphs_seperated_offseted: list[Graph] = [graph.apply_offsets() for graph in holes_graphs_seperated_unoffseted]
+    trace_graphs_seperated_offseted: list[Graph] = []
+    holes_graphs_seperated_offseted: list[Graph] = []
+    test_graph = trace_graphs_seperated_unoffseted[0].apply_offsets()
+    
 
     ### Resolve conflicts after applying the offsets
     # Firstly, join traces and holes graphs 
-    unresolved_graph: Graph = Graph.join(trace_graphs_seperated_offseted, holes_graphs_seperated_offseted)
+    unresolved_graph = Graph()
+    for graph in trace_graphs_seperated_offseted:
+        unresolved_graph = Graph.join(unresolved_graph, graph)
+    for graph in holes_graphs_seperated_offseted:
+        unresolved_graph = Graph.join(unresolved_graph, graph)
 
     # Secondly, seperate them to get list of continious traces WITH holes
     unresolved_graphs: list[Graph] = unresolved_graph.seperate()

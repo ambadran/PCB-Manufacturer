@@ -1,6 +1,9 @@
 from __future__ import annotations
 from typing import Optional
 from dataclasses import dataclass
+from copy import deepcopy
+import turtle
+import random
 
 @dataclass
 class Coordinate:
@@ -86,6 +89,18 @@ class Edge:
         '''
         return Edge(self.end, self.start, self.thickness)
 
+    def __eq__(self, other) -> bool:
+        '''
+        Equality Definition
+        '''
+        return (self.start == other.start and self.end == other.end and self.thickness == other.thickness)
+
+    def __hash__(self):
+        '''
+        hashing the Edge object
+        '''
+        return hash(str(self))
+
     def __str__(self) -> str:
         '''
         string representation of the edge
@@ -107,6 +122,9 @@ class Graph:
     1- Dictionary of key vertices(Coordinate) and value list of Edges GOING OUT from the vertex key
 
     '''
+    # class variables
+    used_colors = set()
+
     def __init__(self, vertices: list[Coordinate] = []):
 
         # Dictionary to relate each vertices to its edges
@@ -134,8 +152,9 @@ class Graph:
 
         :param vertex: the new vertex to be added to our graph
         '''
-        self.vertex_edge[vertex] = []
-        self.vertex_vertices[vertex] = []
+        if vertex not in self.vertex_edge:
+            self.vertex_edge[vertex] = []
+            self.vertex_vertices[vertex] = []
 
     def add_edge(self, edge: Edge) -> None:
         '''
@@ -159,6 +178,51 @@ class Graph:
         '''
         return vertex in list(self.vertex_vertices.keys())
 
+    def visualize(self, multiplier=8, terminate=False) -> None:
+        '''
+        Uses Python Turtle graphs to draw the graph
+        '''
+        skk = turtle.Turtle()
+        turtle.width(3)
+        turtle.speed(0)
+        turtle.hideturtle()
+
+        colors = ['black', 'red', 'blue', 'green', 'brown', 'yellow', 'orange', 'gray', 'indigo']
+        color = random.choice(colors)
+        while color in Graph.used_colors:
+            color = random.choice(colors)
+
+        turtle.pencolor(color)
+
+        turtle.up()
+
+        for edges in self.vertex_edge.values():
+            turtle.setpos(edges[0].start.x*multiplier, edges[0].start.y*multiplier)
+            for edge in edges[1:]:
+                turtle.down()
+                turtle.setpos(edge.start.x*multiplier, edge.start.y*multiplier)
+                turtle.setpos(edge.end.x*multiplier, edge.end.y*multiplier)
+                turtle.up()
+
+        Graph.used_colors.add(color)
+        if len(Graph.used_colors) == len(colors):
+            print('\n\n!!!!!!!!!! COLORS RESET !!!!!!!!!!!!!!!!!\n\n')
+            Graph.used_colors = set()
+
+        if terminate:
+            turtle.done()
+
+    @classmethod
+    def visualize_graphs(cls, graph_list: list[Graph]) -> None:
+        '''
+        calls self.visualize for a bunch of graphs
+        
+        :param graph_list: list of graphs to visualize
+        '''
+        for graph in graph_list[:-1]:
+            graph.visualize()
+        graph_list[-1].visualize(terminate=True)
+
     def __str__(self) -> str:
         '''
         string representation of the graph
@@ -178,45 +242,101 @@ class Graph:
         :return: list of continious trace graph
         '''
         seperated_graphs = []
-        current_ind = 0
 
         visited = set()
+        # print(self)
         
         for vertex in list(self.vertex_edge.keys()):
 
             if vertex not in visited:
-                new_graph = Graph(vertex)
+                # print(vertex, 'added new')
+                new_graph = Graph([vertex])
                 visited.add(vertex)
 
+                for other_vertex in self.vertex_vertices[vertex]:
+                    # print(other_vertex, 'added form vertex_vertices')
+                    new_graph.add_vertex(other_vertex)
+                    visited.add(other_vertex)
+
                 for edge in self.vertex_edge[vertex]:
+                    # print(edge, 'added from vertex_edge')
                     new_graph.add_edge(edge)
 
-                for vertex in self.vertex_vertices[vertex]:
-                    visited.add(vertex)
-
-                seperated_graphs[current_ind].append(new_graph)
+                seperated_graphs.append(new_graph)
+                # print()
 
             else:
                 # finding the graph that has this vertex
+                found = False
+                graphs_ind_to_join = []  # if a vertex is found in more than one graph, then join
                 for ind, graph in enumerate(seperated_graphs):
                     if vertex in graph:
-                        wanted_ind = ind
+                        graphs_ind_to_join.append(ind)
+                        found = True
+
+                if found == False:
+                    raise ValueError("HOW THE HELL??!?!")
+
+                # print(vertex, 'found at graph of ind', graphs_ind_to_join)
+
+                # Create new joined graph from many graphs with same vertex
+                if len(graphs_ind_to_join) > 1:
+                    # found more than one graph with same vertex, creating joined graph
+                    joined_graph = Graph()
+                    for graph_ind in graphs_ind_to_join:
+                        joined_graph = Graph.join(joined_graph, seperated_graphs[graph_ind])
+
+                    # Remove the seperate graphs with same vertex and put the newly created joined graph
+                    new_seperated_graphs = [joined_graph]
+                    wanted_ind = 0
+                    for ind, graph in enumerate(seperated_graphs):
+                        if ind not in graphs_ind_to_join:
+                            new_seperated_graphs.append(graph)
+
+                    seperated_graphs = deepcopy(new_seperated_graphs)
+
+                else:
+                    wanted_ind = graphs_ind_to_join[0]
+
+                for other_vertex2 in self.vertex_vertices[vertex]:
+                    # print(other_vertex2, 'added form vertex_vertices')
+                    visited.add(other_vertex2)
+                    seperated_graphs[wanted_ind].add_vertex(other_vertex2)
 
                 for edge in self.vertex_edge[vertex]:
+                    # print(edge, 'added from vertex_edge')
                     seperated_graphs[wanted_ind].add_edge(edge)
+        
+        # Removing duplicate edges
+        #TODO
+        # for graph_ind, graph in enumerate(seperated_graphs):
+        #     for vertex in graph.vertex_edge:
+        #         seperated_graphs[graph_ind].vertex_edge[vertex] = list(set(graph.vertex_edge[vertex]))
 
-                for vertex in self.vertex_vertices[vertex]:
-                    visited.add(vertex)
 
         return seperated_graphs
 
-    def apply_offset(self) -> list[Graph]:
+    def apply_offsets(self) -> Graph:
         '''
-        apply thickness offset to each graph.
+        The graph to execute .apply_offsets() to is a graph of continious lines of ZERO thickness,
+        This function will create a new graph from the old one with the thickness applied :)
 
-        :return list of graph containing the coord, edge values of one continious trace with offset
+        :return: Graph with thickness applied. The edges are of thickness 0
         '''
-        return []
+        new_graph = Graph()
+
+        print(len(self.vertex_edge))
+        for vertex, edges in self.vertex_edge.items():
+            print(vertex)
+            for edge in edges:
+                print(edge)
+            print()
+
+        self.visualize(terminate=True)
+
+
+
+        return new_graph
 
     def to_coordinate(self) -> list[Coordinate]:
         '''
@@ -231,14 +351,24 @@ class Graph:
         return []
 
     @classmethod
-    def join(cls, *graphs) -> Graph:
+    def join(cls, *graphs: Graph) -> Graph:
         '''
-
+        joins the input graphs
 
         :graphs: undefined number of graphs
         :return: one graph joined from the all the graphs given from *graphs attribute
         '''
-        return Graph()
+        # Type Checking
+        if len(set([type(graph) for graph in graphs])) != 1:
+            raise ValueError("All Arguments MUST be of type Graph")
+
+        joined_graph = Graph()
+        for graph in graphs:
+            joined_graph.vertex_vertices.update(graph.vertex_vertices)
+            joined_graph.vertex_edge.update(graph.vertex_edge)
+
+        return joined_graph
+
 
 
         
