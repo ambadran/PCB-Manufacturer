@@ -371,7 +371,6 @@ class Gerber:
         return all_traces
 
 
-
 if __name__ == '__main__':
 
     gerber_file_path = 'gerber_files/default.gbr'

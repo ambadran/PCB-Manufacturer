@@ -79,7 +79,7 @@ class Coordinate:
  
 @dataclass
 class Edge:
-    start: Coordinate
+    start: Coordinate 
     end: Coordinate
     thickness: float
 
@@ -162,12 +162,15 @@ class Graph:
 
         :param edge: the new edge to be added to the graph
         '''
+        if edge not in self.vertex_edge[edge.start]:
+            self.vertex_edge[edge.start].append(edge)
+        if edge.reversed() not in self.vertex_edge[edge.end]:
+            self.vertex_edge[edge.end].append(edge.reversed())
 
-        self.vertex_edge[edge.start].append(edge)
-        self.vertex_edge[edge.end].append(edge.reversed())
-
-        self.vertex_vertices[edge.start].append(edge.end)
-        self.vertex_vertices[edge.end].append(edge.start)
+        if edge.end not in self.vertex_vertices[edge.start]:
+            self.vertex_vertices[edge.start].append(edge.end)
+        if edge.start not in self.vertex_vertices[edge.end]:
+            self.vertex_vertices[edge.end].append(edge.start)
 
     def __contains__(self, vertex: Coordinate) -> bool:
         '''
@@ -187,7 +190,7 @@ class Graph:
         turtle.speed(0)
         turtle.hideturtle()
 
-        colors = ['black', 'red', 'blue', 'green', 'brown', 'yellow', 'orange', 'gray', 'indigo']
+        colors = ['black', 'red', 'blue', 'light blue', 'green', 'brown', 'yellow', 'orange', 'gray', 'indigo']
         color = random.choice(colors)
         while color in Graph.used_colors:
             color = random.choice(colors)
@@ -198,7 +201,7 @@ class Graph:
 
         for edges in self.vertex_edge.values():
             turtle.setpos(edges[0].start.x*multiplier, edges[0].start.y*multiplier)
-            for edge in edges[1:]:
+            for edge in edges:
                 turtle.down()
                 turtle.setpos(edge.start.x*multiplier, edge.start.y*multiplier)
                 turtle.setpos(edge.end.x*multiplier, edge.end.y*multiplier)
@@ -286,6 +289,8 @@ class Graph:
                     for graph_ind in graphs_ind_to_join:
                         joined_graph = Graph.join(joined_graph, seperated_graphs[graph_ind])
 
+                    # print(f'Joining graphs of inds: {graphs_ind_to_join}')
+
                     # Remove the seperate graphs with same vertex and put the newly created joined graph
                     new_seperated_graphs = [joined_graph]
                     wanted_ind = 0
@@ -306,6 +311,7 @@ class Graph:
                 for edge in self.vertex_edge[vertex]:
                     # print(edge, 'added from vertex_edge')
                     seperated_graphs[wanted_ind].add_edge(edge)
+                # print()
         
         # Removing duplicate edges
         #TODO
@@ -325,14 +331,22 @@ class Graph:
         '''
         new_graph = Graph()
 
-        print(len(self.vertex_edge))
-        for vertex, edges in self.vertex_edge.items():
-            print(vertex)
-            for edge in edges:
-                print(edge)
-            print()
+        visited = set()
+        next_edge = list(self.vertex_edge.values())[0][0]
+        while len(visited) != self.edge_count:
 
-        self.visualize(terminate=True)
+            print(next_edge)
+            next_v = next_edge.end
+
+            for edge in self.vertex_edge[next_v]:
+                # if edge not in visited and next_edge != edge.reversed():
+                if edge not in visited:
+                    next_edge = edge
+                    visited.add(next_edge)
+                    break
+            else:
+                raise ValueError('lskdjf')
+
 
 
 
