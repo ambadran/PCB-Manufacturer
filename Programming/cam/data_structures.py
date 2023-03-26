@@ -106,6 +106,17 @@ class Edge:
         '''
         return self.start.y - self.gradient*self.start.x
 
+    def right_most_successor(self, edge_list_param) -> list[Edge]:
+        '''
+        :returns: a list of the right most edge to the left most edge relative to self
+        '''
+        edge_list = deepcopy(edge_list_param)
+
+        right_most = edge_list[0]
+        for edge in edge_list[1:]:
+            if edge.:
+
+
     def reversed(self) -> Edge:
         '''
         return the reversed Edge
@@ -217,7 +228,7 @@ class Graph:
                 visited.add(next_edge)
 
             else:
-                for edge in self.vertex_edge[next_v]:
+                for edge in next_edge.right_most_successor(self.vertex_edge[next_v]):
                     print('potential edge', edge)
                     if edge not in visited and edge.reversed() != next_edge:
                         print('yes')
@@ -230,8 +241,8 @@ class Graph:
                 else:
                     ### Reached a supposed Deadend
                     ### Backtracking !!!
+                    raise ValueError("No backtracking implemented!!")
 
-    
     def __contains__(self, vertex: Coordinate) -> bool:
         '''
         checks if given vertex is already added to the graph or not
