@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from copy import deepcopy
 import turtle
 import random
+import math
 
 @dataclass
 class Coordinate:
@@ -82,6 +83,28 @@ class Edge:
     start: Coordinate 
     end: Coordinate
     thickness: float
+
+    @property
+    def gradient(self) -> float:
+        '''
+        Assumes the edge as a linear equation
+        m = (y2-y1)/(x2-x1)
+
+        :returns: gradient of the edge
+        '''
+        return (self.end.y - self.start.y) / (self.end.x - self.start.x)
+
+    @property
+    def y_intercept(self) -> float:
+        '''
+        Assumes the edge as linear equation
+        y=mx+c
+        c=y-mx
+        taking y as y1 and x as x1 
+
+        :return: y intercept of the edge
+        '''
+        return self.start.y - self.gradient*self.start.x
 
     def reversed(self) -> Edge:
         '''
@@ -172,6 +195,43 @@ class Graph:
         if edge.start not in self.vertex_vertices[edge.end]:
             self.vertex_vertices[edge.end].append(edge.start)
 
+    @property
+    def ordered_edges(self) -> list[Edge]:
+        '''
+
+        :return: an ordered list of how to traverse the trace in a continual manner
+        '''
+        print(self)
+
+        visited = set()
+        next_edge = list(self.vertex_edge.values())[0][0]
+        while len(visited) < self.edge_count:
+
+            print()
+            print(next_edge, 'start')
+            next_v = next_edge.end
+
+            if len(self.vertex_edge[next_v]) == 1:
+                # dead end must return
+                next_edge = self.vertex_edge[next_v][0]
+                visited.add(next_edge)
+
+            else:
+                for edge in self.vertex_edge[next_v]:
+                    print('potential edge', edge)
+                    if edge not in visited and edge.reversed() != next_edge:
+                        print('yes')
+                        next_edge = edge
+                        visited.add(next_edge)
+                        break
+
+                    else:
+                        print('no')
+                else:
+                    ### Reached a supposed Deadend
+                    ### Backtracking !!!
+
+    
     def __contains__(self, vertex: Coordinate) -> bool:
         '''
         checks if given vertex is already added to the graph or not
@@ -181,12 +241,12 @@ class Graph:
         '''
         return vertex in list(self.vertex_vertices.keys())
 
-    def visualize(self, multiplier=8, terminate=False) -> None:
+    def visualize(self, line_width=3, multiplier=8, terminate=False) -> None:
         '''
         Uses Python Turtle graphs to draw the graph
         '''
         skk = turtle.Turtle()
-        turtle.width(3)
+        turtle.width(line_width)
         turtle.speed(0)
         turtle.hideturtle()
 
@@ -331,24 +391,36 @@ class Graph:
         '''
         new_graph = Graph()
 
-        visited = set()
-        next_edge = list(self.vertex_edge.values())[0][0]
-        while len(visited) != self.edge_count:
+        for vertex, edges in self.vertex_edge.items():
 
-            print(next_edge)
-            next_v = next_edge.end
+            for edge in edges:
 
-            for edge in self.vertex_edge[next_v]:
-                # if edge not in visited and next_edge != edge.reversed():
-                if edge not in visited:
-                    next_edge = edge
-                    visited.add(next_edge)
-                    break
-            else:
-                raise ValueError('lskdjf')
+                ### Getting the linear equation of the offseted line
+                # The Gradient is ofcoarse the same as the gradient of the original line since they're parallel
+                # to get the y-intercept however I devised the following algorithm :)
+                gradient = edge.gradient
+
+                alpha = math.atan(edge.gradient)
+                theta = math.pi/2 - alpha
+
+                abs_offset = edge.thickness/2
+                
+                y_offset = abs_offset / math.sin(theta)
+
+                y_intercept = self.y_intercept - y_offset  #NOTE: I could add/sub, it doesn't matter it just MUST be same for all
+
+                # offseted line equation is now 
+                # y = gradient * x + y_intercept    :)
+
+                ### Now we must get the start and end coordinates
+                # which is the intersection between the line after and the line before
+                x = (y_intercept - prev_y_intercept) / (prev_gradient - gradient)
+                y = gradient * x + y_intercept
 
 
-
+                ### Setting variables for next iteration
+                prev_y_intercept = y_intercept
+                prev_gradient = gradient
 
         return new_graph
 
