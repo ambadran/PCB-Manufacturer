@@ -5,6 +5,10 @@ from copy import deepcopy
 import turtle
 import random
 import math
+from enum import Enum
+
+class Numbers:
+    Infinity = 'infinity'
 
 @dataclass
 class Coordinate:
@@ -85,6 +89,20 @@ class Edge:
     thickness: float
 
     @property
+    def delta_x(self) -> float:
+        '''
+        :return delta x
+        '''
+        return self.end.x - self.start.x
+
+    @property
+    def delta_y(self) -> float:
+        '''
+        :return delta y
+        '''
+        return self.end.y - self.start.y
+    
+    @property
     def gradient(self) -> float:
         '''
         Assumes the edge as a linear equation
@@ -92,7 +110,10 @@ class Edge:
 
         :returns: gradient of the edge
         '''
-        return (self.end.y - self.start.y) / (self.end.x - self.start.x)
+        try:
+            return self.delta_y / self.delta_x
+        except ZeroDivisionError:
+            return Numbers.Infinity
 
     @property
     def y_intercept(self) -> float:
@@ -106,15 +127,48 @@ class Edge:
         '''
         return self.start.y - self.gradient*self.start.x
 
-    def right_most_successor(self, edge_list_param) -> list[Edge]:
+    def right_most_successors(self, edge_list_param) -> list[Edge]:
         '''
         :returns: a list of the right most edge to the left most edge relative to self
         '''
+        ### Sequence to Sort Edges nearst edge anti-clockwise to furthest
+        ### Look at iPad for detailed explanation
+        # 1- Get ALL edges in one list including the main edge to compare to later
         edge_list = deepcopy(edge_list_param)
+        if self not in edge_list:
+            edge_list.append(self)
 
-        right_most = edge_list[0]
-        for edge in edge_list[1:]:
-            if edge.:
+        # 2- Seperate the edge_list to edge list of 'Bottom edges' and 'Top edges'
+        bottom_edges = []
+        top_edges = []
+        if self.delta_x < 0:
+            for edge in edge_list:
+                if edge.start.y < (self.gradient * edge.start.x + self.y_intercept):
+                    bottom_edges.append(edge)
+
+                elif edge.start.y > (self.gradient * edge.start.x + self.y_intercept):
+                    top_edges.append(edge)
+                
+                elif edge.start.y == (self.gradient * edge.start.x + self.y_intercept):
+                    # self edge
+                    if self.delta_y > 0:
+                        bottom_edges.append(edge)
+
+                    elif self.delta_y < 0:
+                        top_edges.append(edge)
+
+                    elif self.delta_y == 0:
+                        bottom_edges.append(edge)
+
+
+        elif delta_x > 0:
+            for edge in edge_list:
+
+        elif delta_x == 0:
+            for edge in edge_list:
+
+
+
 
 
     def reversed(self) -> Edge:
@@ -228,7 +282,7 @@ class Graph:
                 visited.add(next_edge)
 
             else:
-                for edge in next_edge.right_most_successor(self.vertex_edge[next_v]):
+                for edge in next_edge.right_most_successors(self.vertex_edge[next_v]):
                     print('potential edge', edge)
                     if edge not in visited and edge.reversed() != next_edge:
                         print('yes')
