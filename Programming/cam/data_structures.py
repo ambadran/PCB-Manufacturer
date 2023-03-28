@@ -7,8 +7,40 @@ import random
 import math
 from enum import Enum
 
-class Numbers:
-    Infinity = 'infinity'
+class Infinity():
+    def __init__(self):
+        self.value = 'infinity'
+
+    def __lt__(self, other) -> bool:
+        '''
+        less than method definition
+        '''
+        if type(other) != int and type(other) != float:
+            raise ValueError("must compare infinity to numbers only")
+
+        return False
+
+    def __eq__(self, other) -> bool:
+        '''
+        equal than method definition
+        '''
+        if type(other) != int and type(other) != float:
+            raise ValueError("must compare infinity to numbers only")
+
+        return False
+
+    def __gt__(self, other) -> bool:
+        '''
+        greater than method definition
+        '''
+        if type(other) != int and type(other) != float:
+            raise ValueError("must compare infinity to numbers only")
+
+        return True
+
+
+
+
 
 @dataclass
 class Coordinate:
@@ -113,7 +145,7 @@ class Edge:
         try:
             return self.delta_y / self.delta_x
         except ZeroDivisionError:
-            return Numbers.Infinity
+            return Infinity() 
 
     @property
     def y_intercept(self) -> float:
@@ -127,7 +159,7 @@ class Edge:
         '''
         return self.start.y - self.gradient*self.start.x
 
-    def right_most_successors(self, edge_list_param) -> list[Edge]:
+    def anticlockwise_successors(self, edge_list_param) -> list[Edge]:
         '''
         :returns: a list of the right most edge to the left most edge relative to self
         '''
@@ -137,38 +169,59 @@ class Edge:
         edge_list = deepcopy(edge_list_param)
         if self not in edge_list:
             edge_list.append(self)
+        print()
+        print(edge_list, 'initial edge_list')
+        print()
+
 
         # 2- Seperate the edge_list to edge list of 'Bottom edges' and 'Top edges'
         bottom_edges = []
         top_edges = []
-        if self.delta_x < 0:
-            for edge in edge_list:
-                if edge.start.y < (self.gradient * edge.start.x + self.y_intercept):
+        for edge in edge_list:
+            if edge.delta_y < 0:
+                top_edges.append(edge)
+
+            elif edge.delta_y > 0:
+                bottom_edges.append(edge)
+
+            elif edge.delta_y == 0:
+                if edge.delta_x > 0:
                     bottom_edges.append(edge)
 
-                elif edge.start.y > (self.gradient * edge.start.x + self.y_intercept):
+                elif edge.delta_x < 0:
                     top_edges.append(edge)
-                
-                elif edge.start.y == (self.gradient * edge.start.x + self.y_intercept):
-                    # self edge
-                    if self.delta_y > 0:
-                        bottom_edges.append(edge)
 
-                    elif self.delta_y < 0:
-                        top_edges.append(edge)
+                else:
+                    raise ValueError("WTF?!??! THIS IS A POINT NOT AN EDGE!!")
+        print(top_edges, 'top')
+        print()
+        print(bottom_edges, 'bottom')
+        print()
 
-                    elif self.delta_y == 0:
-                        bottom_edges.append(edge)
-
-
-        elif delta_x > 0:
-            for edge in edge_list:
-
-        elif delta_x == 0:
-            for edge in edge_list:
+        # 3- Sort each list in ascending order
+        bottom_edges = sorted(bottom_edges, key=lambda x: x.gradient)
+        top_edges = sorted(top_edges, key=lambda x: x.gradient)
+        print(top_edges, 'orderd top')
+        print()
+        print(bottom_edges, 'orderd bottom')
 
 
+        # 4- Seperate the list with the self to pre-list and post-list
+        wanted_list = top_edges if self in top_edges else bottom_edges
 
+        pre_list = wanted_list[:wanted_list.index(self)]
+        post_list = wanted_list[wanted_list.index(self)+1:]
+
+        other_list = bottom_edges if self in top_edges else top_edges
+
+        # 5- Finally, Create the Final Correctly orderd list :)
+        final_list = []
+        final_list.extend(post_list)
+        final_list.extend(other_list)
+        final_list.extend(pre_list)
+
+        print()
+        return final_list
 
 
     def reversed(self) -> Edge:
@@ -176,6 +229,42 @@ class Edge:
         return the reversed Edge
         '''
         return Edge(self.end, self.start, self.thickness)
+
+    @classmethod
+    def visualize_edges(cls, edges: list[Edge], speed=0, offset=20, line_width=3, multiplier=8, terminate=False) -> None:
+        '''
+        visualizes the sequence of edges in a list 
+        '''
+        skk = turtle.Turtle()
+        turtle.width(line_width)
+        turtle.speed(speed)
+        # turtle.hideturtle()
+
+        colors = ['black', 'red', 'blue', 'light blue', 'green', 'brown', 'yellow', 'orange', 'gray', 'indigo']
+        color = random.choice(colors)
+        while color in Graph.used_colors:
+            color = random.choice(colors)
+
+        turtle.pencolor(color)
+
+        turtle.up()
+
+        turtle.setpos((edges[0].start.x - offset) * multiplier, (edges[0].start.y - offset) * multiplier)
+        for edge in edges:
+            turtle.down()
+            turtle.setpos((edge.start.x - offset) * multiplier, (edge.start.y - offset) * multiplier)
+            turtle.setpos((edge.end.x - offset) * multiplier, (edge.end.y - offset) * multiplier)
+            turtle.up()
+
+        Graph.used_colors.add(color)
+        if len(Graph.used_colors) == len(colors):
+            print('\n\n!!!!!!!!!! COLORS RESET !!!!!!!!!!!!!!!!!\n\n')
+            Graph.used_colors = set()
+
+        if terminate:
+            turtle.done()
+
+
 
     def __eq__(self, other) -> bool:
         '''
@@ -188,6 +277,9 @@ class Edge:
         hashing the Edge object
         '''
         return hash(str(self))
+
+    def __repr__(self) -> str:
+        return str(self)
 
     def __str__(self) -> str:
         '''
@@ -266,7 +358,7 @@ class Graph:
 
         :return: an ordered list of how to traverse the trace in a continual manner
         '''
-        print(self)
+        ordered_edges = []
 
         visited = set()
         next_edge = list(self.vertex_edge.values())[0][0]
@@ -274,16 +366,21 @@ class Graph:
 
             print()
             print(next_edge, 'start')
+            ordered_edges.append(next_edge)
+            
             next_v = next_edge.end
 
             if len(self.vertex_edge[next_v]) == 1:
                 # dead end must return
                 next_edge = self.vertex_edge[next_v][0]
                 visited.add(next_edge)
+                print(next_edge, 'DEADEND')
 
             else:
-                for edge in next_edge.right_most_successors(self.vertex_edge[next_v]):
-                    print('potential edge', edge)
+                successors = next_edge.anticlockwise_successors(self.vertex_edge[next_v])
+                print(successors, 'successors')
+                for edge in successors:
+                    print('potential edge', edge, edge not in visited, edge.reversed() != next_edge)
                     if edge not in visited and edge.reversed() != next_edge:
                         print('yes')
                         next_edge = edge
@@ -295,7 +392,11 @@ class Graph:
                 else:
                     ### Reached a supposed Deadend
                     ### Backtracking !!!
+                    Edge.visualize_edges(ordered_edges, speed=1, terminate=True)
                     raise ValueError("No backtracking implemented!!")
+                
+
+        return ordered_edges
 
     def __contains__(self, vertex: Coordinate) -> bool:
         '''
