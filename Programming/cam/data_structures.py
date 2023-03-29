@@ -158,113 +158,67 @@ class Edge:
         '''
         return self.start.y - self.gradient*self.start.x
 
-    def anticlockwise_successors(self, edge_list_param) -> list[Edge]:
+    def anticlockwise_successors(self, edge_list) -> list[Edge]:
         '''
         :returns: a list of the right most edge to the left most edge relative to self
         '''
-        ### Sequence to Sort Edges nearst edge anti-clockwise to furthest
-        ### Look at iPad for detailed explanation
-        # 1- Get ALL edges in one list including the main edge to compare to later
-        edge_list = deepcopy(edge_list_param)
+        ### Step 1: Put inverted OG edge into the edge list
+        inverted_og = self.reversed()
+        edge_list.append(inverted_og)
 
-        # 2- Seperate the edge_list to edge list of 'first priority edges' and 'second priority edges'
-        first_priority_edges = []
-        second_priority_edges = []
-        is_edge_under = lambda edge: (edge.end.y) < (self.gradient*edge.end.x + self.y_intercept)
-        is_edge_above = lambda edge: (edge.end.y) > (self.gradient*edge.end.x + self.y_intercept)
-        is_on_edge = lambda edge: (edge.end.y) == (self.gradient*edge.end.x + self.y_intercept)
-        middle_edge = None
+        ### Step 2: Get all edges in there correct Quadrant
+        quadrants = [[], [], [], []]
+        for edge in edge_list:
 
-        if self.delta_x < 0:
+            if edge.delta_x > 0:
+                if edge.delta_y > 0:
+                    quadrants[0].append(edge)
 
-            for edge in edge_list:
-                if is_edge_above(edge):
-                    first_priority_edges.append(edge)
+                elif edge.delta_y < 0:
+                    quadrants[3].append(edge)
 
-                elif is_edge_under(edge):
-                    second_priority_edges.append(edge)
+            elif edge.delta_x < 0:
+                if edge.delta_y > 0:
+                    quadrants[1].append(edge)
 
-                elif is_on_edge(edge):
-                    middle_edge = edge
+                elif edge.delta_y < 0:
+                    quadrants[2].append(edge)
 
-                else:
-                    raise ValueError("I put this because i am paranoid")
+        ### Step 3: Get each Quadrant list in order
+        for ind, quadrant in enumerate(quadrants):
+            quadrants[ind] = sorted(quadrant, key= lambda x: x.gradient)
 
-        elif self.delta_x > 0:
+        ### Step 4: Split the list with the inverted OG into 'prelist' and 'post list'
+        if inverted_og.delta_x > 0:
+            if edge.delta_y > 0:
+                pre_list = quadrants[0][:quadrants.index(inverted_og)]
+                post_list = quadrants[0][quadrants.index(inverted_og)+1:]
+                quadrant_order = [1, 2, 3]
 
-            for edge in edge_list:
-                if is_edge_above(edge):
-                    second_priority_edges.append(edge)
+            elif edge.delta_y < 0:
+                pre_list = quadrants[3][:quadrants.index(inverted_og)]
+                post_list = quadrants[3][quadrants.index(inverted_og)+1:]
+                quadrant_order = [0, 1, 2]
 
-                elif is_edge_under(edge):
-                    first_priority_edges.append(edge)
+        elif edge.delta_x < 0:
+            if edge.delta_y > 0:
+                pre_list = quadrants[1][:quadrants.index(inverted_og)]
+                post_list = quadrants[1][quadrants.index(inverted_og)+1:]
+                quadrant_order = [2, 3, 0]
 
-                elif is_on_edge(edge):
-                    middle_edge = edge
+            elif edge.delta_y < 0:
+                pre_list = quadrants[2][:quadrants.index(inverted_og)]
+                post_list = quadrants[2][quadrants.index(inverted_og)+1:]
+                quadrant_order = [3, 0, 1]
 
-                else:
-                    raise ValueError("I put this because i am paranoid")
-
-
-        elif self.delta_x == 0:
-
-            if self.delta_y < 0:
-
-                for edge in edge_list:
-                    if edge.delta_x < 0:
-                        second_priority_edges.append(edge)
-
-                    elif edge.delta_x > 0:
-                        first_priority_edges.append(edge)
-
-                    elif edge.delta_x == 0:
-                        middle_edge = edge
-
-                    else:
-                        raise ValueError("I put this because i am paranoid")
-
-            elif self.delta_y > 0:
-
-                for edge in edge_list:
-                    if edge.delta_x < 0:
-                        first_priority_edges.append(edge)
-
-                    elif edge.delta_x > 0:
-                        second_priority_edges.append(edge)
-
-                    elif edge.delta_x == 0:
-                        middle_edge = edge
-
-                    else:
-                        raise ValueError("I put this because i am paranoid")
-
-        else:
-            raise ValueError("I put this because i am paranoid")
-
-        # 3- Sort each list in ascending order
-        first_priority_edges_ordered = sorted(first_priority_edges, key=lambda x: x.gradient)
-        second_priority_edges_ordered = sorted(second_priority_edges, key=lambda x: x.gradient)
-
-        # 4- Finally, Create the Final Correctly orderd list :)
+        ### Step 5: Creating the final list :)
         final_list = []
-        final_list.extend(first_priority_edges)
-        if middle_edge:
-            final_list.append(middle_edge)
-        final_list.extend(second_priority_edges)
 
-        debug = False
-        if debug:
-            print()
-            print(edge_list, 'initial edge_list')
-            print()
-            print(first_priority_edges, 'first priority')
-            print()
-            print(second_priority_edges, 'second priority')
-            print()
-            print(first_priority_edges_ordered, 'orderd first priority')
-            print()
-            print(second_priority_edges_ordered, 'orderd second priority')
-            print()
+        final_list.extend(post_list)
+        final_list.extend(quadrants[0])
+        final_list.extend(quadrants[1])
+        final_list.extend(quadrants[2])
+        final_list.extend(pre_list)
 
         return final_list
 
@@ -385,6 +339,11 @@ class Graph:
 
         :param edge: the new edge to be added to the graph
         '''
+        # checking if it's an edge
+        if abs(edge.delta_x) == 0 and abs(edge.delta_y) == 0:
+            raise ValueError("not an edge, it's a point")
+
+        # Adding only if it's not there, ensure not duplicates
         if edge not in self.vertex_edge[edge.start]:
             self.vertex_edge[edge.start].append(edge)
         if edge.reversed() not in self.vertex_edge[edge.end]:
@@ -433,12 +392,35 @@ class Graph:
                     else:
                         print('no')
                 else:
-                    ### Reached a supposed Deadend
+                    ### This is now an non-tree graph.
                     ### Backtracking !!!
+
+                    ### THE FOLLOWING CODE IS ONLY TEMPORARY WORKAROUND!!
+                    # This code doesn't deal with real internal edges of a non-tree graph
+                    # it just ignore very tiny edges that looks like internal edge
+                    # in the future I should detect it with the backtracking algorithm and ignore it too.
+                    # print(len(visited), self.edge_count)
+                    # internal_edges = []
+                    # for edge_list in self.vertex_edge.values():
+                    #     for edge in edge_list:
+                    #         if edge not in visited:
+                    #             internal_edges.append(edge)
+
+                    # for edge in internal_edges:
+                    #     if edge.delta_x <= 0.05 and edge.delta_y <= 0.05:
+                    #         continue
+                    #     else:
+                    #         # Found a large edge not accounted for, This is definetly an internal edge. MUST deal with!
+                    #         break
+                    # else:
+                    #     # All captured edges are less then 0.05 in x and y so they're tiny wrong edges by user
+                    #     break
+
                     Edge.visualize_edges(ordered_edges, speed=1, terminate=True)
                     raise ValueError("No backtracking implemented!!")
                 
 
+        Edge.visualize_edges(ordered_edges, speed=1, terminate=True)
         return ordered_edges
 
     def __contains__(self, vertex: Coordinate) -> bool:

@@ -556,7 +556,7 @@ def get_laser_coordinates_lists(gerber: Gerber) -> list[list[Coordinate]]:
     trace_graphs_seperated_offseted: list[Graph] = []
     holes_graphs_seperated_offseted: list[Graph] = []
     # test_graph = trace_graphs_seperated_unoffseted[0].apply_offsets()
-    test_graph = trace_graphs_seperated_unoffseted[0]
+    test_graph = trace_graphs_seperated_unoffseted[3]
     print(test_graph.ordered_edges)
     
 
