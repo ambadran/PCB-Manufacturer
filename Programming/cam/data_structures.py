@@ -7,6 +7,7 @@ import random
 import math
 from enum import Enum
 
+
 class Infinity():
     def __init__(self):
         self.value = 'infinity'
@@ -37,9 +38,6 @@ class Infinity():
             raise ValueError("must compare infinity to numbers only")
 
         return True
-
-
-
 
 
 @dataclass
@@ -114,6 +112,7 @@ class Coordinate:
 
         return Coordinate(x_min, y_min), Coordinate(x_max, y_max)
  
+
 @dataclass
 class Edge:
     start: Coordinate 
@@ -167,62 +166,107 @@ class Edge:
         ### Look at iPad for detailed explanation
         # 1- Get ALL edges in one list including the main edge to compare to later
         edge_list = deepcopy(edge_list_param)
-        if self not in edge_list:
-            edge_list.append(self)
-        print()
-        print(edge_list, 'initial edge_list')
-        print()
 
+        # 2- Seperate the edge_list to edge list of 'first priority edges' and 'second priority edges'
+        first_priority_edges = []
+        second_priority_edges = []
+        is_edge_under = lambda edge: (edge.end.y) < (self.gradient*edge.end.x + self.y_intercept)
+        is_edge_above = lambda edge: (edge.end.y) > (self.gradient*edge.end.x + self.y_intercept)
+        is_on_edge = lambda edge: (edge.end.y) == (self.gradient*edge.end.x + self.y_intercept)
+        middle_edge = None
 
-        # 2- Seperate the edge_list to edge list of 'Bottom edges' and 'Top edges'
-        bottom_edges = []
-        top_edges = []
-        for edge in edge_list:
-            if edge.delta_y < 0:
-                top_edges.append(edge)
+        if self.delta_x < 0:
 
-            elif edge.delta_y > 0:
-                bottom_edges.append(edge)
+            for edge in edge_list:
+                if is_edge_above(edge):
+                    first_priority_edges.append(edge)
 
-            elif edge.delta_y == 0:
-                if edge.delta_x > 0:
-                    bottom_edges.append(edge)
+                elif is_edge_under(edge):
+                    second_priority_edges.append(edge)
 
-                elif edge.delta_x < 0:
-                    top_edges.append(edge)
+                elif is_on_edge(edge):
+                    middle_edge = edge
 
                 else:
-                    raise ValueError("WTF?!??! THIS IS A POINT NOT AN EDGE!!")
-        print(top_edges, 'top')
-        print()
-        print(bottom_edges, 'bottom')
-        print()
+                    raise ValueError("I put this because i am paranoid")
+
+        elif self.delta_x > 0:
+
+            for edge in edge_list:
+                if is_edge_above(edge):
+                    second_priority_edges.append(edge)
+
+                elif is_edge_under(edge):
+                    first_priority_edges.append(edge)
+
+                elif is_on_edge(edge):
+                    middle_edge = edge
+
+                else:
+                    raise ValueError("I put this because i am paranoid")
+
+
+        elif self.delta_x == 0:
+
+            if self.delta_y < 0:
+
+                for edge in edge_list:
+                    if edge.delta_x < 0:
+                        second_priority_edges.append(edge)
+
+                    elif edge.delta_x > 0:
+                        first_priority_edges.append(edge)
+
+                    elif edge.delta_x == 0:
+                        middle_edge = edge
+
+                    else:
+                        raise ValueError("I put this because i am paranoid")
+
+            elif self.delta_y > 0:
+
+                for edge in edge_list:
+                    if edge.delta_x < 0:
+                        first_priority_edges.append(edge)
+
+                    elif edge.delta_x > 0:
+                        second_priority_edges.append(edge)
+
+                    elif edge.delta_x == 0:
+                        middle_edge = edge
+
+                    else:
+                        raise ValueError("I put this because i am paranoid")
+
+        else:
+            raise ValueError("I put this because i am paranoid")
 
         # 3- Sort each list in ascending order
-        bottom_edges = sorted(bottom_edges, key=lambda x: x.gradient)
-        top_edges = sorted(top_edges, key=lambda x: x.gradient)
-        print(top_edges, 'orderd top')
-        print()
-        print(bottom_edges, 'orderd bottom')
+        first_priority_edges_ordered = sorted(first_priority_edges, key=lambda x: x.gradient)
+        second_priority_edges_ordered = sorted(second_priority_edges, key=lambda x: x.gradient)
 
-
-        # 4- Seperate the list with the self to pre-list and post-list
-        wanted_list = top_edges if self in top_edges else bottom_edges
-
-        pre_list = wanted_list[:wanted_list.index(self)]
-        post_list = wanted_list[wanted_list.index(self)+1:]
-
-        other_list = bottom_edges if self in top_edges else top_edges
-
-        # 5- Finally, Create the Final Correctly orderd list :)
+        # 4- Finally, Create the Final Correctly orderd list :)
         final_list = []
-        final_list.extend(post_list)
-        final_list.extend(other_list)
-        final_list.extend(pre_list)
+        final_list.extend(first_priority_edges)
+        if middle_edge:
+            final_list.append(middle_edge)
+        final_list.extend(second_priority_edges)
 
-        print()
+        debug = False
+        if debug:
+            print()
+            print(edge_list, 'initial edge_list')
+            print()
+            print(first_priority_edges, 'first priority')
+            print()
+            print(second_priority_edges, 'second priority')
+            print()
+            print(first_priority_edges_ordered, 'orderd first priority')
+            print()
+            print(second_priority_edges_ordered, 'orderd second priority')
+            print()
+
         return final_list
-
 
     def reversed(self) -> Edge:
         '''
@@ -264,8 +308,6 @@ class Edge:
         if terminate:
             turtle.done()
 
-
-
     def __eq__(self, other) -> bool:
         '''
         Equality Definition
@@ -286,6 +328,7 @@ class Edge:
         string representation of the edge
         '''
         return f"{self.start} -> {self.end} : thickness{self.thickness}"
+
 
 class Graph:
     '''
