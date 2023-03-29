@@ -191,24 +191,24 @@ class Edge:
         ### Step 4: Split the list with the inverted OG into 'prelist' and 'post list'
         if inverted_og.delta_x > 0:
             if edge.delta_y > 0:
-                pre_list = quadrants[0][:quadrants.index(inverted_og)]
-                post_list = quadrants[0][quadrants.index(inverted_og)+1:]
+                pre_list = quadrants[0][:quadrants[0].index(inverted_og)]
+                post_list = quadrants[0][quadrants[0].index(inverted_og)+1:]
                 quadrant_order = [1, 2, 3]
 
             elif edge.delta_y < 0:
-                pre_list = quadrants[3][:quadrants.index(inverted_og)]
-                post_list = quadrants[3][quadrants.index(inverted_og)+1:]
+                pre_list = quadrants[3][:quadrants[3].index(inverted_og)]
+                post_list = quadrants[3][quadrants[3].index(inverted_og)+1:]
                 quadrant_order = [0, 1, 2]
 
         elif edge.delta_x < 0:
             if edge.delta_y > 0:
-                pre_list = quadrants[1][:quadrants.index(inverted_og)]
-                post_list = quadrants[1][quadrants.index(inverted_og)+1:]
+                pre_list = quadrants[1][:quadrants[1].index(inverted_og)]
+                post_list = quadrants[1][quadrants[1].index(inverted_og)+1:]
                 quadrant_order = [2, 3, 0]
 
             elif edge.delta_y < 0:
-                pre_list = quadrants[2][:quadrants.index(inverted_og)]
-                post_list = quadrants[2][quadrants.index(inverted_og)+1:]
+                pre_list = quadrants[2][:quadrants[2].index(inverted_og)]
+                post_list = quadrants[2][quadrants[2].index(inverted_og)+1:]
                 quadrant_order = [3, 0, 1]
 
         ### Step 5: Creating the final list :)
