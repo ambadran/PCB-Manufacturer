@@ -551,14 +551,8 @@ def get_laser_coordinates_lists(gerber: Gerber) -> list[list[Coordinate]]:
     holes_graphs_seperated_unoffseted: list[Graph] = holes_graph_unseperated_unoffseted.seperate()
 
     # apply thickness offset to the graphs
-    # trace_graphs_seperated_offseted: list[Graph] = [graph.apply_offsets() for graph in trace_graphs_seperated_unoffseted]
-    # holes_graphs_seperated_offseted: list[Graph] = [graph.apply_offsets() for graph in holes_graphs_seperated_unoffseted]
-    trace_graphs_seperated_offseted: list[Graph] = []
-    holes_graphs_seperated_offseted: list[Graph] = []
-    # test_graph = trace_graphs_seperated_unoffseted[0].apply_offsets()
-    test_graph = trace_graphs_seperated_unoffseted[3]
-    print(test_graph.ordered_edges)
-    
+    trace_graphs_seperated_offseted: list[Graph] = [graph.apply_offsets() for graph in trace_graphs_seperated_unoffseted]
+    holes_graphs_seperated_offseted: list[Graph] = [graph.apply_offsets() for graph in holes_graphs_seperated_unoffseted]
 
     ### Resolve conflicts after applying the offsets
     # Firstly, join traces and holes graphs 

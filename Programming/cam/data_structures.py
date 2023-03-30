@@ -39,6 +39,7 @@ class Infinity():
 
         return True
 
+LASER_BEAM_THICKNESS = 0.05
 
 @dataclass
 class Coordinate:
@@ -164,61 +165,98 @@ class Edge:
         '''
         ### Step 1: Put inverted OG edge into the edge list
         inverted_og = self.reversed()
-        edge_list.append(inverted_og)
+        include_inverted_og = True
+        if inverted_og not in edge_list:
+            include_inverted_og = False
+            edge_list.append(inverted_og)
 
         ### Step 2: Get all edges in there correct Quadrant
         quadrants = [[], [], [], []]
         for edge in edge_list:
 
-            if edge.delta_x > 0:
-                if edge.delta_y > 0:
-                    quadrants[0].append(edge)
+            if edge.delta_x >= 0 and edge.delta_y >= 0:
+                quadrants[0].append(edge)
 
-                elif edge.delta_y < 0:
-                    quadrants[3].append(edge)
+            elif edge.delta_x > 0 and edge.delta_y < 0:
+                quadrants[3].append(edge)
 
-            elif edge.delta_x < 0:
-                if edge.delta_y > 0:
-                    quadrants[1].append(edge)
+            elif edge.delta_x < 0 and edge.delta_y > 0:
+                quadrants[1].append(edge)
 
-                elif edge.delta_y < 0:
-                    quadrants[2].append(edge)
+            elif edge.delta_x <= 0 and edge.delta_y <= 0:
+                quadrants[2].append(edge)
+
+            else:
+                raise ValueError("WTF?!??!")
 
         ### Step 3: Get each Quadrant list in order
+        sorted_quadrants = [[], [], [], []]
         for ind, quadrant in enumerate(quadrants):
-            quadrants[ind] = sorted(quadrant, key= lambda x: x.gradient)
+            sorted_quadrants[ind] = sorted(quadrant, key= lambda x: x.gradient)
 
         ### Step 4: Split the list with the inverted OG into 'prelist' and 'post list'
-        if inverted_og.delta_x > 0:
-            if edge.delta_y > 0:
-                pre_list = quadrants[0][:quadrants[0].index(inverted_og)]
-                post_list = quadrants[0][quadrants[0].index(inverted_og)+1:]
-                quadrant_order = [1, 2, 3]
+        if inverted_og.delta_x >= 0 and inverted_og.delta_y >= 0:
+            og_index = sorted_quadrants[0].index(inverted_og)
 
-            elif edge.delta_y < 0:
-                pre_list = quadrants[3][:quadrants[3].index(inverted_og)]
-                post_list = quadrants[3][quadrants[3].index(inverted_og)+1:]
-                quadrant_order = [0, 1, 2]
+            pre_list = sorted_quadrants[0][:og_index]
+            post_list = sorted_quadrants[0][og_index+1:]
 
-        elif edge.delta_x < 0:
-            if edge.delta_y > 0:
-                pre_list = quadrants[1][:quadrants[1].index(inverted_og)]
-                post_list = quadrants[1][quadrants[1].index(inverted_og)+1:]
-                quadrant_order = [2, 3, 0]
+            quadrant_order = [1, 2, 3]
 
-            elif edge.delta_y < 0:
-                pre_list = quadrants[2][:quadrants[2].index(inverted_og)]
-                post_list = quadrants[2][quadrants[2].index(inverted_og)+1:]
-                quadrant_order = [3, 0, 1]
+        elif inverted_og.delta_x > 0 and inverted_og.delta_y < 0:
+            og_index = sorted_quadrants[3].index(inverted_og)
+
+            pre_list = sorted_quadrants[3][:og_index]
+            post_list = sorted_quadrants[3][og_index+1:]
+
+            quadrant_order = [0, 1, 2]
+
+        elif inverted_og.delta_x < 0 and inverted_og.delta_y > 0:
+            og_index = sorted_quadrants[1].index(inverted_og)
+
+            pre_list = sorted_quadrants[1][:og_index]
+            post_list = sorted_quadrants[1][og_index+1:]
+
+            quadrant_order = [2, 3, 0]
+
+        elif inverted_og.delta_x <= 0 and inverted_og.delta_y <= 0:
+            og_index = sorted_quadrants[2].index(inverted_og)
+
+            pre_list = sorted_quadrants[2][:og_index]
+            post_list = sorted_quadrants[2][og_index+1:]
+
+            quadrant_order = [3, 0, 1]
+
+        if include_inverted_og:
+            pre_list.append(inverted_og)
+
 
         ### Step 5: Creating the final list :)
         final_list = []
 
         final_list.extend(post_list)
-        final_list.extend(quadrants[0])
-        final_list.extend(quadrants[1])
-        final_list.extend(quadrants[2])
+        final_list.extend(sorted_quadrants[quadrant_order[0]])
+        final_list.extend(sorted_quadrants[quadrant_order[1]])
+        final_list.extend(sorted_quadrants[quadrant_order[2]])
         final_list.extend(pre_list)
+
+        debug = False
+        if debug:
+            print()
+            print(edge_list, 'initial edge_list', len(edge_list), 'edges')
+            print()
+            print(quadrants[0], 'Q1')
+            print(quadrants[1], 'Q2')
+            print(quadrants[2], 'Q3')
+            print(quadrants[3], 'Q4')
+            print()
+            print(post_list, 'post list')
+            print(sorted_quadrants[quadrant_order[0]], f'quadrant{quadrant_order[0]}')
+            print(sorted_quadrants[quadrant_order[1]], f'quadrant{quadrant_order[1]}')
+            print(sorted_quadrants[quadrant_order[2]], f'quadrant{quadrant_order[2]}')
+            print()
+
+
 
         return final_list
 
@@ -357,6 +395,8 @@ class Graph:
     @property
     def ordered_edges(self) -> list[Edge]:
         '''
+        DP algorithm to order edges,
+        #NOTE: HIGHLY DEPENDENT ON 'Edge.anticlockwise_successors()'
 
         :return: an ordered list of how to traverse the trace in a continual manner
         '''
@@ -366,8 +406,8 @@ class Graph:
         next_edge = list(self.vertex_edge.values())[0][0]
         while len(visited) < self.edge_count:
 
-            print()
-            print(next_edge, 'start')
+            # print()
+            # print(next_edge, 'start')
             ordered_edges.append(next_edge)
             
             next_v = next_edge.end
@@ -376,51 +416,30 @@ class Graph:
                 # dead end must return
                 next_edge = self.vertex_edge[next_v][0]
                 visited.add(next_edge)
-                print(next_edge, 'DEADEND')
+                # print(next_edge, 'DEADEND')
 
             else:
                 successors = next_edge.anticlockwise_successors(self.vertex_edge[next_v])
-                print(successors, 'successors')
+                # print(successors, 'successors')
                 for edge in successors:
-                    print('potential edge', edge, edge not in visited, edge.reversed() != next_edge)
+                    # print('potential edge', edge, edge not in visited, edge.reversed() != next_edge)
                     if edge not in visited and edge.reversed() != next_edge:
-                        print('yes')
+                        # print('yes')
                         next_edge = edge
                         visited.add(next_edge)
                         break
 
                     else:
-                        print('no')
+                        pass
+                        # print('no')
                 else:
                     ### This is now an non-tree graph.
                     ### Backtracking !!!
 
-                    ### THE FOLLOWING CODE IS ONLY TEMPORARY WORKAROUND!!
-                    # This code doesn't deal with real internal edges of a non-tree graph
-                    # it just ignore very tiny edges that looks like internal edge
-                    # in the future I should detect it with the backtracking algorithm and ignore it too.
-                    # print(len(visited), self.edge_count)
-                    # internal_edges = []
-                    # for edge_list in self.vertex_edge.values():
-                    #     for edge in edge_list:
-                    #         if edge not in visited:
-                    #             internal_edges.append(edge)
-
-                    # for edge in internal_edges:
-                    #     if edge.delta_x <= 0.05 and edge.delta_y <= 0.05:
-                    #         continue
-                    #     else:
-                    #         # Found a large edge not accounted for, This is definetly an internal edge. MUST deal with!
-                    #         break
-                    # else:
-                    #     # All captured edges are less then 0.05 in x and y so they're tiny wrong edges by user
-                    #     break
-
                     Edge.visualize_edges(ordered_edges, speed=1, terminate=True)
-                    raise ValueError("No backtracking implemented!!")
+                    raise ValueError("Backtracking not implemented yet!!")
                 
-
-        Edge.visualize_edges(ordered_edges, speed=1, terminate=True)
+        # Edge.visualize_edges(ordered_edges, speed=1)
         return ordered_edges
 
     def __contains__(self, vertex: Coordinate) -> bool:
@@ -582,37 +601,72 @@ class Graph:
         '''
         new_graph = Graph()
 
-        for vertex, edges in self.vertex_edge.items():
+        ordered_edges = self.ordered_edges
+        last_edge = ordered_edges[-1]
 
-            for edge in edges:
+        gradient = last_edge.gradient
+        alpha = math.atan(last_edge.gradient)
+        theta = math.pi/2 - alpha
+        abs_offset = last_edge.thickness/2
+        y_offset = abs_offset / math.sin(theta)
+        prev_y_intercept = last_edge.y_intercept - y_offset
+        prev_gradient = gradient
 
-                ### Getting the linear equation of the offseted line
-                # The Gradient is ofcoarse the same as the gradient of the original line since they're parallel
-                # to get the y-intercept however I devised the following algorithm :)
-                gradient = edge.gradient
+        first_edge = ordered_edges[0]
 
-                alpha = math.atan(edge.gradient)
-                theta = math.pi/2 - alpha
+        gradient = first_edge.gradient
+        alpha = math.atan(first_edge.gradient)
+        theta = math.pi/2 - alpha
+        abs_offset = first_edge.thickness/2
+        y_offset = abs_offset / math.sin(theta)
+        y_intercept = first_edge.y_intercept - y_offset
 
-                abs_offset = edge.thickness/2
-                
-                y_offset = abs_offset / math.sin(theta)
+        x = round((y_intercept - prev_y_intercept) / (prev_gradient - gradient), 3)
+        y = round(gradient * x + y_intercept, 3)
 
-                y_intercept = self.y_intercept - y_offset  #NOTE: I could add/sub, it doesn't matter it just MUST be same for all
+        prev_vertex = Coordinate(x, y)
+        new_graph.add_vertex(prev_vertex)
+        prev_y_intercept = y_intercept
+        prev_gradient = gradient
+        for edge in ordered_edges[1:]:
 
-                # offseted line equation is now 
-                # y = gradient * x + y_intercept    :)
+            ### Getting the linear equation of the offseted line
+            # The Gradient is ofcoarse the same as the gradient of the original line since they're parallel
+            # to get the y-intercept however I devised the following algorithm :)
+            gradient = edge.gradient
 
-                ### Now we must get the start and end coordinates
-                # which is the intersection between the line after and the line before
-                x = (y_intercept - prev_y_intercept) / (prev_gradient - gradient)
-                y = gradient * x + y_intercept
+            alpha = math.atan(edge.gradient)
+            theta = math.pi/2 - alpha
 
+            abs_offset = edge.thickness/2
+            
+            y_offset = abs_offset / math.sin(theta)
 
-                ### Setting variables for next iteration
-                prev_y_intercept = y_intercept
-                prev_gradient = gradient
+            y_intercept = edge.y_intercept - y_offset  #NOTE: I could add/sub, it doesn't matter it just MUST be same for all
 
+            # offseted line equation is now 
+            # y = gradient * x + y_intercept    :)
+
+            ### Now we must get the start and end coordinates
+            # which is the intersection between the line after and the line before
+            # solving simultaneous equation
+            x = round((y_intercept - prev_y_intercept) / (prev_gradient - gradient), 3)
+            y = round(gradient * x + y_intercept, 3)
+            current_vertex = Coordinate(x, y)
+
+            ### Creating the new vertex for next iteration
+            new_graph.add_vertex(current_vertex)
+
+            ### Creating the new edge between prev iteration vertex and current
+            new_graph.add_edge(Edge(prev_vertex, current_vertex, LASER_BEAM_THICKNESS))
+
+            ### Setting variables for next iteration
+            prev_y_intercept = y_intercept
+            prev_gradient = gradient
+            prev_vertex = current_vertex
+
+        new_graph.visualize(terminate=True)
+        raise ValueError("finished apply_offset :)")
         return new_graph
 
     def to_coordinate(self) -> list[Coordinate]:
