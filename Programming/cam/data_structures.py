@@ -143,7 +143,7 @@ class Edge:
         :returns: gradient of the edge
         '''
         try:
-            return self.delta_y / self.delta_x
+            return round(self.delta_y / self.delta_x, 3)
         except ZeroDivisionError:
             return Infinity() 
 
@@ -603,63 +603,95 @@ class Graph:
 
         ordered_edges =self.ordered_edges
 
+        ### PRE-ITERATION: get y=mx+c of edge of ind=-1
         # Getting gradient and y_intercept of last edge in cycle
         last_edge = ordered_edges[-1]
         gradient = last_edge.gradient
-        alpha = math.atan(last_edge.gradient)
-        theta = math.pi/2 - alpha
-        abs_offset = last_edge.thickness/2
-        y_offset = abs_offset / math.sin(theta)
+        alpha = round(math.atan(last_edge.gradient), 3)
+        theta = round(math.pi/2 - alpha, 3)
+        abs_offset = round(last_edge.thickness/2, 3)
+        y_offset = round(abs_offset / math.sin(theta), 3)
 
-        prev_y_intercept = last_edge.y_intercept - y_offset
+        if last_edge.delta_x > 0:
+            prev_y_intercept = round(last_edge.y_intercept - y_offset, 3)
+        elif last_edge.delta_x < 0:
+            prev_y_intercept = round(last_edge.y_intercept + y_offset, 3)
+        elif last_edge.delta_x == 0:
+            if last_edge.delta_y > 0:
+                prev_y_intercept = round(last_edge.y_intercept - y_offset, 3)
+            elif last_edge.delta_y < 0:
+                prev_y_intercept = round(last_edge.y_intercept + y_offset, 3)
+
         prev_gradient = gradient
-
-        first_encounter = True
 
         for ind, edge in enumerate(ordered_edges):
 
-            ### Getting the linear equation of the offseted line
+            ### 1- Getting the linear equation of the offseted line
             # The Gradient is ofcoarse the same as the gradient of the original line since they're parallel
             # to get the y-intercept however I devised the following algorithm :)
             gradient = edge.gradient
 
-            alpha = math.atan(edge.gradient)
-            theta = math.pi/2 - alpha
+            alpha = round(math.atan(edge.gradient), 3)
+            theta = round(math.pi/2 - alpha, 3)
 
-            abs_offset = edge.thickness/2
+            abs_offset = round(edge.thickness/2, 3)
             
-            y_offset = abs_offset / math.sin(theta)
+            y_offset = round(abs_offset / math.sin(theta), 3)
 
-            y_intercept = edge.y_intercept - y_offset  #NOTE: I could add/sub, it doesn't matter it just MUST be same for all
+            if edge.delta_x > 0:
+                y_intercept = round(edge.y_intercept - y_offset, 3)
+            elif edge.delta_x < 0:
+                y_intercept = round(edge.y_intercept + y_offset, 3)
+            elif edge.delta_x == 0:
+                if edge.delta_y > 0:
+                    y_intercept = round(edge.y_intercept - y_offset, 3)
+                elif edge.delta_y < 0:
+                    y_intercept = round(edge.y_intercept + y_offset, 3)
+
 
             # offseted line equation is now 
             # y = gradient * x + y_intercept    :)
 
-            ### Now we must get the start and end coordinates
-            # which is the intersection between the line after and the line before
-            # solving simultaneous equation
-            if (prev_gradient - gradient) != 0 and first_encounter:  
-                # lines are not parallel
+            ### Parrallel edges are dealth with differently compared to non-parallel edges
+            if (prev_gradient - gradient) != 0:  # lines are not parallel
+
+                ### 2- Getting intersection between previous edge and current edge to get 'current_vertex'
+                # Solving simultaneous equations :)
                 x = round((y_intercept - prev_y_intercept) / (prev_gradient - gradient), 3)
                 y = round(gradient * x + y_intercept, 3)
 
-                ### Creating the new vertex for next iteration
+                # Adding the vertex to the graph
                 current_vertex = Coordinate(x, y)
                 new_graph.add_vertex(current_vertex)
 
-                ### Creating the new edge between prev iteration vertex and current
-                if ind != 0:
+                ### 3- Creating and adding a new edge between previous vertex and current vertex
+                if ind != 0:  # ONLY FOR ITERATIONS OF INDEX>1
                     current_edge = Edge(prev_vertex, current_vertex, LASER_BEAM_THICKNESS)
                     new_graph.add_edge(current_edge)
 
                 debug = True
                 if debug:
-                    print(edge, 'current ordered edge')
+                    print(f'Current edge index: {ind}')
+                    print(f'Current edge : {edge}')
+                    print()
 
-                    print(current_vertex, 'current_vertex')
                     if ind != 0:
-                        print(prev_vertex, 'prev_vertex')
-                        print(current_edge, 'current_edge')
+                        print(f'Previous offseted Vertex: {prev_vertex}')
+                    else:
+                        print(f'No prev offseted vertex for first iterations')
+                    print(f'Previous offseted edge linear equations:\ny = {prev_gradient}*x + {prev_y_intercept}')
+                    print()
+
+                    print(f'Current offseted Vertex: {current_vertex}')
+                    print(f'Current offseted edge linear equations: y = {gradient}*x + {y_intercept}')
+                    print()
+
+                    if ind != 0:
+                        print(f'Newly Created Edge: {current_edge}')
+                    else:
+                        print(f'No edge to be created for first iteration')
+                    print()
+
                     print()
 
                 ### Setting variables for next iteration
@@ -668,85 +700,66 @@ class Graph:
                 prev_vertex = current_vertex
 
             else:  
-                # lines are parallel and must join them with circle
+                # lines are parallel and must join them with semi-circle
 
-                ### TEMPORARY SOLUTION, will connect them with a straight line for now
-                #NOTE: parallel line handling is done in 2 iterations
+                #NOTE: This is a TEMPORARY SOLUTION, will connect them with a straight 
+                # line for now, should connect them with semi-circle
 
-                if first_encounter:
-                    ### Finding linear equation of inverse line
-                    gradient_inverse = - (1/prev_gradient)
-                    y_intercept_inverse = edge.end.y - gradient_inverse*edge.end.x
+                ### 2- Getting invserse linear equation (for next step)
+                inverse_gradient = round((-1)/gradient, 3)
+                inverse_y_intercept = round(edge.start.y - inverse_gradient*edge.start.x, 3)
 
-                    ### Finding coordinates of intersection between inverse line and offseted line
-                    x = round((y_intercept_inverse - y_intercept) / (gradient - gradient_inverse), 3)
-                    y = round(gradient*x + y_intercept, 3)
+                ### 3- Create and add the two connecting vertices of the deadend to the graph
+                # Find intersection b/w:
+                # current offseted edge and inverse line
+                # previous offseted edge and inverse line
+                x = round((inverse_y_intercept - prev_y_intercept) / (prev_gradient - inverse_gradient), 3)
+                y = round(inverse_gradient*x + inverse_y_intercept, 3)
+                vertex1 = Coordinate(x, y)
+                new_graph.add_vertex(vertex1)
 
-                    ### Creating the new vertex for next iteration
-                    current_vertex = Coordinate(x, y)
-                    new_graph.add_vertex(current_vertex)
+                x = round((inverse_y_intercept - y_intercept) / (gradient - inverse_gradient), 3)
+                y = round(inverse_gradient*x + inverse_y_intercept, 3)
+                vertex2 = Coordinate(x, y)
+                new_graph.add_vertex(vertex2)
 
-                    ### Creating the new edge between prev iteration vertex and current
-                    current_edge = Edge(prev_vertex, current_vertex, LASER_BEAM_THICKNESS)
-                    new_graph.add_edge(current_edge)
+                ### 4- Adding the new edges to the graph
+                # b/w:
+                # previous vertex and V1
+                # V1 and V2
+                edge1 = Edge(prev_vertex, vertex1, LASER_BEAM_THICKNESS)
+                new_graph.add_edge(edge1)
+                edge2 = Edge(vertex1, vertex2, LASER_BEAM_THICKNESS)
+                new_graph.add_edge(edge2)
 
-                    ### Setting variables for next iteration
-                    prev_y_intercept = y_intercept
-                    prev_gradient = gradient
-                    prev_vertex = current_vertex
-                    first_encounter = False
-
-                else:
-                    ### For second iterations MUST 
-                    ### 1- create the point and edge of intersection between inverse edge and prev edge
-                    ### Finding linear equation of inverse line on the other side
-                    gradient_inverse = - (1/prev_gradient)
-                    y_intercept_inverse = edge.start.y - gradient_inverse*edge.start.x
-
-                    ### Finding coordinates of intersection between inverse line and offseted line
-                    x = round((y_intercept_inverse - prev_y_intercept) / (prev_gradient - gradient_inverse), 3)
-                    y = round(prev_gradient*x + prev_y_intercept, 3)
-
-                    ### Creating the new vertex for next iteration
-                    current_vertex = Coordinate(x, y)
-                    new_graph.add_vertex(current_vertex)
-
-                    ### Creating the new edge between prev iteration vertex and current
-                    current_edge = Edge(prev_vertex, current_vertex, LASER_BEAM_THICKNESS)
-                    new_graph.add_edge(current_edge)
-
-                    ### 2- Do a normal iteration between prev edge and current_edge
-                    x = round((y_intercept - prev_y_intercept) / (prev_gradient - gradient), 3)
-                    y = round(gradient * x + y_intercept, 3)
-
-                    ### Creating the new vertex for next iteration
-                    current_vertex = Coordinate(x, y)
-                    new_graph.add_vertex(current_vertex)
-
-                    ### Creating the new edge between prev iteration vertex and current
-                    current_edge = Edge(prev_vertex, current_vertex, LASER_BEAM_THICKNESS)
-                    new_graph.add_edge(current_edge)
-
-                    ### Setting variables for next iteration
-                    prev_y_intercept = y_intercept
-                    prev_gradient = gradient
-                    prev_vertex = current_vertex
-                    first_encounter = True
-
-
-                debug = True
                 if debug:
-                    print('Parallel lines !!')
-                    print('first_encounter', first_encounter)
-                    print(edge, 'current ordered edge')
-
-                    print(current_vertex, 'current_vertex')
-                    if ind != 0:
-                        print(prev_vertex, 'prev_vertex')
-                        print(current_edge, 'current_edge')
+                    print('PARALLEL EDGE DETECTED!!!')
+                    print(f'Current edge index: {ind}')
+                    print(f'Current edge : {edge}')
                     print()
 
+                    print(f'Previous offseted Vertex: {prev_vertex}')
+                    print(f'Previous offseted edge linear equations:\ny = {prev_gradient}*x + {prev_y_intercept}')
+                    print()
+
+                    print(f'Inverse linear equation:\ny = {inverse_gradient}*x + {inverse_y_intercept}')
+                    print()
+
+                    print(f'Current offseted edge linear equations: y = {gradient}*x + {y_intercept}')
+                    print()
+
+                    print(f'vertex1: {vertex1}')
+                    print(f'vertex2: {vertex2}')
+                    print(f'edge1 (prev to inverse): {edge1}')
+                    print(f'edge2 (inverse to current): {edge2}')
+                    print()
+
+                    print()
                
+                ### 5- Setting previous variable for next iteration
+                prev_vertex = vertex2
+                prev_gradient = gradient
+                prev_y_intercept = y_intercept
 
 
         new_graph.visualize(terminate=True)
