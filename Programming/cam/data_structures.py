@@ -12,11 +12,35 @@ class Infinity():
     def __init__(self):
         self.value = 'infinity'
 
+    def __add__(self, other) -> Infinity:
+        '''
+        add magic method to divide addition
+        '''
+        return Infinity()
+
+    def __sub__(self, other) -> Infinity:
+        '''
+        add magic method to divide addition
+        '''
+        return Infinity()
+
+    def __mul__(self, other) -> Infinity:
+        '''
+        add magic method to divide addition
+        '''
+        return Infinity()
+
+    def __truediv__(self, other) -> Infinity:
+        '''
+        add magic method to divide addition
+        '''
+        return Infinity()
+
     def __lt__(self, other) -> bool:
         '''
         less than method definition
         '''
-        if type(other) != int and type(other) != float:
+        if type(other) != int and type(other) != float and type(other) != Infinity:
             raise ValueError("must compare infinity to numbers only")
 
         return False
@@ -25,19 +49,25 @@ class Infinity():
         '''
         equal than method definition
         '''
-        if type(other) != int and type(other) != float:
+        if type(other) != int and type(other) != float and type(other) != Infinity:
             raise ValueError("must compare infinity to numbers only")
 
-        return False
+        if type(other) == Infinity:
+            return True
+        else:
+            return False
 
     def __gt__(self, other) -> bool:
         '''
         greater than method definition
         '''
-        if type(other) != int and type(other) != float:
+        if type(other) != int and type(other) != float and type(other) != Infinity:
             raise ValueError("must compare infinity to numbers only")
 
-        return True
+        if type(other) == Infinity:
+            return False
+        else:
+            return True
 
 LASER_BEAM_THICKNESS = 0.05
 
@@ -299,6 +329,36 @@ class Edge:
 
         if terminate:
             turtle.done()
+
+    def intersection(self, other: Edge) -> Coordinate:
+        '''
+        :param self: the first edge 
+        :param other: the second edge 
+
+        returns the coordinate of intersection between self and other
+        '''
+        if type(self.gradient) != Infinity() and type(other) != Infinity():
+            if (prev_gradient - gradient) != 0:
+                x = round((y_intercept - prev_y_intercept) / (prev_gradient - gradient), 3)
+                y = round(gradient * x + y_intercept, 3)
+                return Coordinate(x, y)
+            else:
+                return None
+
+        elif type(self.gradient) == Infinity() and type(other) != Infinity():
+            x = self.start.x
+            y = round(other.gradient*x + other.y_intercept, 3)
+            return Coordinate(x, y)
+
+        elif type(self.gradient) != Infinity() and type(other) == Infinity():
+            x = other.start.x
+            y = round(self.gradient*x + self.y_intercept, 3)
+            return Coordinate(x, y)
+
+        elif type(self.gradient) == Infinity() and type(other) == Infinity():
+            # it's either infinite intersections if same line or no intersection if different lines
+            return None
+
 
     def __eq__(self, other) -> bool:
         '''
@@ -601,26 +661,22 @@ class Graph:
         '''
         new_graph = Graph()
 
-        ordered_edges =self.ordered_edges
+        ordered_edges = self.ordered_edges
 
         ### PRE-ITERATION: get y=mx+c of edge of ind=-1
         # Getting gradient and y_intercept of last edge in cycle
         last_edge = ordered_edges[-1]
         gradient = last_edge.gradient
-        alpha = round(math.atan(last_edge.gradient), 3)
-        theta = round(math.pi/2 - alpha, 3)
         abs_offset = round(last_edge.thickness/2, 3)
-        y_offset = round(abs_offset / math.sin(theta), 3)
+        if last_edge.gradient != Infinity():
+            alpha = round(math.atan(last_edge.gradient), 3)
+            theta = round(math.pi/2 - alpha, 3)
+            y_offset = round(abs_offset / math.sin(theta), 3)
 
         if last_edge.delta_x > 0:
             prev_y_intercept = round(last_edge.y_intercept - y_offset, 3)
         elif last_edge.delta_x < 0:
             prev_y_intercept = round(last_edge.y_intercept + y_offset, 3)
-        elif last_edge.delta_x == 0:
-            if last_edge.delta_y > 0:
-                prev_y_intercept = round(last_edge.y_intercept - y_offset, 3)
-            elif last_edge.delta_y < 0:
-                prev_y_intercept = round(last_edge.y_intercept + y_offset, 3)
 
         prev_gradient = gradient
 
@@ -630,35 +686,30 @@ class Graph:
             # The Gradient is ofcoarse the same as the gradient of the original line since they're parallel
             # to get the y-intercept however I devised the following algorithm :)
             gradient = edge.gradient
-
-            alpha = round(math.atan(edge.gradient), 3)
-            theta = round(math.pi/2 - alpha, 3)
-
             abs_offset = round(edge.thickness/2, 3)
-            
-            y_offset = round(abs_offset / math.sin(theta), 3)
+
+            if gradient != Infinity():
+                alpha = round(math.atan(edge.gradient), 3)
+                theta = round(math.pi/2 - alpha, 3)
+                y_offset = round(abs_offset / math.sin(theta), 3)
 
             if edge.delta_x > 0:
                 y_intercept = round(edge.y_intercept - y_offset, 3)
             elif edge.delta_x < 0:
                 y_intercept = round(edge.y_intercept + y_offset, 3)
-            elif edge.delta_x == 0:
-                if edge.delta_y > 0:
-                    y_intercept = round(edge.y_intercept - y_offset, 3)
-                elif edge.delta_y < 0:
-                    y_intercept = round(edge.y_intercept + y_offset, 3)
-
 
             # offseted line equation is now 
             # y = gradient * x + y_intercept    :)
 
             ### Parrallel edges are dealth with differently compared to non-parallel edges
-            if (prev_gradient - gradient) != 0:  # lines are not parallel
+            if (gradient - prev_gradient) != 0:  # lines are not parallel
 
                 ### 2- Getting intersection between previous edge and current edge to get 'current_vertex'
                 # Solving simultaneous equations :)
+                # if gradient != Infinity():
                 x = round((y_intercept - prev_y_intercept) / (prev_gradient - gradient), 3)
                 y = round(gradient * x + y_intercept, 3)
+                current_vertex = #TODO: must incorporate y_intercept, prev_y_intercept, prev_gradient, gradient in this
 
                 # Adding the vertex to the graph
                 current_vertex = Coordinate(x, y)

@@ -144,3 +144,16 @@
         return final_list
 
 
+
+
+#####################
+
+        elif last_edge.delta_x == 0:
+            if last_edge.delta_y > 0:
+                # prev_y_intercept = round(last_edge.y_intercept - y_offset, 3)
+                pass
+            elif last_edge.delta_y < 0:
+                # prev_y_intercept = round(last_edge.y_intercept + y_offset, 3)
+                pass
+
+
