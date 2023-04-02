@@ -69,6 +69,9 @@ class Infinity():
         else:
             return True
 
+    def __str__(self) -> str:
+        return '<Infinity bitches>'
+
 LASER_BEAM_THICKNESS = 0.05
 
 @dataclass
@@ -511,13 +514,13 @@ class Graph:
         '''
         return vertex in list(self.vertex_vertices.keys())
 
-    def visualize(self, line_width=3, multiplier=8, terminate=False) -> None:
+    def visualize(self, offset=20, speed = 0, line_width=3, multiplier=8, terminate=False) -> None:
         '''
         Uses Python Turtle graphs to draw the graph
         '''
         skk = turtle.Turtle()
         turtle.width(line_width)
-        turtle.speed(0)
+        turtle.speed(speed)
         turtle.hideturtle()
 
         colors = ['black', 'red', 'blue', 'light blue', 'green', 'brown', 'yellow', 'orange', 'gray', 'indigo']
@@ -530,11 +533,11 @@ class Graph:
         turtle.up()
 
         for edges in self.vertex_edge.values():
-            turtle.setpos(edges[0].start.x*multiplier, edges[0].start.y*multiplier)
+            turtle.setpos((edges[0].start.x - offset) * multiplier, (edges[0].start.y - offset) * multiplier)
             for edge in edges:
                 turtle.down()
-                turtle.setpos(edge.start.x*multiplier, edge.start.y*multiplier)
-                turtle.setpos(edge.end.x*multiplier, edge.end.y*multiplier)
+                turtle.setpos((edge.start.x - offset) * multiplier, (edge.start.y - offset) * multiplier)
+                turtle.setpos((edge.end.x - offset) * multiplier, (edge.end.y - offset) * multiplier)
                 turtle.up()
 
         Graph.used_colors.add(color)
@@ -673,10 +676,18 @@ class Graph:
             theta = round(math.pi/2 - alpha, 3)
             y_offset = round(abs_offset / math.sin(theta), 3)
 
-        if last_edge.delta_x > 0:
-            prev_y_intercept = round(last_edge.y_intercept - y_offset, 3)
-        elif last_edge.delta_x < 0:
-            prev_y_intercept = round(last_edge.y_intercept + y_offset, 3)
+            if last_edge.delta_x > 0:
+                prev_y_intercept = round(last_edge.y_intercept - y_offset, 3)
+
+            elif last_edge.delta_x < 0:
+                prev_y_intercept = round(last_edge.y_intercept + y_offset, 3)
+
+        else:
+            if last_edge.delta_y > 0:
+                vertical_line_offset_x = last_edge.start.x - abs_offset
+
+            elif last_edge.delta_y < 0:
+                vertical_line_offset_x = last_edge.start.x + abs_offset
 
         prev_gradient = gradient
 
@@ -693,23 +704,43 @@ class Graph:
                 theta = round(math.pi/2 - alpha, 3)
                 y_offset = round(abs_offset / math.sin(theta), 3)
 
-            if edge.delta_x > 0:
-                y_intercept = round(edge.y_intercept - y_offset, 3)
-            elif edge.delta_x < 0:
-                y_intercept = round(edge.y_intercept + y_offset, 3)
+                if edge.delta_x > 0:
+                    y_intercept = round(edge.y_intercept - y_offset, 3)
+
+                elif edge.delta_x < 0:
+                    y_intercept = round(edge.y_intercept + y_offset, 3)
+
+            else:
+                if edge.delta_y > 0:
+                    vertical_line_offset_x = edge.start.x - abs_offset
+
+                elif edge.delta_y < 0:
+                    vertical_line_offset_x = edge.start.x + abs_offset
 
             # offseted line equation is now 
             # y = gradient * x + y_intercept    :)
 
-            ### Parrallel edges are dealth with differently compared to non-parallel edges
-            if (gradient - prev_gradient) != 0:  # lines are not parallel
+            ### Parrallel opposite direction edges are essentially deadends, point of return
+            # They are dealt with differently in the else statement
+            if gradient != prev_gradient: #TODO: implement direction testingor edge.delta_x != current_edge.delta_x:
 
                 ### 2- Getting intersection between previous edge and current edge to get 'current_vertex'
                 # Solving simultaneous equations :)
-                # if gradient != Infinity():
-                x = round((y_intercept - prev_y_intercept) / (prev_gradient - gradient), 3)
-                y = round(gradient * x + y_intercept, 3)
-                current_vertex = #TODO: must incorporate y_intercept, prev_y_intercept, prev_gradient, gradient in this
+                if gradient == Infinity() and prev_gradient != Infinity():
+                    x = round(vertical_line_offset_x, 3)
+                    y = round(prev_gradient * x + prev_y_intercept, 3)
+
+                elif prev_gradient == Infinity() and gradient != Infinity():
+                    x = round(prev_vertex.x, 3)
+                    y = round(gradient * x + y_intercept, 3)
+
+                elif prev_gradient == Infinity() and gradient == Infinity():
+                    pass  #TODO:
+
+                else: # both gradient not infinity
+                    x = round((y_intercept - prev_y_intercept) / (prev_gradient - gradient), 3)
+                    y = round(gradient * x + y_intercept, 3)
+
 
                 # Adding the vertex to the graph
                 current_vertex = Coordinate(x, y)
@@ -756,22 +787,47 @@ class Graph:
                 #NOTE: This is a TEMPORARY SOLUTION, will connect them with a straight 
                 # line for now, should connect them with semi-circle
 
-                ### 2- Getting invserse linear equation (for next step)
-                inverse_gradient = round((-1)/gradient, 3)
-                inverse_y_intercept = round(edge.start.y - inverse_gradient*edge.start.x, 3)
+                if gradient == Infinity():
+                    ### 2&3- Create and add the two connecting vertices of the deadend to the graph
+                    # Find intersection b/w:
+                    # current offseted edge and inverse line
+                    # previous offseted edge and inverse line
+                    x1 = edge.start.x - abs_offset
+                    x2 = edge.start.x + abs_offset
 
-                ### 3- Create and add the two connecting vertices of the deadend to the graph
-                # Find intersection b/w:
-                # current offseted edge and inverse line
-                # previous offseted edge and inverse line
-                x = round((inverse_y_intercept - prev_y_intercept) / (prev_gradient - inverse_gradient), 3)
-                y = round(inverse_gradient*x + inverse_y_intercept, 3)
-                vertex1 = Coordinate(x, y)
+                    y1 = edge.start.y
+                    y2 = y1
+
+                elif gradient == 0:
+                    ### 2&3- Create and add the two connecting vertices of the deadend to the graph
+                    # Find intersection b/w:
+                    # current offseted edge and inverse line
+                    # previous offseted edge and inverse line
+                    x1 = edge.start.x
+                    x2 = x1
+
+                    y1 = edge.start.y - abs_offset
+                    y2 = edge.start.y + abs_offset
+
+                else:
+                    ### 2- Getting invserse linear equation (for next step)
+                    inverse_gradient = round((-1)/gradient, 3)
+                    inverse_y_intercept = round(edge.start.y - inverse_gradient*edge.start.x, 3)
+
+                    ### 3- Create and add the two connecting vertices of the deadend to the graph
+                    # Find intersection b/w:
+                    # current offseted edge and inverse line
+                    # previous offseted edge and inverse line
+                    x1 = round((inverse_y_intercept - prev_y_intercept) / (prev_gradient - inverse_gradient), 3)
+                    y1 = round(inverse_gradient*x + inverse_y_intercept, 3)
+
+                    x2 = round((inverse_y_intercept - y_intercept) / (gradient - inverse_gradient), 3)
+                    y2 = round(inverse_gradient*x + inverse_y_intercept, 3)
+
+                vertex1 = Coordinate(x1, y1)
                 new_graph.add_vertex(vertex1)
 
-                x = round((inverse_y_intercept - y_intercept) / (gradient - inverse_gradient), 3)
-                y = round(inverse_gradient*x + inverse_y_intercept, 3)
-                vertex2 = Coordinate(x, y)
+                vertex2 = Coordinate(x2, y2)
                 new_graph.add_vertex(vertex2)
 
                 ### 4- Adding the new edges to the graph
@@ -812,8 +868,8 @@ class Graph:
                 prev_gradient = gradient
                 prev_y_intercept = y_intercept
 
-
-        new_graph.visualize(terminate=True)
+        Edge.visualize_edges(self.ordered_edges, speed=3)
+        new_graph.visualize(speed=3, line_width=1, terminate=True)
         raise ValueError("finished apply_offset :)")
         return new_graph
 
