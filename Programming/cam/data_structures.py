@@ -145,6 +145,17 @@ class Coordinate:
                 y_max = new_y
 
         return Coordinate(x_min, y_min), Coordinate(x_max, y_max)
+
+    @classmethod
+    def generate_semicircle_coordinates(cls, coordinate1: Coordinate, coordinate2: Coordinate, resolution: int =100) -> list[Coordinate]:
+        '''
+        :param coordinate1: The coordinate the list of semicircle coordinates start from
+        :param coordinate2: The coordinate the list of semicircle coordinates ends at
+        :param resolution: The number of coordinates in the list of semicircle coordinates
+
+        :return: list of coordinates that if joined with straight makes a pseudo semicircle
+        '''
+
  
 
 @dataclass
@@ -300,16 +311,19 @@ class Edge:
         return Edge(self.end, self.start, self.thickness)
 
     @classmethod
-    def visualize_edges(cls, edges: list[Edge], speed=0, offset=20, line_width=3, multiplier=8, terminate=False) -> None:
+    def visualize_edges(cls, edges: list[Edge], hide_turtle=True, speed=0, offset=20, line_width=3, multiplier=8, terminate=False) -> None:
         '''
         visualizes the sequence of edges in a list 
         '''
         skk = turtle.Turtle()
         turtle.width(line_width)
         turtle.speed(speed)
-        # turtle.hideturtle()
+        if hide_turtle:
+            turtle.hideturtle()
+        else:
+            turtle.showturtle()
 
-        colors = ['black', 'red', 'blue', 'light blue', 'green', 'brown', 'yellow', 'orange', 'gray', 'indigo']
+        colors = ['black', 'red', 'blue', 'light blue', 'green', 'brown', 'dark green', 'orange', 'gray', 'indigo']
         color = random.choice(colors)
         while color in Graph.used_colors:
             color = random.choice(colors)
@@ -417,6 +431,7 @@ class Graph:
     '''
     # class variables
     used_colors = set()
+    DEBUG_APPLY_OFFSET = True
 
     def __init__(self, vertices: list[Coordinate] = []):
 
@@ -529,16 +544,19 @@ class Graph:
         '''
         return vertex in list(self.vertex_vertices.keys())
 
-    def visualize(self, offset=20, speed = 0, line_width=3, multiplier=8, terminate=False) -> None:
+    def visualize(self, hide_turtle=True, offset=20, speed = 0, line_width=3, multiplier=8, terminate=False) -> None:
         '''
         Uses Python Turtle graphs to draw the graph
         '''
         skk = turtle.Turtle()
         turtle.width(line_width)
         turtle.speed(speed)
-        turtle.hideturtle()
+        if hide_turtle:
+            turtle.hideturtle()
+        else:
+            turtle.showturtle()
 
-        colors = ['black', 'red', 'blue', 'light blue', 'green', 'brown', 'yellow', 'orange', 'gray', 'indigo']
+        colors = ['black', 'red', 'blue', 'light blue', 'green', 'brown', 'dark green', 'orange', 'gray', 'indigo']
         color = random.choice(colors)
         while color in Graph.used_colors:
             color = random.choice(colors)
@@ -670,7 +688,7 @@ class Graph:
 
         return seperated_graphs
 
-    def apply_offsets(self) -> Graph:
+    def apply_offsets(self, extra_offset=0, terminate_after=False) -> Graph:
         '''
         The graph to execute .apply_offsets() to is a graph of continious lines of ZERO thickness,
         This function will create a new graph from the old one with the thickness applied :)
@@ -686,7 +704,7 @@ class Graph:
         # Getting gradient and y_intercept of last edge in cycle
         last_edge = ordered_edges[-1]
         gradient = last_edge.gradient
-        abs_offset = round(last_edge.thickness/2, 3)
+        abs_offset = round(last_edge.thickness/2 + extra_offset, 3)
         if last_edge.gradient != Infinity():
             alpha = round(math.atan(last_edge.gradient), 3)
             theta = round(math.pi/2 - alpha, 3)
@@ -714,7 +732,7 @@ class Graph:
             # The Gradient is ofcoarse the same as the gradient of the original line since they're parallel
             # to get the y-intercept however I devised the following algorithm :)
             gradient = edge.gradient
-            abs_offset = round(edge.thickness/2, 3)
+            abs_offset = round(edge.thickness/2 + extra_offset, 3)
 
             if gradient != Infinity():
                 alpha = round(math.atan(edge.gradient), 3)
@@ -739,7 +757,12 @@ class Graph:
 
             ### Parrallel opposite direction edges are essentially deadends, point of return
             # They are dealt with differently in the else statement
-            if not(gradient == prev_gradient and not edge.is_same_direction(ordered_edges[ind-1])):
+            if ind == 0:
+                # This is because the last item in the list is the first one as I just added it before the main loop
+                same_dir_ind = ind - 1  
+            else:
+                same_dir_ind = ind
+            if not(gradient == prev_gradient and not edge.is_same_direction(ordered_edges[same_dir_ind-1])):
 
                 ### 2- Getting intersection between previous edge and current edge to get 'current_vertex'
                 # Solving simultaneous equations :)
@@ -748,7 +771,7 @@ class Graph:
                     y = round(prev_gradient * x + prev_y_intercept, 3)
 
                 elif prev_gradient == Infinity() and gradient != Infinity():
-                    if edge.delta_y > 0:
+                    if ordered_edges[same_dir_ind-1].delta_y > 0:
                         x = edge.start.x + abs_offset 
                     else:
                         x = edge.start.x - abs_offset 
@@ -772,10 +795,15 @@ class Graph:
                         y = edge.start.y + abs_offset
 
                 elif prev_gradient == gradient:
-                    print(edge, 'NEW CORNER CASE')
+                    if ind != 0:
+                        x = current_edge.end.x
+                        y = current_edge.end.y
+                    else:
+                        raise ValueError('This case is not implemented yet')
+                        pass #TODO:
 
                 else:  # both gradient different and not infinity and not 0
-                    print(prev_gradient, gradient)
+                    print('herkljsodifjlkwjefkjspdoiajf;lkwejpobinqapoiwejf;lkajspeoifjqpaoiwj')
                     x = round((y_intercept - prev_y_intercept) / (prev_gradient - gradient), 3)
                     y = round(gradient * x + y_intercept, 3)
 
@@ -789,8 +817,7 @@ class Graph:
                     current_edge = Edge(prev_vertex, current_vertex, LASER_BEAM_THICKNESS)
                     new_graph.add_edge(current_edge)
 
-                debug = True
-                if debug:
+                if Graph.DEBUG_APPLY_OFFSET:
                     print(f'Current edge index: {ind}')
                     print(f'Current edge : {edge}')
                     print()
@@ -821,7 +848,8 @@ class Graph:
                     print()
 
                 ### Setting variables for next iteration
-                prev_y_intercept = y_intercept
+                if gradient != Infinity():
+                    prev_y_intercept = y_intercept
                 prev_gradient = gradient
                 prev_vertex = current_vertex
 
@@ -837,11 +865,11 @@ class Graph:
                     # current offseted edge and inverse line
                     # previous offseted edge and inverse line
                     if edge.delta_y > 0:
-                        x1 = edge.start.x + abs_offset 
-                        x2 = edge.start.x - abs_offset
-                    else:
                         x1 = edge.start.x - abs_offset 
                         x2 = edge.start.x + abs_offset
+                    else:
+                        x1 = edge.start.x + abs_offset 
+                        x2 = edge.start.x - abs_offset
 
                     y1 = edge.start.y
                     y2 = y1
@@ -855,11 +883,11 @@ class Graph:
                     x2 = x1
 
                     if edge.delta_x > 0:
-                        y1 = edge.start.y - abs_offset 
-                        y2 = edge.start.y + abs_offset
-                    else:
-                        y1 = edge.start.y + abs_offset
+                        y1 = edge.start.y + abs_offset 
                         y2 = edge.start.y - abs_offset
+                    else:
+                        y1 = edge.start.y - abs_offset
+                        y2 = edge.start.y + abs_offset
 
                 else:
                     ### 2- Getting invserse linear equation (for next step)
@@ -879,19 +907,33 @@ class Graph:
                 vertex1 = Coordinate(x1, y1)
                 new_graph.add_vertex(vertex1)
 
+
                 vertex2 = Coordinate(x2, y2)
+
+                semicircle_vertices =  Coordinate.generate_semicircle_coordinates(vertex1, vertex2)
+
+                for semicircle_vertex in semicircle_vertices:
+                    new_graph.add_vertex(semicircle_vertex)
+
                 new_graph.add_vertex(vertex2)
 
                 ### 4- Adding the new edges to the graph
                 # b/w:
                 # previous vertex and V1
                 # V1 and V2
-                edge1 = Edge(prev_vertex, vertex1, LASER_BEAM_THICKNESS)
-                new_graph.add_edge(edge1)
+                if ind != 0:
+                    edge1 = Edge(prev_vertex, vertex1, LASER_BEAM_THICKNESS)
+                    new_graph.add_edge(edge1)
+
+                prev_semicircle_vertex = semicircle_vertices[0]
+                for semicircle_vertex in semicircle_vertices[1:]:
+                    new_graph.add_edge(Edge(prev_semicircle_vertex, semicircle_vertex))
+                    prev_semicircle_vertex = semicircle_vertex
+
                 edge2 = Edge(vertex1, vertex2, LASER_BEAM_THICKNESS)
                 new_graph.add_edge(edge2)
 
-                if debug:
+                if Graph.DEBUG_APPLY_OFFSET:
                     print('PARALLEL EDGE DETECTED!!!')
                     print(f'm=infinity -> {gradient==Infinity()}, m=0 -> {gradient == 0}')
                     print()
@@ -900,8 +942,12 @@ class Graph:
                     print(f'Current edge : {edge}')
                     print()
 
-                    print(f'Previous offseted Vertex: {prev_vertex}')
-                    print(f'Previous offseted edge linear equations:\ny = {prev_gradient}*x + {prev_y_intercept}')
+                    if ind != 0:
+                        print(f'Previous offseted Vertex: {prev_vertex}')
+                    else:
+                        print(f'No prev offseted vertex for first iterations')
+                    if gradient != Infinity():
+                        print(f'Previous offseted edge linear equations:\ny = {prev_gradient}*x + {prev_y_intercept}')
                     print()
 
                     if gradient != Infinity() and gradient != 0:
@@ -910,12 +956,16 @@ class Graph:
                         print(f'prev_gradient = gradient = {gradient} = {prev_gradient}')
                     print()
 
-                    print(f'Current offseted edge linear equations: y = {gradient}*x + {y_intercept}')
+                    if gradient != Infinity():
+                        print(f'Current offseted edge linear equations: y = {gradient}*x + {y_intercept}')
                     print()
 
                     print(f'vertex1: {vertex1}')
                     print(f'vertex2: {vertex2}')
-                    print(f'edge1 (prev to inverse): {edge1}')
+                    if ind != 0:
+                        print(f'edge1 (prev to inverse): {edge1}')
+                    else:
+                        print('No edge1 for first iteration')
                     print(f'edge2 (inverse to current): {edge2}')
                     print()
 
@@ -924,10 +974,11 @@ class Graph:
                 ### 5- Setting previous variable for next iteration
                 prev_vertex = vertex2
                 prev_gradient = gradient
-                prev_y_intercept = y_intercept
+                if gradient != Infinity():
+                    prev_y_intercept = y_intercept
 
-        Edge.visualize_edges(self.ordered_edges, offset=20, multiplier=10, speed=3)
-        new_graph.visualize(speed=3, line_width=1, offset=20, multiplier = 10)
+        Edge.visualize_edges(self.ordered_edges, hide_turtle=False, offset=25, multiplier=15, speed=3)
+        new_graph.visualize(speed=3, line_width=1, offset=25, multiplier = 15, terminate=terminate_after)
         return new_graph
 
     def to_coordinate(self) -> list[Coordinate]:
@@ -935,6 +986,13 @@ class Graph:
 
         '''
         return []
+
+    def remove_tiny_edges(self) -> None:
+        '''
+        Removes the stupid small infuriating edges that mess up with everything
+        Affects self Graph
+        '''
+        pass #TODO:
 
     def resolve_conflicts(self) -> list[Graph]:
         '''
