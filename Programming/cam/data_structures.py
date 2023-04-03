@@ -362,7 +362,22 @@ class Edge:
             # it's either infinite intersections if same line or no intersection if different lines
             return None
 
+    def is_same_direction(self, other: Edge) -> bool:
+        '''
+        :param self: edge1
+        :param other: edge2
 
+        :returns: whether the two edges are on point to the same direction or not
+        '''
+        if self.gradient != other.gradient:
+            return False
+
+        if self.gradient != Infinity():
+            return (self.delta_x > 0 and other.delta_x > 0) or (self.delta_x < 0 and other.delta_x < 0)
+
+        else:
+            return (self.delta_y > 0 and other.delta_y > 0) or (self.delta_y < 0 and other.delta_y < 0)
+            
     def __eq__(self, other) -> bool:
         '''
         Equality Definition
@@ -662,6 +677,7 @@ class Graph:
 
         :return: Graph with thickness applied. The edges are of thickness 0
         '''
+        print('NEW CALL!!!!!!!!!!')
         new_graph = Graph()
 
         ordered_edges = self.ordered_edges
@@ -691,6 +707,7 @@ class Graph:
 
         prev_gradient = gradient
 
+        ordered_edges.append(ordered_edges[0])  # to force it to do one more iteration at the end
         for ind, edge in enumerate(ordered_edges):
 
             ### 1- Getting the linear equation of the offseted line
@@ -712,17 +729,17 @@ class Graph:
 
             else:
                 if edge.delta_y > 0:
-                    vertical_line_offset_x = edge.start.x - abs_offset
+                    vertical_line_offset_x = edge.start.x + abs_offset
 
                 elif edge.delta_y < 0:
-                    vertical_line_offset_x = edge.start.x + abs_offset
+                    vertical_line_offset_x = edge.start.x - abs_offset
 
             # offseted line equation is now 
             # y = gradient * x + y_intercept    :)
 
             ### Parrallel opposite direction edges are essentially deadends, point of return
             # They are dealt with differently in the else statement
-            if gradient != prev_gradient: #TODO: implement direction testingor edge.delta_x != current_edge.delta_x:
+            if not(gradient == prev_gradient and not edge.is_same_direction(ordered_edges[ind-1])):
 
                 ### 2- Getting intersection between previous edge and current edge to get 'current_vertex'
                 # Solving simultaneous equations :)
@@ -731,13 +748,31 @@ class Graph:
                     y = round(prev_gradient * x + prev_y_intercept, 3)
 
                 elif prev_gradient == Infinity() and gradient != Infinity():
-                    x = round(prev_vertex.x, 3)
+                    if edge.delta_y > 0:
+                        x = edge.start.x + abs_offset 
+                    else:
+                        x = edge.start.x - abs_offset 
+
                     y = round(gradient * x + y_intercept, 3)
 
                 elif prev_gradient == Infinity() and gradient == Infinity():
-                    pass  #TODO:
+                    if edge.delta_y > 0:
+                        x = edge.start.x + abs_offset 
+                    else:
+                        x = edge.start.x - abs_offset 
+
+                    y = edge.start.y
+
+                elif prev_gradient == 0 and gradient == 0:
+                    x = edge.start.x
+
+                    if edge.delta_x > 0:
+                        y = edge.start.y - abs_offset 
+                    else:
+                        y = edge.start.y + abs_offset
 
                 else: # both gradient not infinity
+                    print(prev_gradient, gradient)
                     x = round((y_intercept - prev_y_intercept) / (prev_gradient - gradient), 3)
                     y = round(gradient * x + y_intercept, 3)
 
@@ -761,11 +796,17 @@ class Graph:
                         print(f'Previous offseted Vertex: {prev_vertex}')
                     else:
                         print(f'No prev offseted vertex for first iterations')
-                    print(f'Previous offseted edge linear equations:\ny = {prev_gradient}*x + {prev_y_intercept}')
+                    if prev_gradient != Infinity():
+                        print(f'Previous offseted edge linear equations:\ny = {prev_gradient}*x + {prev_y_intercept}')
+                    else:
+                        print(f'prev_gradient = {prev_gradient}')
                     print()
 
                     print(f'Current offseted Vertex: {current_vertex}')
-                    print(f'Current offseted edge linear equations: y = {gradient}*x + {y_intercept}')
+                    if gradient != Infinity():
+                        print(f'Current offseted edge linear equations: y = {gradient}*x + {y_intercept}')
+                    else:
+                        print(f'gradient = {gradient}')
                     print()
 
                     if ind != 0:
@@ -792,8 +833,12 @@ class Graph:
                     # Find intersection b/w:
                     # current offseted edge and inverse line
                     # previous offseted edge and inverse line
-                    x1 = edge.start.x - abs_offset
-                    x2 = edge.start.x + abs_offset
+                    if edge.delta_y > 0:
+                        x1 = edge.start.x + abs_offset 
+                        x2 = edge.start.x - abs_offset
+                    else:
+                        x1 = edge.start.x - abs_offset 
+                        x2 = edge.start.x + abs_offset
 
                     y1 = edge.start.y
                     y2 = y1
@@ -806,8 +851,12 @@ class Graph:
                     x1 = edge.start.x
                     x2 = x1
 
-                    y1 = edge.start.y - abs_offset
-                    y2 = edge.start.y + abs_offset
+                    if edge.delta_x > 0:
+                        y1 = edge.start.y - abs_offset 
+                        y2 = edge.start.y + abs_offset
+                    else:
+                        y1 = edge.start.y + abs_offset
+                        y2 = edge.start.y - abs_offset
 
                 else:
                     ### 2- Getting invserse linear equation (for next step)
@@ -819,10 +868,10 @@ class Graph:
                     # current offseted edge and inverse line
                     # previous offseted edge and inverse line
                     x1 = round((inverse_y_intercept - prev_y_intercept) / (prev_gradient - inverse_gradient), 3)
-                    y1 = round(inverse_gradient*x + inverse_y_intercept, 3)
+                    y1 = round(inverse_gradient*x1 + inverse_y_intercept, 3)
 
                     x2 = round((inverse_y_intercept - y_intercept) / (gradient - inverse_gradient), 3)
-                    y2 = round(inverse_gradient*x + inverse_y_intercept, 3)
+                    y2 = round(inverse_gradient*x2 + inverse_y_intercept, 3)
 
                 vertex1 = Coordinate(x1, y1)
                 new_graph.add_vertex(vertex1)
@@ -841,6 +890,9 @@ class Graph:
 
                 if debug:
                     print('PARALLEL EDGE DETECTED!!!')
+                    print(f'm=infinity -> {gradient==Infinity()}, m=0 -> {gradient == 0}')
+                    print()
+
                     print(f'Current edge index: {ind}')
                     print(f'Current edge : {edge}')
                     print()
@@ -849,7 +901,10 @@ class Graph:
                     print(f'Previous offseted edge linear equations:\ny = {prev_gradient}*x + {prev_y_intercept}')
                     print()
 
-                    print(f'Inverse linear equation:\ny = {inverse_gradient}*x + {inverse_y_intercept}')
+                    if gradient != Infinity() and gradient != 0:
+                        print(f'Inverse linear equation:\ny = {inverse_gradient}*x + {inverse_y_intercept}')
+                    else:
+                        print(f'prev_gradient = gradient = {gradient} = {prev_gradient}')
                     print()
 
                     print(f'Current offseted edge linear equations: y = {gradient}*x + {y_intercept}')
@@ -868,9 +923,8 @@ class Graph:
                 prev_gradient = gradient
                 prev_y_intercept = y_intercept
 
-        Edge.visualize_edges(self.ordered_edges, speed=3)
-        new_graph.visualize(speed=3, line_width=1, terminate=True)
-        raise ValueError("finished apply_offset :)")
+        Edge.visualize_edges(self.ordered_edges, offset=20, multiplier=10, speed=3)
+        new_graph.visualize(speed=3, line_width=1, offset=20, multiplier = 10)
         return new_graph
 
     def to_coordinate(self) -> list[Coordinate]:
