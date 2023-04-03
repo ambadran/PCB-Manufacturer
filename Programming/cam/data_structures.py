@@ -771,7 +771,10 @@ class Graph:
                     else:
                         y = edge.start.y + abs_offset
 
-                else: # both gradient not infinity
+                elif prev_gradient == gradient:
+                    print(edge, 'NEW CORNER CASE')
+
+                else:  # both gradient different and not infinity and not 0
                     print(prev_gradient, gradient)
                     x = round((y_intercept - prev_y_intercept) / (prev_gradient - gradient), 3)
                     y = round(gradient * x + y_intercept, 3)
