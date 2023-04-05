@@ -175,6 +175,18 @@ class Coordinate:
             inverse_gradient= 0.0
             inverse_y_intercept = b
 
+            raise ValueError("NOT IMPLEMENTED YET")
+
+        elif coordinate2.y == coordinate1.y:
+            gradient = 0.0
+            y_intercept = a ### NOT SURE
+
+            # Get the linear equation of the inverse of the diameter linear equation
+            inverse_gradient = Infinity()
+            inverse_y_intercept = None
+
+            raise ValueError("NOT IMPLEMENTED YET")
+
         else:
             gradient = (coordinate2.y - coordinate1.y) / (coordinate2.x - coordinate1.x)
             y_intercept = coordinate1.y - gradient*coordinate1.x
@@ -183,65 +195,65 @@ class Coordinate:
             inverse_gradient = round(-1/gradient, 3)
             inverse_y_intercept = b - inverse_gradient*a
 
-        ### Step 3: Getting linear equation of tangent to the circle at the maximum
-        # This is done by solving simultaneous equation of circle and the inverse linear equation
-        # This is done to get the coordinates of the maximum and minimum points on the circle relative to our coordinates
-        # The following equations I completely derived on my own on the iPad
-        a_q = 1 + inverse_gradient**2
-        b_q = -2*a + 2*inverse_gradient*inverse_y_intercept - 2*b*inverse_gradient
-        c_q = inverse_y_intercept**2 - 2*b*inverse_y_intercept + b**2 - r**2 + a**2
+            ### Step 3: Getting linear equation of tangent to the circle at the maximum
+            # This is done by solving simultaneous equation of circle and the inverse linear equation
+            # This is done to get the coordinates of the maximum and minimum points on the circle relative to our coordinates
+            # The following equations I completely derived on my own on the iPad
+            a_q = 1 + inverse_gradient**2
+            b_q = -2*a + 2*inverse_gradient*inverse_y_intercept - 2*b*inverse_gradient
+            c_q = inverse_y_intercept**2 - 2*b*inverse_y_intercept + b**2 - r**2 + a**2
 
-        # Now I have the quadratic equation 
-        # a_q * x**2 + b_q * x + c_q = 0
-        # Solving quadratic equation using quadratic formula
-        x1 = round((-b_q + math.sqrt(b_q**2 - 4*a_q*c_q)) / (2*a_q), 3)
-        x2 = round((-b_q - math.sqrt(b_q**2 - 4*a_q*c_q)) / (2*a_q), 3)
+            # Now I have the quadratic equation 
+            # a_q * x**2 + b_q * x + c_q = 0
+            # Solving quadratic equation using quadratic formula
+            x1 = round((-b_q + math.sqrt(b_q**2 - 4*a_q*c_q)) / (2*a_q), 3)
+            x2 = round((-b_q - math.sqrt(b_q**2 - 4*a_q*c_q)) / (2*a_q), 3)
 
-        # Getting values of y by substituting in inverse linear equation
-        y1 = inverse_gradient*x1 + inverse_y_intercept
-        y2 = inverse_gradient*x2 + inverse_y_intercept
-
-
-        # Getting linear equation of maximum point and saving it in a variable, (ignoring minimum point)
-        maximum_point_coordinate = Coordinate(x1, y1)
-        print(maximum_point_coordinate, 'lksjdflksjdkfj')
-        maximum_line_gradient = gradient
-        maximum_line_y_intercept = y1 - maximum_line_gradient*x1
-
-        ### Step 4: Getting the list of y_intercepts of linear equations that intersects the circle
-        y_intercept_range = maximum_line_y_intercept - y_intercept  #TODO: Adapt this for gradient=Infinity()
-        num_iterations = resolution/2 - 1
-        increment = y_intercept_range / num_iterations
-        y_intercept_list = []  #NOTE: It is meant to not include the last coordinate, the maximum_line coordinate, (x1, y1)
-        increment_sum = increment
-        for _ in range(round(num_iterations)):
-            y_intercept_list.append(y_intercept + increment_sum)
-            increment_sum += increment
-
-        ### Step 5: Getting the intersection between circle equation and all the intersection linear equations
-        # from the diameter to the maximum line.
-        semicircle_coords_from_right = []
-        semicircle_coords_from_left = []
-        for current_y_intercept in y_intercept_list:
-            a_q = 1 + gradient**2
-            b_q = -2*a + 2*gradient*current_y_intercept - 2*b*gradient
-            c_q = current_y_intercept**2 - 2*b*current_y_intercept + b**2 - r**2 + a**2
-
-            x1 = round((-b_q + math.sqrt(b_q**2 - 4*a_q*c_q)) / (2*a_q), 6)
+            # Getting values of y by substituting in inverse linear equation
             y1 = inverse_gradient*x1 + inverse_y_intercept
-            semicircle_coords_from_right.append(Coordinate(x1, y1))
-
-            x2 = round((-b_q - math.sqrt(b_q**2 - 4*a_q*c_q)) / (2*a_q), 6)
             y2 = inverse_gradient*x2 + inverse_y_intercept
-            semicircle_coords_from_left.append(Coordinate(x2, y2))
 
-        ### Step 6: Get the final ordered list of coordinates
-        ordered_semicircle_coords = []
-        ordered_semicircle_coords.extend(semicircle_coords_from_right)
-        # ordered_semicircle_coords.append(maximum_point_coordinate)
-        ordered_semicircle_coords.extend(semicircle_coords_from_left)
 
-        return ordered_semicircle_coords
+            # Getting linear equation of maximum point and saving it in a variable, (ignoring minimum point)
+            maximum_point_coordinate = Coordinate(x1, y1)
+            print(maximum_point_coordinate, 'lksjdflksjdkfj')
+            maximum_line_gradient = gradient
+            maximum_line_y_intercept = y1 - maximum_line_gradient*x1
+
+            ### Step 4: Getting the list of y_intercepts of linear equations that intersects the circle
+            y_intercept_range = maximum_line_y_intercept - y_intercept  #TODO: Adapt this for gradient=Infinity()
+            num_iterations = resolution/2 - 1
+            increment = y_intercept_range / num_iterations
+            y_intercept_list = []  #NOTE: It is meant to not include the last coordinate, the maximum_line coordinate, (x1, y1)
+            increment_sum = increment
+            for _ in range(round(num_iterations)):
+                y_intercept_list.append(y_intercept + increment_sum)
+                increment_sum += increment
+
+            ### Step 5: Getting the intersection between circle equation and all the intersection linear equations
+            # from the diameter to the maximum line.
+            semicircle_coords_from_right = []
+            semicircle_coords_from_left = []
+            for current_y_intercept in y_intercept_list:
+                a_q = 1 + gradient**2
+                b_q = -2*a + 2*gradient*current_y_intercept - 2*b*gradient
+                c_q = current_y_intercept**2 - 2*b*current_y_intercept + b**2 - r**2 + a**2
+
+                x1 = round((-b_q + math.sqrt(b_q**2 - 4*a_q*c_q)) / (2*a_q), 6)
+                y1 = inverse_gradient*x1 + inverse_y_intercept
+                semicircle_coords_from_right.append(Coordinate(x1, y1))
+
+                x2 = round((-b_q - math.sqrt(b_q**2 - 4*a_q*c_q)) / (2*a_q), 6)
+                y2 = inverse_gradient*x2 + inverse_y_intercept
+                semicircle_coords_from_left.append(Coordinate(x2, y2))
+
+            ### Step 6: Get the final ordered list of coordinates
+            ordered_semicircle_coords = []
+            ordered_semicircle_coords.extend(semicircle_coords_from_right)
+            # ordered_semicircle_coords.append(maximum_point_coordinate)
+            ordered_semicircle_coords.extend(semicircle_coords_from_left)
+
+            return ordered_semicircle_coords
 
 @dataclass
 class Edge:
