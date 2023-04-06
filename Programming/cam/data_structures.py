@@ -165,29 +165,71 @@ class Coordinate:
         # It's also the half length form coordinate1 to coordinate2
         r = round( (math.sqrt( (coordinate2.x - coordinate1.x)**2 + (coordinate2.y - coordinate1.y)**2 ) / 2) , 3)
 
-        ### Step 2: Get linear equation of the line that passes through the circle diameter, aka the 2 coordinates
-        # Get the linear equation of the diameter coordinates
-        if coordinate2.x == coordinate1.x:
-            gradient = Infinity()
-            y_intercept = None
+        if coordinate2.x == coordinate1.x:  # Gradient = infinity
+            ### Step 2: Get linear equation of the line that passes through the circle diameter, aka the 2 coordinates
+            # Getting equation of a vertical line
+            x = coordinate1.x
+            # y = y  # the independent variable of a vertical line is y
 
-            # Get the linear equation of the inverse of the diameter linear equation
-            inverse_gradient= 0.0
-            inverse_y_intercept = b
+            ### Step 3: Getting linear equation of tangent to the circle at the maximum
+            x_max = x + r  #TODO: IMPLEMENT A CONDITION THAT TELLS IT WHEN TO + or -
+            y = b
 
-            raise ValueError("NOT IMPLEMENTED YET")
+            ### Step 4: Getting the list of y_intercepts of linear equations that intersects the circle
+            x_range = x_max - x
+            num_iterations = resolution/2 - 1
+            increment = x_range / num_iterations
+            increment_sum = increment
+            x_values = []
+            for _ in range(round(num_iterations)):
+                x_values.append(x+increment_sum)
+                increment_sum += increment
 
-        elif coordinate2.y == coordinate1.y:
-            gradient = 0.0
-            y_intercept = a ### NOT SURE
+            ### Step 5: Getting the intersection between circle equation and all the intersection linear equations
+            maximum_point_coordinate = Coordinate(x_max, b)
+            semicircle_coords_from_right = []
+            semicircle_coords_from_left = []
+            for current_x_value in x_values:
+                y1 = round(b + math.sqrt(r**2 - (current_x_value - a)**2))
+                semicircle_coords_from_right.append(Coordinate(current_x_value, y1))
 
-            # Get the linear equation of the inverse of the diameter linear equation
-            inverse_gradient = Infinity()
-            inverse_y_intercept = None
+                y2 = round(b - math.sqrt(r**2 - (current_x_value - a)**2))
+                semicircle_coords_from_left.append(Coordinate(current_x_value, y2))
 
-            raise ValueError("NOT IMPLEMENTED YET")
+        elif coordinate2.y == coordinate1.y:  # Gradient = 0.0
+            ### Step 2: Get linear equation of the line that passes through the circle diameter, aka the 2 coordinates
+            # Getting equation of a horizontal line
+            # x = x  # the independent variable of a horizontal line is x
+            y = coordinate1.y
+
+            ### Step 3: Getting linear equation of tangent to the circle at the maximum
+            x = a
+            y_max = y + r  #TODO: IMPLEMENT A CONDITION THAT TELLS IT WHEN TO + or -
+
+            ### Step 4: Getting the list of y_intercepts of linear equations that intersects the circle
+            y_range = y_max - y
+            num_iterations = resolution/2 - 1
+            increment = y_range / num_iterations
+            increment_sum = increment
+            y_values = []
+            for _ in range(round(num_iterations)):
+                y_values.append(y+increment_sum)
+                increment_sum += increment
+
+            ### Step 5: Getting the intersection between circle equation and all the intersection linear equations
+            maximum_point_coordinate = Coordinate(a, y_max)
+            semicircle_coords_from_right = []
+            semicircle_coords_from_left = []
+            for current_y_value in y_values:
+                x1 = round(a + math.sqrt(r**2 - (current_y_value - b)**2))
+                semicircle_coords_from_right.append(Coordinate(x1, current_y_value))
+
+                x2 = round(a - math.sqrt(r**2 - (current_y_value - b)**2))
+                semicircle_coords_from_left.append(Coordinate(x2, current_y_value))
 
         else:
+            ### Step 2: Get linear equation of the line that passes through the circle diameter, aka the 2 coordinates
+            # Get the linear equation of the diameter coordinates
             gradient = (coordinate2.y - coordinate1.y) / (coordinate2.x - coordinate1.x)
             y_intercept = coordinate1.y - gradient*coordinate1.x
 
@@ -216,7 +258,6 @@ class Coordinate:
 
             # Getting linear equation of maximum point and saving it in a variable, (ignoring minimum point)
             maximum_point_coordinate = Coordinate(x1, y1)
-            print(maximum_point_coordinate, 'lksjdflksjdkfj')
             maximum_line_gradient = gradient
             maximum_line_y_intercept = y1 - maximum_line_gradient*x1
 
@@ -247,13 +288,13 @@ class Coordinate:
                 y2 = inverse_gradient*x2 + inverse_y_intercept
                 semicircle_coords_from_left.append(Coordinate(x2, y2))
 
-            ### Step 6: Get the final ordered list of coordinates
-            ordered_semicircle_coords = []
-            ordered_semicircle_coords.extend(semicircle_coords_from_right)
-            # ordered_semicircle_coords.append(maximum_point_coordinate)
-            ordered_semicircle_coords.extend(semicircle_coords_from_left)
+        ### Step 6: Get the final ordered list of coordinates
+        ordered_semicircle_coords = []
+        ordered_semicircle_coords.extend(semicircle_coords_from_right)
+        # ordered_semicircle_coords.append(maximum_point_coordinate)
+        ordered_semicircle_coords.extend(semicircle_coords_from_left)
 
-            return ordered_semicircle_coords
+        return ordered_semicircle_coords
 
 @dataclass
 class Edge:
@@ -1007,11 +1048,10 @@ class Graph:
 
                 vertex2 = Coordinate(x2, y2)
 
-                semicircle_vertices =  Coordinate.generate_semicircle_coordinates(vertex1, vertex2)
                 print(vertex1)
                 print(vertex2)
                 print()
-
+                semicircle_vertices =  Coordinate.generate_semicircle_coordinates(vertex1, vertex2)
                 for semicircle_vertex in semicircle_vertices:
                     new_graph.add_vertex(semicircle_vertex)
 
