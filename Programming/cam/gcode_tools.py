@@ -551,36 +551,11 @@ def get_laser_coordinates_lists(gerber: Gerber) -> list[list[Coordinate]]:
     holes_graphs_seperated_unoffseted: list[Graph] = holes_graph_unseperated_unoffseted.seperate()
 
     # apply thickness offset to the graphs
-    # trace_graphs_seperated_offseted: list[Graph] = [graph.apply_offsets() for graph in trace_graphs_seperated_unoffseted[:-1]]
-    # trace_graphs_seperated_offseted.append(trace_graphs_seperated_unoffseted[-1].apply_offsets(terminate_after=True))
-    # holes_graphs_seperated_offseted: list[Graph] = [graph.apply_offsets() for graph in holes_graphs_seperated_unoffseted]
+    trace_graphs_seperated_offseted: list[Graph] = [graph.apply_offsets() for graph in trace_graphs_seperated_unoffseted[:-1]]
+    trace_graphs_seperated_offseted.append(trace_graphs_seperated_unoffseted[-1].apply_offsets(terminate_after=True))
+    holes_graphs_seperated_offseted: list[Graph] = [graph.apply_offsets() for graph in holes_graphs_seperated_unoffseted]
 
-# vertex1: (X27.172Y30.953)
-    v1 = Coordinate(27.172, 30.953)
-# vertex2: (X26.608Y31.517)
-    v2 = Coordinate(26.608, 31.517)
-
-# vertex1: (X50.367Y28.848)
-    v1 = Coordinate(50.367, 28.848)
-# vertex2: (X49.803Y29.412)
-    v2 = Coordinate(49.803, 29.412)
-
-# vertex1: (X8.827Y31.518)
-    v1 = Coordinate(8.827, 31.518)
-# vertex2: (X9.393Y30.952)
-    v2 = Coordinate(9.393, 30.952)
-
-# vertex1: (X20.828Y31.517)
-    v1 = Coordinate(20.828, 31.517)
-# vertex2: (X21.392Y30.953)
-    v2 = Coordinate(21.392, 30.953)
-
-# (X50.358Y15.824) (X49.558Y15.824)
-    v1 = Coordinate(50.358, 15.824)
-    v2 = Coordinate(49.558, 15.824)
-    
-    # Coordinate.test_generate_semicircle(v1, v2, False)
-    trace_graphs_seperated_unoffseted[3].apply_offsets(terminate_after=True)
+    # trace_graphs_seperated_unoffseted[-3].apply_offsets(terminate_after=True)
 
     ### Resolve conflicts after applying the offsets
     # Firstly, join traces and holes graphs 

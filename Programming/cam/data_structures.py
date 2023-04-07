@@ -147,7 +147,8 @@ class Coordinate:
         return Coordinate(x_min, y_min), Coordinate(x_max, y_max)
 
     @classmethod
-    def generate_semicircle_coordinates(cls, coordinate1: Coordinate, coordinate2: Coordinate, orientation: bool, resolution: int =100) -> list[Coordinate]:
+    def generate_semicircle_coordinates(cls, coordinate1: Coordinate, coordinate2: Coordinate, 
+            delta_x: float, delta_y: float, resolution: int =20) -> list[Coordinate]:
         '''
         :param coordinate1: The coordinate the list of semicircle coordinates start from
         :param coordinate2: The coordinate the list of semicircle coordinates ends at
@@ -156,6 +157,16 @@ class Coordinate:
 
         :return: list of coordinates that if joined with straight makes a pseudo semicircle
         '''
+        if delta_x > 0:
+            orientation = False
+        elif delta_x < 0:
+            orientation = True
+        elif delta_x == 0:
+            if delta_y > 0:
+                orientation = False
+            elif delta_y < 0:
+                orientation = True
+
         ### Step 1: Get circle equation attributes
         # a and b are the x and y offset value from circle center respectively
         # They are also the midpoints between coord1 and coord2
@@ -165,7 +176,7 @@ class Coordinate:
         # r is the radius of circle
         # It's also the half length form coordinate1 to coordinate2
         r = round( (math.sqrt( (coordinate2.x - coordinate1.x)**2 + (coordinate2.y - coordinate1.y)**2 ) / 2) , 3)
-        print('circle equation values',a, b, r)
+        print('circle equation values',a, b, r)  #TODO: implement an if debug: for this function
 
         if coordinate2.x == coordinate1.x:  # Gradient = infinity
             ### Step 2: Get linear equation of the line that passes through the circle diameter, aka the 2 coordinates
@@ -174,8 +185,12 @@ class Coordinate:
             # y = y  # the independent variable of a vertical line is y
 
             ### Step 3: Getting linear equation of tangent to the circle at the maximum
-            x_max = x + r  #TODO: IMPLEMENT A CONDITION THAT TELLS IT WHEN TO + or -
+            if orientation:
+                x_max = x + r
+            else:
+                x_max = x - r
             y = b
+            max_coord = Coordinate(x_max, b)
 
             ### Step 4: Getting the list of y_intercepts of linear equations that intersects the circle
             x_range = x_max - x
@@ -188,22 +203,21 @@ class Coordinate:
                 increment_sum += increment
 
             ### Step 5: Getting the intersection between circle equation and all the intersection linear equations
-            max_coord = Coordinate(x_max, b)
-            semicircle_coords_from_right = []
-            semicircle_coords_from_left = []
+            semicircle_coords_positive_x = []
+            semicircle_coords_negative_x = []
             for current_x_value in x_values:
-                y1 = round(b + math.sqrt(r**2 - (current_x_value - a)**2))
-                semicircle_coords_from_right.insert(0, Coordinate(current_x_value, y1))
+                y1 = round(b + math.sqrt(round(r**2 - (current_x_value - a)**2, 6)), 5)
+                semicircle_coords_positive_x.append(Coordinate(current_x_value, y1))
 
-                y2 = round(b - math.sqrt(r**2 - (current_x_value - a)**2))
-                semicircle_coords_from_left.append(Coordinate(current_x_value, y2))
+                y2 = round(b - math.sqrt(round(r**2 - (current_x_value - a)**2, 6)), 5)
+                if y1 != y2: # to eleminate max point
+                    semicircle_coords_negative_x.append(Coordinate(current_x_value, y2))
 
         elif coordinate2.y == coordinate1.y:  # Gradient = 0.0
             ### Step 2: Get linear equation of the line that passes through the circle diameter, aka the 2 coordinates
             # Getting equation of a horizontal line
             # x = x  # the independent variable of a horizontal line is x
             y = coordinate1.y
-            print(y)
 
             ### Step 3: Getting linear equation of tangent to the circle at the maximum and max coord
             x = a
@@ -219,28 +233,20 @@ class Coordinate:
             increment = y_range / num_iterations
             increment_sum = increment
             y_values = []
-            print()
-            print()
-            print('lskdjflksdjf;lksjdf;lksjd;flkj;lksdfj')
             for _ in range(round(num_iterations)):
-                print(y+increment_sum, 'y_value')
                 y_values.append(y+increment_sum)
                 increment_sum += increment
-            print()
-            print()
 
             ### Step 5: Getting the intersection between circle equation and all the intersection linear equations
-            semicircle_coords_from_right = []
-            semicircle_coords_from_left = []
+            semicircle_coords_positive_x = []
+            semicircle_coords_negative_x = []
             for current_y_value in y_values:
-                print(current_y_value)
-                print(r**2 - (current_y_value - b)**2)
                 x1 = round(a + math.sqrt(round(r**2 - (current_y_value - b)**2, 6)), 5)
-                semicircle_coords_from_right.insert(0, Coordinate(x1, current_y_value))
+                semicircle_coords_positive_x.append(Coordinate(x1, current_y_value))
 
                 x2 = round(a - math.sqrt(round(r**2 - (current_y_value - b)**2, 6)), 5)
-                if x1 != x2:
-                    semicircle_coords_from_left.insert(0, Coordinate(x2, current_y_value))
+                if x1 != x2: # to eleminate max point
+                    semicircle_coords_negative_x.append(Coordinate(x2, current_y_value))
 
         else:
             ### Step 2: Get linear equation of the line that passes through the circle diameter, aka the 2 coordinates
@@ -293,47 +299,124 @@ class Coordinate:
 
             ### Step 5: Getting the intersection between circle equation and all the intersection linear equations
             # from the diameter to the maximum line.
-            semicircle_coords_from_right = []
-            semicircle_coords_from_left = []
+            semicircle_coords_positive_x = []
+            semicircle_coords_negative_x = []
             for current_y_intercept in y_intercept_list:
-                print(gradient, 'gradient')
-                print(current_y_intercept, 'current y intercept')
                 a_q = 1 + gradient**2
                 b_q = -2*a + 2*gradient*current_y_intercept - 2*b*gradient
                 c_q = current_y_intercept**2 - 2*b*current_y_intercept + b**2 - r**2 + a**2
 
-                if b_q**2 - 4*a_q*c_q > 0:
+                if b_q**2 - 4*a_q*c_q > 0:  #TODO: Fix this shit
                     x1 = round((-b_q + math.sqrt(b_q**2 - 4*a_q*c_q)) / (2*a_q), 6)
                     y1 = gradient*x1 + current_y_intercept
-                    semicircle_coords_from_right.insert(0, Coordinate(x1, y1))
-                    print(x1, y1)
+                    semicircle_coords_positive_x.append(Coordinate(x1, y1))
 
                     x2 = round((-b_q - math.sqrt(b_q**2 - 4*a_q*c_q)) / (2*a_q), 6)
                     y2 = gradient*x2 + current_y_intercept
-                    semicircle_coords_from_left.append(Coordinate(x2, y2))
-                    print(x2, y2)
+                    semicircle_coords_negative_x.append(Coordinate(x2, y2))
                 else:
                     # raise ValueError("SHITTT")
                     print('SHITTTT')
-                print()
 
         ### Step 6: Get the final ordered list of coordinates
-        if orientation:
-            ordered_semicircle_coords = []
-            ordered_semicircle_coords.extend(reversed(semicircle_coords_from_right))
-            # ordered_semicircle_coords.append(max_coord)  #TODO: check this
-            ordered_semicircle_coords.extend(semicircle_coords_from_left)
+        # PLEASE refer to iPad. The combination are truly ENORMOUS and was difficult to derive ;)
+        ordered_semicircle_coords = []
+        if delta_x > 0:
+            if coordinate2.y > coordinate1.y:
+                if delta_y > 0:
+                    ordered_semicircle_coords.extend(semicircle_coords_positive_x)
+                    ordered_semicircle_coords.extend(reversed(semicircle_coords_negative_x))
 
-        else:
-            ordered_semicircle_coords = []
-            ordered_semicircle_coords.extend(semicircle_coords_from_left)
-            # ordered_semicircle_coords.append(max_coord)  #TODO: check this
-            ordered_semicircle_coords.extend(semicircle_coords_from_right)
+                elif delta_y < 0:
+                    ordered_semicircle_coords.extend(semicircle_coords_negative_x)
+                    ordered_semicircle_coords.extend(reversed(semicircle_coords_positive_x))
+
+                elif delta_y == 0:
+                    ordered_semicircle_coords.extend(semicircle_coords_negative_x)
+                    ordered_semicircle_coords.extend(reversed(semicircle_coords_positive_x))
+
+            elif coordinate1.y > coordinate2.y:
+                if delta_y > 0:
+                    ordered_semicircle_coords.extend(semicircle_coords_negative_x)
+                    ordered_semicircle_coords.extend(reversed(semicircle_coords_positive_x))
+
+                elif delta_y < 0:
+                    ordered_semicircle_coords.extend(semicircle_coords_positive_x)
+                    ordered_semicircle_coords.extend(reversed(semicircle_coords_negative_x))
+
+                elif delta_y == 0:
+                    ordered_semicircle_coords.extend(semicircle_coords_positive_x)
+                    ordered_semicircle_coords.extend(reversed(semicircle_coords_negative_x))
+
+            else:
+                raise ValueError('NOT FUCKING POSSIBLE (acoording to my calculations ;) )')
+
+        elif delta_x < 0:
+            if coordinate2.y > coordinate1.y:
+                if delta_y > 0:
+                    ordered_semicircle_coords.extend(semicircle_coords_negative_x)
+                    ordered_semicircle_coords.extend(reversed(semicircle_coords_positive_x))
+
+                elif delta_y < 0:
+                    ordered_semicircle_coords.extend(semicircle_coords_positive_x)
+                    ordered_semicircle_coords.extend(reversed(semicircle_coords_negative_x))
+ 
+                elif delta_y == 0:
+                    ordered_semicircle_coords.extend(semicircle_coords_negative_x)
+                    ordered_semicircle_coords.extend(reversed(semicircle_coords_positive_x))
+
+            elif coordinate1.y > coordinate2.y:
+                if delta_y > 0:
+                    ordered_semicircle_coords.extend(semicircle_coords_positive_x)
+                    ordered_semicircle_coords.extend(reversed(semicircle_coords_negative_x))
+
+                elif delta_y < 0:
+                    ordered_semicircle_coords.extend(semicircle_coords_negative_x)
+                    ordered_semicircle_coords.extend(reversed(semicircle_coords_positive_x))
+
+                elif delta_y == 0:
+                    ordered_semicircle_coords.extend(semicircle_coords_positive_x)
+                    ordered_semicircle_coords.extend(reversed(semicircle_coords_negative_x))
+
+            else:
+                raise ValueError('NOT FUCKING POSSIBLE (acoording to my calculations ;) )')
+
+        elif delta_x == 0:
+            if coordinate1.x > coordinate2.x:
+                ordered_semicircle_coords.extend(semicircle_coords_positive_x)
+                ordered_semicircle_coords.extend(reversed(semicircle_coords_negative_x))
+
+            elif coordinate2.x > coordinate1.x:
+                ordered_semicircle_coords.extend(semicircle_coords_negative_x)
+                ordered_semicircle_coords.extend(reversed(semicircle_coords_positive_x))
+
+            else:
+                raise ValueError('NOT FUCKING POSSIBLE (acoording to my calculations ;) )')
+
 
         return ordered_semicircle_coords
 
     @classmethod
     def test_generate_semicircle(cls, vertex1, vertex2, orientation):
+        '''
+        test points:
+
+        v1 = Coordinate(27.172, 30.953)
+        v2 = Coordinate(26.608, 31.517)
+
+        v1 = Coordinate(50.367, 28.848)
+        v2 = Coordinate(49.803, 29.412)
+
+        v1 = Coordinate(8.827, 31.518)
+        v2 = Coordinate(9.393, 30.952)
+
+        v1 = Coordinate(20.828, 31.517)
+        v2 = Coordinate(21.392, 30.953)
+
+        v1 = Coordinate(50.358, 15.824)
+        v2 = Coordinate(49.558, 15.824)
+        '''
+
         print("Semicircle Coords !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         print(vertex1)
         print(vertex2)
@@ -896,6 +979,7 @@ class Graph:
 
         :return: Graph with thickness applied. The edges are of thickness 0
         '''
+        print('\nNEW CALL!!!!!!!!!!!!!!!')
         new_graph = Graph()
 
         ordered_edges = self.ordered_edges
@@ -1017,7 +1101,7 @@ class Graph:
                     new_graph.add_edge(current_edge)
 
                 if Graph.DEBUG_APPLY_OFFSET:
-                    print('\nNEW CALL!!!!!!!!!!!!!!!!!!!!')
+                    print('\nNew Iteration:')
                     print(f'Current edge index: {ind}')
                     print(f'Current edge : {edge}')
                     print()
@@ -1109,16 +1193,7 @@ class Graph:
 
                 vertex2 = Coordinate(x2, y2)
 
-                if edge.delta_x > 0:
-                    orientation = False
-                elif edge.delta_x < 0:
-                    orientation = True
-                elif edge.delta_x == 0:
-                    if edge.delta_y > 0:
-                        orientation = False
-                    elif edge.delta_y < 0:
-                        orientation = True
-                semicircle_vertices =  Coordinate.generate_semicircle_coordinates(vertex1, vertex2, orientation)
+                semicircle_vertices =  Coordinate.generate_semicircle_coordinates(vertex1, vertex2, edge.delta_x, edge.delta_y)
 
                 for semicircle_vertex in semicircle_vertices:
                     new_graph.add_vertex(semicircle_vertex)
@@ -1135,14 +1210,17 @@ class Graph:
 
                 prev_semicircle_vertex = semicircle_vertices[0]
                 for ind, semicircle_vertex in enumerate(semicircle_vertices[1:]):
-                    new_graph.add_edge(Edge(prev_semicircle_vertex, semicircle_vertex, LASER_BEAM_THICKNESS))
+                    try:
+                        new_graph.add_edge(Edge(prev_semicircle_vertex, semicircle_vertex, LASER_BEAM_THICKNESS))
+                    except ValueError:
+                        print("BIG PROBLEMMMMMM, two identical coordinates generated, maybe the max point may be not")
                     prev_semicircle_vertex = semicircle_vertex
 
                 # edge2 = Edge(vertex1, vertex2, LASER_BEAM_THICKNESS)
                 # new_graph.add_edge(edge2)
 
                 if Graph.DEBUG_APPLY_OFFSET:
-                    print('\nNEW CALL!!!!!!!!!!!!!!!')
+                    print('\nNew Iteration:')
                     print('PARALLEL EDGE DETECTED!!!')
                     print(f'm=infinity -> {gradient==Infinity()}, m=0 -> {gradient == 0}')
                     print()
@@ -1151,9 +1229,11 @@ class Graph:
                     print(f'Current edge : {edge}')
                     print()
 
-                    if ind != 0:
+                    # if ind != 0:
+                    # in case of first edge is a parallel line, all the circle edges will be added and it will have a high index
+                    try:
                         print(f'Previous offseted Vertex: {prev_vertex}')
-                    else:
+                    except Exception:
                         print(f'No prev offseted vertex for first iterations')
                     if gradient != Infinity():
                         print(f'Previous offseted edge linear equations:\ny = {prev_gradient}*x + {prev_y_intercept}')
@@ -1171,9 +1251,11 @@ class Graph:
 
                     print(f'vertex1: {vertex1}')
                     print(f'vertex2: {vertex2}')
-                    if ind != 0:
+                    # if ind != 0:
+                    # in case of first edge is a parallel line, all the circle edges will be added and it will have a high index
+                    try:
                         print(f'edge1 (prev to inverse): {edge1}')
-                    else:
+                    except Exception:
                         print('No edge1 for first iteration')
                     # print(f'edge2 (inverse to current): {edge2}')  # it's replaced with a semicircle now
                     print()
@@ -1186,8 +1268,8 @@ class Graph:
                 if gradient != Infinity():
                     prev_y_intercept = y_intercept
 
-        Edge.visualize_edges(self.ordered_edges, hide_turtle=False, x_offset=25, y_offset=25, multiplier=15, speed=3)
-        new_graph.visualize(speed=3, line_width=1, x_offset=25, y_offset=25, multiplier = 15, terminate=terminate_after)
+        Edge.visualize_edges(self.ordered_edges, hide_turtle=False, x_offset=25, y_offset=25, multiplier=10, speed=0)
+        new_graph.visualize(speed=0, line_width=1, x_offset=25, y_offset=25, multiplier = 10, terminate=terminate_after)
         return new_graph
 
     def to_coordinate(self) -> list[Coordinate]:
