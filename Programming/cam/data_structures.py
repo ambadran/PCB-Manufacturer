@@ -1324,6 +1324,8 @@ class Graph:
         new_graph.visualize(speed=0, line_width=1, x_offset=25, y_offset=25, multiplier = 10, terminate=terminate_after)
         return new_graph
 
+    def remove_and_join_edges
+
     def to_coordinate(self) -> list[Coordinate]:
         '''
 

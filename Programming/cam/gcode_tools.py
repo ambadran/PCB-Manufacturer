@@ -555,9 +555,8 @@ def get_laser_coordinates_lists(gerber: Gerber) -> list[list[Coordinate]]:
     # trace_graphs_seperated_offseted.append(trace_graphs_seperated_unoffseted[-1].apply_offsets(terminate_after=True))
     # holes_graphs_seperated_offseted: list[Graph] = [graph.apply_offsets() for graph in holes_graphs_seperated_unoffseted]
 
-    # trace_graphs_seperated_unoffseted[-3].apply_offsets(terminate_after=True)
+    trace_graphs_seperated_unoffseted[3].apply_offsets(terminate_after=True)
 
-    Coordinate.test_generate_semicircle()
 
     ### Resolve conflicts after applying the offsets
     # Firstly, join traces and holes graphs 
