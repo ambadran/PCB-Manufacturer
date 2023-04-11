@@ -1324,20 +1324,56 @@ class Graph:
         new_graph.visualize(speed=0, line_width=1, x_offset=25, y_offset=25, multiplier = 10, terminate=terminate_after)
         return new_graph
 
-    def remove_and_join_edges
-
     def to_coordinate(self) -> list[Coordinate]:
         '''
 
         '''
         return []
 
-    def remove_tiny_edges(self) -> None:
+    def remove_vertex(self, vertex: Coordinate) -> None:
+        '''
+        Specific sequence to undo add_vertex and resolve all the edges connected to it
+
+        :param vertex: vertex to be removed from the graph
+        '''
+        if vertex not in self.vertex_vertices:
+            raise ValueError("vertex is already not there!")
+
+        # Case 1: vertex is a deadline
+        if (len(self.vertex_vertices[vertex]) == 1):
+            # Step 1: Remove the key entirely
+            previous_vertex = self.vertex_vertices.pop(vertex)[0]
+            self.vertex_edge.pop(vertex)
+
+            # Step 2: Remove the vertex and edge values from other key vertices
+            self.vertex_vertices[previous_vertex].remove(vertex)
+
+            # Step 3: Remove the edges in the previous vertex that has anything to do with the to be deleted vertex
+            edges_to_be_removed = []
+            for edge in self.vertex_edge[previous_vertex]:
+                if edge.start == vertex or edge.end == vertex:
+                    edges_to_be_removed.append(edge)
+
+            for edge in edges_to_be_removed:
+                self.vertex_edge[previous_vertex].remove(edge)
+
+        # Case 2: vertex is a link
+        else:
+            raise ValueError('not implemented yet')
+
+
+    def filter_tiny_edges(self) -> None:
         '''
         Removes the stupid small infuriating edges that mess up with everything
         Affects self Graph
         '''
-        pass #TODO:
+        print(self.vertex_vertices.keys())
+        vertex0 = Coordinate(x=20.598704, y=29.13)
+        # vertex1 = Coordinate(x=26.89, y=31.235)
+        # vertex2 = Coordinate(x=9.11, y=31.235)
+        self.remove_vertex(vertex0)
+        # self.remove_vertex(vertex1)
+        # self.remove_vertex(vertex2)
 
     def resolve_conflicts(self) -> list[Graph]:
         '''

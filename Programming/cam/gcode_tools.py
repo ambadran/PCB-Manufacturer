@@ -541,8 +541,9 @@ def get_laser_coordinates_lists(gerber: Gerber) -> list[list[Coordinate]]:
     :return: list of list of coordinates of one continious trace
     '''
 
-    # converting trace gerber blocks to one big graph 
+    # converting trace gerber blocks to one big graph
     trace_graph_unseperated_unoffseted: Graph = gerber.blocks_to_graph(gerber.blocks[BlockType.Conductor])
+
     # holes_graph_unseperated_unoffseted: Graph = gerber.blocks_to_graph(gerber.blocks[BlockType.ComponentPad])
     holes_graph_unseperated_unoffseted: Graph = Graph()  #TODO: complete blocks_to_graph development for 'BlockType.ComponentPad'
 
@@ -550,12 +551,17 @@ def get_laser_coordinates_lists(gerber: Gerber) -> list[list[Coordinate]]:
     trace_graphs_seperated_unoffseted: list[Graph] = trace_graph_unseperated_unoffseted.seperate()
     holes_graphs_seperated_unoffseted: list[Graph] = holes_graph_unseperated_unoffseted.seperate()
 
+    # Filtering all the stupid tiny edges that mess up with everything 
+    # trace_graphs_seperated_unoffseted: list[Graph] = [graph.filter_tiny_edges() for graph in trace_graphs_seperated_unoffseted]
+
+    trace_graphs_seperated_unoffseted[0].filter_tiny_edges()
+
     # apply thickness offset to the graphs
     # trace_graphs_seperated_offseted: list[Graph] = [graph.apply_offsets() for graph in trace_graphs_seperated_unoffseted[:-1]]
     # trace_graphs_seperated_offseted.append(trace_graphs_seperated_unoffseted[-1].apply_offsets(terminate_after=True))
     # holes_graphs_seperated_offseted: list[Graph] = [graph.apply_offsets() for graph in holes_graphs_seperated_unoffseted]
 
-    trace_graphs_seperated_unoffseted[3].apply_offsets(terminate_after=True)
+    trace_graphs_seperated_unoffseted[0].apply_offsets(terminate_after=True)
 
 
     ### Resolve conflicts after applying the offsets
