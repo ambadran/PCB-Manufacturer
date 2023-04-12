@@ -765,7 +765,11 @@ class Graph:
     '''
     # class variables
     used_colors = set()
+    TINY_EDGE_OFFSET = 0.2
+
+    # Debuggin switches
     DEBUG_APPLY_OFFSET = True
+    DEBUG_FILTER_TINY_EDGES = True
 
     def __init__(self, vertices: list[Coordinate] = []):
 
@@ -1025,6 +1029,9 @@ class Graph:
 
     def apply_offsets(self, extra_offset=0, terminate_after=False) -> Graph:
         '''
+        for debugging
+        # trace_graphs_seperated_unoffseted[0].apply_offsets(terminate_after=True)
+
         The graph to execute .apply_offsets() to is a graph of continious lines of ZERO thickness,
         This function will create a new graph from the old one with the thickness applied :)
 
@@ -1320,8 +1327,10 @@ class Graph:
                 if gradient != Infinity():
                     prev_y_intercept = y_intercept
 
-        Edge.visualize_edges(self.ordered_edges, hide_turtle=False, x_offset=25, y_offset=25, multiplier=10, speed=0)
-        new_graph.visualize(speed=0, line_width=1, x_offset=25, y_offset=25, multiplier = 10, terminate=terminate_after)
+        if Graph.DEBUG_APPLY_OFFSET:
+            Edge.visualize_edges(self.ordered_edges, hide_turtle=False, x_offset=25, y_offset=25, multiplier=10, speed=0)
+            new_graph.visualize(speed=0, line_width=1, x_offset=25, y_offset=25, multiplier = 10, terminate=terminate_after)
+
         return new_graph
 
     def to_coordinate(self) -> list[Coordinate]:
@@ -1363,10 +1372,12 @@ class Graph:
 
     def remove_edge(self, edge: Edge) -> None:
         '''
+        #TODO: THIS FUNCTION CAN ONLY BE APPLIED BEFORE EXECUTING .seperate()
         :param edge: edge to be removed from graph
         '''
         if edge.start not in self.vertex_vertices or edge.end not in self.vertex_vertices:
-            raise ValueError("Edge is not in graph")
+            # raise ValueError(f"{edge} is not in graph")
+            return None
 
         if edge.start not in self.vertex_vertices[edge.end] or edge.end not in self.vertex_vertices[edge.start]:
             raise ValueError("Edge not properly implemented in graph")
@@ -1390,28 +1401,34 @@ class Graph:
 
         # Step 3: Delete before vertex if there is only one of them, no other edge is attached to it, it's floating point now
         if len(prev_vertex_list) == 1:
-            prev_vertex = prev_vertex_list[0]
-            self.vertex_vertices.pop(prev_vertex)
-            self.vertex_edge.pop(prev_vertex)
+            # prev_vertex = prev_vertex_list[0]  # not needed anywhere
+            self.vertex_vertices.pop(edge.start)
+            self.vertex_edge.pop(edge.start)
 
-        # Step 4: Loop through prev_vertex_list and replace every existence of edge.start with the after vertex
+        # Step 4: Replace every existence of edge.start in each prev_vertex with after_vertex
         for prev_vertex in prev_vertex_list:
-            for ind1, prev_prev_vertex in self.vertex_vertices[prev_vertex]:
+            # Replacing Vertices
+            for ind1, prev_prev_vertex in enumerate(self.vertex_vertices[prev_vertex]):
                 if prev_prev_vertex == edge.start:
                     self.vertex_vertices[prev_vertex][ind1] = after_vertex
 
-            for ind2, prev_prev_edge in self.vertex_edge[prev_vertex]:
+            # Replacing Edges
+            for ind2, prev_prev_edge in enumerate(self.vertex_edge[prev_vertex]):
                 if prev_prev_edge.start == edge.start:
                     self.vertex_edge[prev_vertex][ind2].start = after_vertex
 
-                if prev_prev_edge.start == edge.end:
+                if prev_prev_edge.end == edge.start:
                     self.vertex_edge[prev_vertex][ind2].end = after_vertex
 
-        # Step 5: DELETE every existence of edge.start in after_vertex and connect after_vertex to all prev_vertex_list 
-        # deleting
-        if edge.start in self.vertex_vertices[after_vertex]:
-            self.vertex_vertices[after_vertex].remove(edge.start)
+        # Step 5: Replace every existence of edge.start in after_vertex with all the vertices/edges of prev_vertex
+        # Deleting Vertices
+        if self.vertex_vertices[after_vertex].count(edge.start) <= 1:  # only 0 or 1 count is allowed
+            if edge.start in self.vertex_vertices[after_vertex]:  # checking if it's there or not
+                self.vertex_vertices[after_vertex].remove(edge.start)
+        else:
+            raise ValueError('Multiple occurance of a vertex found!')
 
+        # Deleting Edges
         edges_to_be_removed = []
         for prev_edge in self.vertex_edge[after_vertex]:
             if prev_edge.start == edge.start or prev_edge.end == edge.start:
@@ -1420,12 +1437,13 @@ class Graph:
         for edge_tobe_del in edges_to_be_removed:
             self.vertex_edge[after_vertex].remove(edge_tobe_del)
 
-        # adding 
         for prev_vertex in prev_vertex_list:
+            # Adding Vertices
             if prev_vertex not in self.vertex_vertices[after_vertex]:
                 self.vertex_vertices[after_vertex].append(prev_vertex)
 
-            edge1 = Edge(prev_vertex, after_vertex)
+            # Adding Edges
+            edge1 = Edge(prev_vertex, after_vertex, edge.thickness)
             if edge1 not in self.vertex_edge[after_vertex]:
                 self.vertex_edge[after_vertex].append(edge1)
 
@@ -1433,29 +1451,25 @@ class Graph:
             if edge2 not in self.vertex_edge[after_vertex]:
                 self.vertex_edge[after_vertex].append(edge2)
 
-
-
-
-
     def filter_tiny_edges(self) -> None:
         '''
         Removes the stupid small infuriating edges that mess up with everything
         Affects self Graph
         '''
-        print(self.vertex_vertices.keys())
-        vertex0 = Coordinate(x=20.598704, y=29.13)
-        vertex1 = Coordinate(x=26.89, y=31.235)
-        edge = Edge()
-        # vertex2 = Coordinate(x=9.11, y=31.235)
-        self.remove_edge(edge)
-        # self.remove_vertex(vertex1)
-        # self.remove_vertex(vertex2)
+        edges_to_be_removed = []
+        for vertex in self.vertex_vertices.keys():
+            for edge in self.vertex_edge[vertex]:
+                if abs(edge.delta_x) <= Graph.TINY_EDGE_OFFSET and abs(edge.delta_y) <= Graph.TINY_EDGE_OFFSET:
+                    edges_to_be_removed.append(edge)
+        
+        for edge in edges_to_be_removed:
+            self.remove_edge(edge)
 
-    def resolve_conflicts(self) -> list[Graph]:
-        '''
-        after applying offset to graph
-        '''
-        return []
+        if Graph.DEBUG_FILTER_TINY_EDGES:
+            print("Removed Edges:")
+            for edge in edges_to_be_removed:
+                print(edge)
+            print()
 
     @classmethod
     def join(cls, *graphs: Graph) -> Graph:
@@ -1498,6 +1512,12 @@ class Graph:
 # after that i can easily extract each trace by finding the coord that points to nothing:
         # I know that this is the start of a new trace and the end of a previous trace 
 
+    def incorporate_holes(self):
+        '''
+        Meant to take in list of hole coordinates and the shapes 
+        then incorporate it, merge the offset with the 'offseted graphs'
+        '''
+        pass
 # next up is to return the proper coordinate list for each trace with two important features:
     # 1- offset the coordinates two times with the wanted thickness
     # 2- find holes and incorporate them in the trace somehow ;)
