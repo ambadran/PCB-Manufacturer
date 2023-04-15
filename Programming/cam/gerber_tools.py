@@ -176,7 +176,6 @@ class Gerber:
                 [coordinate for block in self.blocks[BlockType.ComponentPad] for coordinate in block.coordinates_with_multiplier],
         }
 
-
     def read_gerber_file(self, file_path: str) -> str:
         '''
         :param file_path: path to a gerber file

@@ -775,8 +775,12 @@ class Graph:
 
         # Dictionary to relate each vertices to its edges
         self.vertex_edge: dict[Coordinate: list[Edge]] = {vertex: [] for vertex in vertices}
+
         # Dictionary to relate each vertices to the vertices it is attached to in the other end
         self.vertex_vertices: dict[Coordinate: list[Coordinate]] = {vertex: [] for vertex in vertices}
+
+        # Dictionary to relate each vertices to the ComponentPad it's on (ONLY if there is one)
+        self.vertex_componentpad: dict[Coordinate: Optional[ComponentPad]] = {vertex: None for vertex in vertices}
 
     @property
     def vertex_count(self) -> int:
@@ -1479,11 +1483,19 @@ class Graph:
         :graphs: undefined number of graphs
         :return: one graph joined from the all the graphs given from *graphs attribute
         '''
-        # Type Checking
-        if len(set([type(graph) for graph in graphs])) != 1:
-            raise ValueError("All Arguments MUST be of type Graph")
+        # Mode checking
+        list_mode = False
+        if len(graphs) == 1 and type(graphs[0]) == list:
+            list_mode = True
+
+        elif len(set([type(graph) for graph in graphs])) != 1:
+            raise ValueError("All Arguments MUST be of type Graph OR a one list argument of all graphs")
 
         joined_graph = Graph()
+
+        if list_mode:
+            graphs = graphs[0]
+
         for graph in graphs:
             joined_graph.vertex_vertices.update(graph.vertex_vertices)
             joined_graph.vertex_edge.update(graph.vertex_edge)
