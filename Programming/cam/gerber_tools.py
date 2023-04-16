@@ -35,7 +35,7 @@ class Block:
         self.coordinates = coordinates
         self.block_type = block_type
         self.shape_type = shape_type
-        self.thickness = thickness
+        self.thickness = thickness  # Diameter for Circle
         self.thickness2 = thickness2
         self.coordinates_with_multiplier = coordinates_with_multiplier
 
@@ -324,7 +324,7 @@ class Gerber:
 
         self.gerber_file = new_file
 
-    def blocks_to_graph(self, blocks: Block) -> Graph:
+    def blocks_to_graph(self, blocks: list[Block]) -> Graph:
         '''
         creates a graph data structure from the given block objects
 

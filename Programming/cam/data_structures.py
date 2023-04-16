@@ -491,6 +491,31 @@ class Coordinate:
 
         raise ValueError('END')
 
+    @classmethod
+    def point_edge_intersection(edge: Edge, coordinate: Coordinate, block: Block) -> Optional[list[Coordinate]]:
+        '''
+        Finds the intersection between edges of a graph (offseted traces) and the componentPad (offseted)
+        :param edge: edge on the graph to intersect the component pad
+        :param coordinate: center of the componentpad that if offset applied might intersect the edge
+        :param block: The Block datatype object in which this ComponentPad Coordinate belong to
+
+        :return: None if no intersection, 1 coordinate of the single intersection found or 2 coordinates if 2 intersections found
+        '''
+        intersections = []
+        if block.shape_type == ShapeType.Circle:
+            a = coordinate.x
+            b = coordinate.y
+            r = round(block.thickness/2, 5)
+
+        elif block.shape_type == ShapeType.Rectangle:
+            pass
+
+        elif block.shape_type == ShapeType.Oval:
+            pass
+
+        else:
+            raise ValueError('Unkonwn ShapeType')
+
 
 @dataclass
 class Edge:
@@ -768,8 +793,8 @@ class Graph:
     TINY_EDGE_OFFSET = 0.2
 
     # Debuggin switches
-    DEBUG_APPLY_OFFSET = True
-    DEBUG_FILTER_TINY_EDGES = True
+    DEBUG_APPLY_OFFSET = False
+    DEBUG_FILTER_TINY_EDGES = False
 
     def __init__(self, vertices: list[Coordinate] = []):
 
@@ -1041,7 +1066,9 @@ class Graph:
 
         :return: Graph with thickness applied. The edges are of thickness 0
         '''
-        print('\nNEW CALL!!!!!!!!!!!!!!!')
+        if Graph.DEBUG_APPLY_OFFSET:
+            print('\nNEW CALL!!!!!!!!!!!!!!!')
+
         new_graph = Graph()
 
         ordered_edges = self.ordered_edges
@@ -1524,14 +1551,75 @@ class Graph:
 # after that i can easily extract each trace by finding the coord that points to nothing:
         # I know that this is the start of a new trace and the end of a previous trace 
 
-    def incorporate_holes(self):
+    def incorporate_componentpad(self, blocks: list[Block], terminate_after=False):
         '''
-        Meant to take in list of hole coordinates and the shapes 
-        then incorporate it, merge the offset with the 'offseted graphs'
-        '''
-        pass
-# next up is to return the proper coordinate list for each trace with two important features:
-    # 1- offset the coordinates two times with the wanted thickness
-    # 2- find holes and incorporate them in the trace somehow ;)
+        :param blocks: list of Block objects of BlockType ComponentPad
 
+        #NOTE: graph object to have this method executed on MUST be an offseted graph
+
+        modifies the offseted graph into offseted graph with component pads edges (hopefully) :)
+        '''
+        intersection_data = []
+        # Step 1: Identify intersection 1
+        for edges_ind, edges in enumerate(list(self.vertex_edge.values())):
+            for edge_ind, edge in enumerate(edges):
+                for block in blocks:
+                    for coordinate in block.coordinates:
+
+                        intersections = Coordinate.point_edge_intersection(edge, coordinate, block)
+                        if intersections:
+                            if intersections[0] in [inter_data[-1] for inter_data in intersection_data]:
+                                # make sure this intersection is not the second intersection of a previous set of intersections
+                                break_prev_iter = True
+                                break
+
+                            # Step 2: Identify intersection 2
+                            if not find_second_intersection:
+                                if len(intersections) == 2:
+                                    # second intersectio on the same line
+                                    intersection1 = intersections[0]
+                                    intersection2 = intersections[1]
+
+                                    intersection_data.append([edges_ind, edge_ind, edges_ind, edge_ind, coordinate, 
+                                        block.thickness, block.thickness2, block.shape_type, intersection1, intersection2])
+
+                                    break_prev_iter = True
+                                    break
+
+                                elif len(intersections) == 1:
+                                    intersection1 = intersections[0]
+
+                                    # Must find the second intersection
+                                    if edges_ind == len(self.vertex_edge):
+                                        edges_ind = -1
+                                    if edge_ind = len(self.vertex_edge[edges_ind]):
+                                        edge_ind = -1
+                                    for edges_ind2, edges2 in enumerate(list(self.vertex_edge.values())[edges_ind+1:]):
+                                        for edge_ind2, edge2 in enumerate(edges[edge_ind+1:]):
+                                            intersections= Coordinate.point_edge_intersection(edge2, coordinate, block)
+                                            if intersections:
+                                                if len(intersections) == 1:
+                                                    edges_ind2 += edges_ind+1
+                                                    edge_ind2 += edge_ind+1
+                                                    intersection_data.append([edges_ind, edge_ind, edges_ind2, edge_ind2,
+                                                        coordinate, block.shape_type, block.thickness, block.thickness2,
+                                                        intersection1, intersection2])
+                                                    
+                                                    break_prev_iter = True
+                                                    break
+
+                                                else:
+                                                    raise ValueError('second intersection not in same edge MUST ONLY have one number of intersections!!!')
+                                        if break_prev_iter:
+                                            break
+                                else:
+                                    raise ValueError('>2 intersection ?!?!??!?!')
+
+                    if break_prev_iter:
+                        break_prev_iter = False
+                        break
+
+        print(intersection_data)
+
+        self.visualize(speed=0, line_width=1, x_offset=25, y_offset=25, multiplier = 10, terminate=terminate_after)
 

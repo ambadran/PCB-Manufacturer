@@ -1,0 +1,20 @@
+    # holes_graphs_seperated_offseted: list[Graph] = [graph.apply_offsets() for graph in holes_graphs_seperated_unoffseted]
+
+#     ### Resolve conflicts after applying the offsets
+#     # Firstly, join traces and holes graphs 
+#     unresolved_graph = Graph()
+#     for graph in trace_graphs_seperated_offseted:
+#         unresolved_graph = Graph.join(unresolved_graph, graph)
+#     for graph in holes_graphs_seperated_offseted:
+#         unresolved_graph = Graph.join(unresolved_graph, graph)
+
+#     # Secondly, seperate them to get list of continious traces WITH holes
+#     unresolved_graphs: list[Graph] = unresolved_graph.seperate()
+
+#     # lastly, resolve conflict for each trace
+#     graphs: list[Graph] = [graph.resolve() for graph in unresolved_graphs] 
+
+#     # get the coordinate sequence that will be given to gcode
+#     trace_coordinates_lists: list[list[Coordinate]] = [graph.to_coordinates() for graph in graphs]
+
+
