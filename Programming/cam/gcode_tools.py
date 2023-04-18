@@ -545,23 +545,21 @@ def get_laser_coordinates_lists(gerber: Gerber, debug=False) -> list[list[Coordi
         Graph.DEBUG_FILTER_TINY_EDGES = True
 
     # converting trace gerber blocks to one big graph
-    trace_graph_unseperated_unoffseted: Graph = gerber.blocks_to_graph(gerber.blocks[BlockType.Conductor])
+    graph_unsep_unoff: Graph = gerber.blocks_to_graph(gerber.blocks[BlockType.Conductor])
 
     # Filtering the stupid tiny edges
-    trace_graph_unseperated_unoffseted.filter_tiny_edges()
+    graph_unsep_unoff.filter_tiny_edges()
 
     # seperating continious traces each into it's own graph
-    trace_graphs_seperated_unoffseted: list[Graph] = trace_graph_unseperated_unoffseted.seperate()
+    graphs_sep_unoff: list[Graph] = graph_unsep_unoff.seperate()
 
     # apply thickness offset to the graphs
-    trace_graphs_seperated_offseted: list[Graph] = [graph.apply_offsets() for graph in trace_graphs_seperated_unoffseted[:-1]]
-    trace_graphs_seperated_offseted.append(trace_graphs_seperated_unoffseted[-1].apply_offsets(terminate_after=True))
+    graphs_sep_off: list[Graph] = [graph.apply_offsets() for graph in graphs_sep_unoff]
+    # trace_graphs_seperated_offseted.append(trace_graphs_seperated_unoffseted[-1].apply_offsets(terminate_after=True))
 
     # Incorporating component pads
-    trace_graphs_seperated_offseted_with_componentpad: list[Graph] = [
-        graph.incorporate_componentpad(gerber.blocks[BlockType.ComponentPad]) for graph in trace_graphs_seperated_offseted[:-1]]
-    trace_graphs_seperated_offseted_with_componentpad.append(
-        trace_graphs_seperated_offseted[-1].incorporate_componentpad(gerber.blocks[BlockType.ComponentPad],terminate_after=True))
+    comppad_blocks = gerber.blocks[BlockType.ComponentPad]
+    graphs_sep_off_comppad = [graph.add_comppad(comppad_blocks) for graph in graphs_sep_off]
 
     return trace_coordinates_lists
 

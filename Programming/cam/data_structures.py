@@ -1,18 +1,62 @@
 from __future__ import annotations
-from typing import Optional
+from typing import Optional, Deque
 from dataclasses import dataclass
 from copy import deepcopy
 import turtle
 import random
 import math
 from enum import Enum
+from heapq import heappush, heappop
+
+
+class Stack:
+    """
+    singly linkedlist with LIFO settings
+    """ 
+    def __init__(self):
+        self._container = []
+
+    def push(self, value):
+        self._container.append(value)
+
+    def pop(self):
+        return self._container.pop()
+
+    @property
+    def empty(self):
+        return not self._container
+
+    def __repr__(self):
+        return repr(self._container)
+
+
+class Queue:
+    """
+    singly linkedlist with FIFO settings
+    """
+    def __init__(self):
+        self._container = Deque()
+
+    @property
+    def empty(self):
+        return not self._container
+
+    def push(self, item):
+        self._container.append(item)
+
+    def pop(self):
+        return self._container.popleft()
+
+    def __repr__(self):
+        return repr(self._container)
+
+
+
 
 class ShapeType(Enum):
     Circle = 'C'
     Rectangle = 'R'
     Oval = 'O'
-
-
 
 class Infinity():
     def __init__(self):
@@ -916,6 +960,7 @@ class Graph:
     # Debuggin switches
     DEBUG_APPLY_OFFSET = False
     DEBUG_FILTER_TINY_EDGES = False
+    DEBUG_ORDERED_EDGES = False
 
     def __init__(self, vertices: list[Coordinate] = []):
 
@@ -973,8 +1018,7 @@ class Graph:
         if edge.start not in self.vertex_vertices[edge.end]:
             self.vertex_vertices[edge.end].append(edge.start)
 
-    @property
-    def ordered_edges(self) -> list[Edge]:
+    def ordered_edges(self, ignore_non_tree=False) -> list[Ezdge]:
         '''
         DP algorithm to order edges,
         #NOTE: HIGHLY DEPENDENT ON 'Edge.anticlockwise_successors()'
@@ -1017,11 +1061,87 @@ class Graph:
                     ### This is now an non-tree graph.
                     ### Backtracking !!!
 
-                    Edge.visualize_edges(ordered_edges, speed=1, terminate=True)
-                    raise ValueError("Backtracking not implemented yet!!")
+                    # Edge.visualize_edges(ordered_edges, speed=1, terminate=True)
+                    if ignore_non_tree:
+                        # print(len(visited), self.edge_count, 'lskjdflksdjflksjdf')
+                        return ordered_edges
+                    else:
+                        raise ValueError("Use Graph.ordered_edges_non_tree() for non-tree graphs")
                 
         # Edge.visualize_edges(ordered_edges, speed=1)
         return ordered_edges
+
+    @property
+    def ordered_edges_non_tree(self) -> list[Edge]:
+        '''
+        DP algorithm to order edges,
+        #NOTE: HIGHLY DEPENDENT ON 'Edge.anticlockwise_successors()'
+
+        :return: an ordered list of how to traverse the trace in a continual manner
+        '''
+        ordered_edges = []
+
+        visited = set()
+        next_edge = list(self.vertex_edge.values())[0][0]
+        first_edge = deepcopy(next_edge)
+        backtracking_frontier = Queue()
+        while len(visited) < self.edge_count:
+
+            # print()
+            # print(next_edge, 'start')
+            ordered_edges.append(next_edge)
+            if next_edge not in visited:
+                backtracking_frontier.push(next_edge)
+            
+            next_v = next_edge.end
+
+            if len(self.vertex_edge[next_v]) == 1:
+                # dead end must return
+                next_edge = self.vertex_edge[next_v][0]
+                visited.add(next_edge)
+                # print(next_edge, 'DEADEND')
+
+            else:
+                successors = next_edge.anticlockwise_successors(self.vertex_edge[next_v])
+                # print(successors, 'successors')
+                for edge in successors:
+                    # print('potential edge', edge, edge not in visited, edge.reversed() != next_edge)
+                    if edge not in visited and edge.reversed() != next_edge:
+                        # print('yes')
+                        next_edge = edge
+                        visited.add(next_edge)
+                        break
+
+                    # else:
+                        # pass
+                        # print('no')
+                else:
+                    ### This is now an non-tree graph.
+                    ### Backtracking !!!
+                    if backtracking_frontier.empty:
+                        # print(next_edge, 'Frontier Emptied!!!!')
+                        if next_edge == first_edge:
+                            next_edge = next_edge.reversed()
+                            # print(f'Going the other side :) {next_edge}')
+                        else:
+                            raise ValueError("No Solution")
+
+                    else:
+                        next_edge = backtracking_frontier.pop()
+                        # print(f'Backtracking to {next_edge}')
+
+        if Graph.DEBUG_ORDERED_EDGES:
+            Edge.visualize_edges(ordered_edges, speed=1, hide_turtle=False, line_width=2, terminate=True)
+
+        return ordered_edges
+
+    @property
+    def ordered_edges_non_tree_diff_lists(self) -> list[list[Edge]]:
+        '''
+        exactly like ordered_edges_non_tree but return list of list of different continious edge orders
+        '''
+        #TODO:
+        pass
 
     def __contains__(self, vertex: Coordinate) -> bool:
         '''
@@ -1030,6 +1150,9 @@ class Graph:
         :param vertex: vertex to check if it's in the graph or not
         :return: whether given vertex is in the graph or not
         '''
+        if type(vertex) != Coordinate:
+            raise ValueError("can only use 'in' operator '__contains__' for vertex objects (Coordinate objects)")
+
         return vertex in list(self.vertex_vertices.keys())
 
     def visualize(self, hide_turtle=True, x_offset=20, y_offset=20, speed = 0, line_width=3, multiplier=8, terminate=False) -> None:
@@ -1192,7 +1315,7 @@ class Graph:
 
         new_graph = Graph()
 
-        ordered_edges = self.ordered_edges
+        ordered_edges = self.ordered_edges()
 
         ### PRE-ITERATION: get y=mx+c of edge of ind=-1
         # Getting gradient and y_intercept of last edge in cycle
@@ -1480,7 +1603,7 @@ class Graph:
                     prev_y_intercept = y_intercept
 
         if Graph.DEBUG_APPLY_OFFSET:
-            Edge.visualize_edges(self.ordered_edges, hide_turtle=False, x_offset=25, y_offset=25, multiplier=10, speed=0)
+            Edge.visualize_edges(self.ordered_edges(), hide_turtle=False, x_offset=25, y_offset=25, multiplier=10, speed=0)
             new_graph.visualize(speed=0, line_width=1, x_offset=25, y_offset=25, multiplier = 10, terminate=terminate_after)
 
         return new_graph
@@ -1672,77 +1795,27 @@ class Graph:
 # after that i can easily extract each trace by finding the coord that points to nothing:
         # I know that this is the start of a new trace and the end of a previous trace 
 
-    def incorporate_componentpad(self, blocks: list[Block], terminate_after=False):
+    def add_comppad(self, blocks: list[Block], terminate_after=False):
         '''
         :param blocks: list of Block objects of BlockType ComponentPad
+        :param graph_sep_unoff: The original unoffseted graph object from which the offseted graph was created
 
         #NOTE: graph object to have this method executed on MUST be an offseted graph
 
         modifies the offseted graph into offseted graph with component pads edges (hopefully) :)
         '''
+        new_graph = Graph()
+        new_ordered_edges = []
+
         intersection_data = []
-        break_prev_iter = False
-        find_second_intersection = False
-        # Step 1: Identify intersection 1
-        for edges_ind, edges in enumerate(list(self.vertex_edge.values())):
-            for edge_ind, edge in enumerate(edges):
-                for block in blocks:
-                    for coordinate in block.coordinates:
 
-                        intersections = Coordinate.point_edge_intersection(edge, coordinate, block)
-                        if intersections:
-                            if intersections[0] in [inter_data[-1] for inter_data in intersection_data]:
-                                # make sure this intersection is not the second intersection of a previous set of intersections
-                                break_prev_iter = True
-                                break
+        ordered_edges = self.ordered_edges_non_tree
 
-                            # Step 2: Identify intersection 2
-                            if not find_second_intersection:
-                                if len(intersections) == 2:
-                                    # second intersectio on the same line
-                                    intersection1 = intersections[0]
-                                    intersection2 = intersections[1]
+        for edge in ordered_edges:
+            print(edge)
+        print()
+        print()
+        print()
 
-                                    intersection_data.append([edges_ind, edge_ind, edges_ind, edge_ind, coordinate, 
-                                        block.thickness, block.thickness2, block.shape_type, intersection1, intersection2])
-
-                                    break_prev_iter = True
-                                    break
-
-                                elif len(intersections) == 1:
-                                    intersection1 = intersections[0]
-
-                                    # Must find the second intersection
-                                    if edges_ind == len(self.vertex_edge):
-                                        edges_ind = -1
-                                    if edge_ind == len(self.vertex_edge[edges_ind]):
-                                        edge_ind = -1
-                                    for edges_ind2, edges2 in enumerate(list(self.vertex_edge.values())[edges_ind+1:]):
-                                        for edge_ind2, edge2 in enumerate(edges[edge_ind+1:]):
-                                            intersections = Coordinate.point_edge_intersection(edge2, coordinate, block)
-                                            if intersections:
-                                                if len(intersections) == 1:
-                                                    edges_ind2 += edges_ind+1
-                                                    edge_ind2 += edge_ind+1
-                                                    intersection_data.append([edges_ind, edge_ind, edges_ind2, edge_ind2,
-                                                        coordinate, block.shape_type, block.thickness, block.thickness2,
-                                                        intersection1, intersection2])
-                                                    
-                                                    break_prev_iter = True
-                                                    break
-
-                                                else:
-                                                    raise ValueError('second intersection not in same edge MUST ONLY have one number of intersections!!!')
-                                        if break_prev_iter:
-                                            break
-                                else:
-                                    raise ValueError('>2 intersection ?!?!??!?!')
-
-                    if break_prev_iter:
-                        break_prev_iter = False
-                        break
-
-        print(intersection_data)
-
-        self.visualize(speed=0, line_width=1, x_offset=25, y_offset=25, multiplier = 10, terminate=terminate_after)
+        return Graph.convert_edges_to_graphs(new_ordered_edges) 
 
