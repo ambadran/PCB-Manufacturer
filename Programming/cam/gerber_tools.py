@@ -8,17 +8,10 @@ from typing import Optional
 from data_structures import *
 from copy import deepcopy
 
-
 class BlockType(Enum):
     Conductor = 'Conductor'
     ComponentPad = 'ComponentPad'
     Profile = 'Profile'
-
-class ShapeType(Enum):
-    Circle = 'C'
-    Rectangle = 'R'
-    Oval = 'O'
-
 
 class Block:
     '''

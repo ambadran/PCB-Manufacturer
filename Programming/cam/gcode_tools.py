@@ -530,7 +530,7 @@ def generate_ink_laying_gcode(gerber: Gerber, tool: Callable, tip_thickness: flo
     return gcode
 
 
-def get_laser_coordinates_lists(gerber: Gerber) -> list[list[Coordinate]]:
+def get_laser_coordinates_lists(gerber: Gerber, debug=False) -> list[list[Coordinate]]:
     '''
     Get list of list of coordinates, each list is one continious piece of trace.
 
@@ -540,6 +540,9 @@ def get_laser_coordinates_lists(gerber: Gerber) -> list[list[Coordinate]]:
     :param gerber: Gerber Object
     :return: list of list of coordinates of one continious trace
     '''
+    if debug:
+        Graph.DEBUG_APPLY_OFFSET = True
+        Graph.DEBUG_FILTER_TINY_EDGES = True
 
     # converting trace gerber blocks to one big graph
     trace_graph_unseperated_unoffseted: Graph = gerber.blocks_to_graph(gerber.blocks[BlockType.Conductor])

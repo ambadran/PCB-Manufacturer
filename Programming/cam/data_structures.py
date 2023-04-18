@@ -7,6 +7,12 @@ import random
 import math
 from enum import Enum
 
+class ShapeType(Enum):
+    Circle = 'C'
+    Rectangle = 'R'
+    Oval = 'O'
+
+
 
 class Infinity():
     def __init__(self):
@@ -196,7 +202,7 @@ class Coordinate:
             y = b
             max_coord = Coordinate(x_max, b)
 
-            ### Step 4: Getting the list of y_intercepts of linear equations that intersects the circle
+            ### Step 4: Getting the list of x values of vertical line equations that intersects the circle
             x_range = x_max - x
             num_iterations = int((resolution-1)/2)
             increment = round(x_range / (num_iterations + 1), 5)
@@ -269,8 +275,8 @@ class Coordinate:
             # Now I have the quadratic equation 
             # a_q * x**2 + b_q * x + c_q = 0
             # Solving quadratic equation using quadratic formula
-            x1 = round((-b_q + math.sqrt(b_q**2 - 4*a_q*c_q)) / (2*a_q), 3)
-            x2 = round((-b_q - math.sqrt(b_q**2 - 4*a_q*c_q)) / (2*a_q), 3)
+            x1 = round((-b_q + math.sqrt(round(b_q**2 - 4*a_q*c_q, 5))) / (2*a_q), 5)
+            x2 = round((-b_q - math.sqrt(round(b_q**2 - 4*a_q*c_q, 5))) / (2*a_q), 5)
 
             # Getting values of y by substituting in inverse linear equation
             y1 = inverse_gradient*x1 + inverse_y_intercept
@@ -304,17 +310,17 @@ class Coordinate:
                 b_q = -2*a + 2*gradient*current_y_intercept - 2*b*gradient
                 c_q = current_y_intercept**2 - 2*b*current_y_intercept + b**2 - r**2 + a**2
 
-                if b_q**2 - 4*a_q*c_q > 0:  #TODO: Fix this shit
-                    x1 = round((-b_q + math.sqrt(b_q**2 - 4*a_q*c_q)) / (2*a_q), 6)
+                if b_q**2 - 4*a_q*c_q > 0: 
+                    x1 = round((-b_q + math.sqrt(round(b_q**2 - 4*a_q*c_q, 5))) / (2*a_q), 5)
                     y1 = gradient*x1 + current_y_intercept
                     semicircle_coords_positive_x.append(Coordinate(x1, y1))
 
-                    x2 = round((-b_q - math.sqrt(b_q**2 - 4*a_q*c_q)) / (2*a_q), 6)
+                    x2 = round((-b_q - math.sqrt(round(b_q**2 - 4*a_q*c_q, 5))) / (2*a_q), 5)
                     y2 = gradient*x2 + current_y_intercept
                     semicircle_coords_negative_x.append(Coordinate(x2, y2))
                 else:
-                    # raise ValueError("SHITTT")
-                    print('SHITTTT')
+                    raise ValueError("SHITTT")
+                    # print('SHITTTT')
 
         ### Step 6: Get the final ordered list of coordinates
         # PLEASE refer to iPad. The combination are truly ENORMOUS and was difficult to derive ;)
@@ -492,7 +498,7 @@ class Coordinate:
         raise ValueError('END')
 
     @classmethod
-    def point_edge_intersection(edge: Edge, coordinate: Coordinate, block: Block) -> Optional[list[Coordinate]]:
+    def point_edge_intersection(cls, edge: Edge, coordinate: Coordinate, block: Block) -> Optional[list[Coordinate]]:
         '''
         Finds the intersection between edges of a graph (offseted traces) and the componentPad (offseted)
         :param edge: edge on the graph to intersect the component pad
@@ -507,14 +513,129 @@ class Coordinate:
             b = coordinate.y
             r = round(block.thickness/2, 5)
 
+            if edge.gradient == Infinity():
+                # Getting equation of a vertical line
+                x = edge.start.x
+
+                # Getting min and maximum
+                if edge.start.y > edge.end.y:
+                    y_min = edge.end.y
+                    y_max = edge.start.y
+                else:
+                    y_min = edge.start.y
+                    y_max = edge.end.y
+
+                # Getting intersection with vertical line
+                if (r**2 - (x-a)**2) >= 0:
+                    # Solutions Present
+                    y1 = round(b - math.sqrt(round(r**2 - (x - a)**2, 6)), 5)
+                    y2 = round(b + math.sqrt(round(r**2 - (x - a)**2, 6)), 5)
+                    
+                    # Within edge check
+                    if y1 <= y_max and y1 >= y_min:
+                        intersections.append(Coordinate(x, y1))
+
+                    # Within edge check and repeated root check
+                    if y2 <= y_max and y2 >= y_max and y1 != y2:
+                        intersections.append(Coordinate(x, y2))
+
+                else:
+                    # No intersection what so ever
+                    return None
+
+            elif edge.gradient == 0:
+                # Getting equation of a horizontal line
+                y = edge.start.y
+
+                # Getting min and maximum
+                if edge.start.x > edge.end.x:
+                    x_min = edge.end.x
+                    x_max = edge.start.x
+                else:
+                    x_min = edge.start.x
+                    x_max = edge.end.x
+
+                # Getting intersection with vertical line
+                if (r**2 - (y-b)**2) >= 0:
+                    # Solutions Present
+                    x1 = round(a - math.sqrt(round(r**2 - (y - b)**2, 6)), 5)
+                    x2 = round(a + math.sqrt(round(r**2 - (y - b)**2, 6)), 5)
+                    
+                    # Within Edge check
+                    if x1 <= x_max and x1 >= x_min:
+                        intersections.append(Coordinate(x1, y))
+
+                    # Within Edge check and same root check
+                    if x2 <= x_max and x2 >= x_max and x1 != x2:
+                        intersections.append(Coordinate(x2, y))
+
+                else:
+                    # No intersection what so ever
+                    return None
+
+            else:
+                # edge linear equation is given by getter attributes .gradient and .y_intercept
+                gradient = edge.gradient
+                y_intercept = edge.y_intercept
+
+                # Getting min and maximum
+                if edge.start.y > edge.end.y:
+                    y_min = edge.end.y
+                    y_max = edge.start.y
+                else:
+                    y_min = edge.start.y
+                    y_max = edge.end.y
+
+                # Getting intersection with line, solving simultaneous equation between circle and edge linear equation 
+                a_q = 1 + gradient**2
+                b_q = -2*a + 2*gradient*y_intercept - 2*b*gradient
+                c_q = y_intercept**2 - 2*b*y_intercept + b**2 - r**2 + a**2
+                if round(b_q**2 - 4*a_q*c_q, 5) >= 0:
+                    # Solving quadratic equation using quadratic formula
+                    x1 = round((-b_q + math.sqrt(round(b_q**2 - 4*a_q*c_q, 5))) / (2*a_q), 5)
+                    x2 = round((-b_q - math.sqrt(round(b_q**2 - 4*a_q*c_q, 5))) / (2*a_q), 5)
+
+                    # Getting values of y by substituting in inverse linear equation
+                    y1 = gradient*x1 + y_intercept
+                    y2 = gradient*x2 + y_intercept
+
+                    # Within edge check
+                    if y1 <= y_max and y1 >= y_min:
+                        intersections.append(Coordinate(x1, y1))
+
+                    # Within edge check and repeated root check
+                    if y2 <= y_max and y2 >= y_max and y1 != y2:
+                        intersections.append(Coordinate(x2, y2))
+
+                else:
+                    return None
+
         elif block.shape_type == ShapeType.Rectangle:
-            pass
+            return None
 
         elif block.shape_type == ShapeType.Oval:
-            pass
+            return None
 
         else:
-            raise ValueError('Unkonwn ShapeType')
+            print(block.shape_type, type(block.shape_type))
+            print(ShapeType.Oval, type(ShapeType.Oval))
+            print(block.shape_type == ShapeType.Oval)
+            print(ShapeType.Oval == ShapeType.Oval)
+            raise ValueError(f'Unkonwn ShapeType: {block.shape_type}')
+
+        if len(intersections) > 1:
+            # Order intersections with right order, first encounter then second encounter
+            # Finding distance between intersection coordinate and edge.start
+            distance_edge_start_inter1 = round(math.sqrt(round((intersections[0].x - edge.start.x)**2 
+                + (intersections[0].y - edge.start.y)**2, 5)), 5)
+
+            distance_edge_start_inter2 = round(math.sqrt(round((intersections[1].x - edge.start.x)**2 
+                + (intersections[1].y - edge.start.y)**2, 5)), 5)
+
+            if distance_edge_start_inter1 > distance_edge_start_inter2:
+                intersections = [intersections[1], intersections[0]]
+
+        return intersections
 
 
 @dataclass
@@ -1560,6 +1681,8 @@ class Graph:
         modifies the offseted graph into offseted graph with component pads edges (hopefully) :)
         '''
         intersection_data = []
+        break_prev_iter = False
+        find_second_intersection = False
         # Step 1: Identify intersection 1
         for edges_ind, edges in enumerate(list(self.vertex_edge.values())):
             for edge_ind, edge in enumerate(edges):
@@ -1592,11 +1715,11 @@ class Graph:
                                     # Must find the second intersection
                                     if edges_ind == len(self.vertex_edge):
                                         edges_ind = -1
-                                    if edge_ind = len(self.vertex_edge[edges_ind]):
+                                    if edge_ind == len(self.vertex_edge[edges_ind]):
                                         edge_ind = -1
                                     for edges_ind2, edges2 in enumerate(list(self.vertex_edge.values())[edges_ind+1:]):
                                         for edge_ind2, edge2 in enumerate(edges[edge_ind+1:]):
-                                            intersections= Coordinate.point_edge_intersection(edge2, coordinate, block)
+                                            intersections = Coordinate.point_edge_intersection(edge2, coordinate, block)
                                             if intersections:
                                                 if len(intersections) == 1:
                                                     edges_ind2 += edges_ind+1
