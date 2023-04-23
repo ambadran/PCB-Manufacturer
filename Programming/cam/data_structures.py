@@ -1795,6 +1795,16 @@ class Graph:
 # after that i can easily extract each trace by finding the coord that points to nothing:
         # I know that this is the start of a new trace and the end of a previous trace 
 
+    def to_singly_linked_list(self) -> Node:
+        '''
+        Converts Graph to singly linked list
+
+        #IMP: ONLY WORKS FOR GRAPHS THAT DOESN'T HAVE BRANCHS
+            every vertices point to the next and previous vertex ONLY, creating a loop (or not)
+        '''
+        # Checking if graph can be converted
+    
+
     def add_comppad(self, blocks: list[Block], terminate_after=False):
         '''
         :param blocks: list of Block objects of BlockType ComponentPad
@@ -1804,18 +1814,15 @@ class Graph:
 
         modifies the offseted graph into offseted graph with component pads edges (hopefully) :)
         '''
-        new_graph = Graph()
-        new_ordered_edges = []
+        print('New Call!!')
 
-        intersection_data = []
+        for edges_ind, edges in enumerate(self.vertex_edge.values()):
+            if len(edges) != 2:
+                print(edges)
 
-        ordered_edges = self.ordered_edges_non_tree
-
-        for edge in ordered_edges:
-            print(edge)
         print()
         print()
         print()
-
-        return Graph.convert_edges_to_graphs(new_ordered_edges) 
-
+        print()
+        print()
+        self.visualize()
