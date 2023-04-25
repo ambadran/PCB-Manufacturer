@@ -8,6 +8,7 @@ import math
 from enum import Enum
 from heapq import heappush, heappop
 
+LASER_BEAM_THICKNESS = 0.05
 
 class Stack:
     """
@@ -29,7 +30,6 @@ class Stack:
     def __repr__(self):
         return repr(self._container)
 
-
 class Queue:
     """
     singly linkedlist with FIFO settings
@@ -50,8 +50,148 @@ class Queue:
     def __repr__(self):
         return repr(self._container)
 
+class Node:
+    def __init__(self, vertex: Coordinate, parent: Optional[Node]):
+        self.vertex = vertex
+        self.parent = parent
+
+    def to_list(self) -> list[Coordinate]:
+        '''
+        converts the linkedlist to a normal list of coordinates
+        '''
+        next_node = self
+        vertex_list = []
+        while next_node.parent != None and next_node.parent != self:
+            vertex_list.append(next_node.vertex)
+            next_node = next_node.parent
+
+        vertex_list.append(next_node.vertex)
+
+        return vertex_list
+
+    @property
+    def node_count(self) -> int:
+        '''
+        return the number of nodes in this linkedlist, starting with the head node to the last node
+        '''
+        next_node = self
+        count = 1
+        while next_node.parent != None and next_node.parent != self:
+            count += 1
+            next_node = next_node.parent
+
+        if next_node.parent == self:
+            count += 1
+            
+        return count
+
+    def visualize(self, hide_turtle=True, speed=0, x_offset=20, y_offset=20, line_width=1.5, multiplier=8, terminate=False) -> None:
+        '''
+        visualizes the linked list
+        '''
+        skk = turtle.Turtle()
+        turtle.width(line_width)
+        turtle.speed(speed)
+        if hide_turtle:
+            turtle.hideturtle()
+        else:
+            turtle.showturtle()
+
+        colors = ['black', 'red', 'blue', 'light blue', 'green', 'brown', 'dark green', 'orange', 'gray', 'indigo']
+        color = random.choice(colors)
+        while color in Graph.used_colors:
+            color = random.choice(colors)
+
+        turtle.pencolor(color)
+
+        turtle.up()
+
+        next_node = self
+        turtle.setpos((next_node.vertex.x - x_offset) * multiplier, (next_node.vertex.y - y_offset) * multiplier)
+        turtle.down()
+        while next_node.parent != None:
+            next_node = next_node.parent
+            turtle.setpos((next_node.vertex.x - x_offset) * multiplier, (next_node.vertex.y - y_offset) * multiplier)
+
+        Graph.used_colors.add(color)
+        if len(Graph.used_colors) == len(colors):
+            print('\n\n!!!!!!!!!! COLORS RESET !!!!!!!!!!!!!!!!!\n\n')
+            Graph.used_colors = set()
+
+        if terminate:
+            turtle.done()
+
+    def add_comppad(self, blocks: list[Block], terminate_after=False) -> Node:
+        '''
+        :param blocks: list of ComponentPad Block objects
+
+        '''
+        print('NEW CALLLL!!!!!!')
+
+        ### Step 1: Find all the intersection data between all the traces and all the component pads :)
+        prev_vertex = self.vertex
+        next_node = self.parent  # start iteration from second node
+        intersections_data = []
+        found_first = False
+        while next_node.parent != None and next_node.parent != self:
+
+            # current working edge
+            current_edge = Edge(prev_vertex, next_node.vertex, None)
+            print()
+            print(current_edge)
+
+            # testing to see if it intersects with any component pad what so ever
+            if not found_first:
+                for block in blocks:
+                    for coordinate in block.coordinates:
+                        intersections = Coordinate.point_edge_intersection(current_edge, coordinate, block)
+
+                        if intersections != None:
+                            if not found_first:
+                                if len(intersections) == 2:
+                                    print('found 2 intersections in one edge')
+                                    intersections_data.append([coordinate, block, intersections[0], intersections[1], 
+                                        current_edge, current_edge])
+
+                                elif len(intersections) == 1:
+                                    print('found first intersection of an edge')
+                                    found_first = True
+                                    first_intersection = intersections[0]
+                                    edge_at_inter1 = current_edge
+                                    coordinate_to_find_inter2 = coordinate
+                                    block_to_find_inter2 = block
+
+            else:
+                intersections = Coordinate.point_edge_intersection(current_edge, coordinate_to_find_inter2, block_to_find_inter2)
+
+                if intersections != None:
+                    if len(intersections) == 1:
+                        print('found second intersection of an edge')
+                        intersections_data.append([coordinate_to_find_inter2, block_to_find_inter2, first_intersection, 
+                            intersections[0], edge_at_inter1, current_edge])
+
+                        found_first = False
+
+                    elif len(intersections) == 2:
+                        raise ValueError('THIS IS NOT POSSIBLE!!!!!!!')
 
 
+            prev_vertex = next_node.vertex
+            next_node = next_node.parent
+
+        print()
+        print()
+        print('intersections_data')
+        print()
+        for datum in intersections_data:
+            print(datum)
+            print()
+        #TODO: the intersection finding algorithm is working fine, only thing left is to coninue to develop in Coordinate.point_edge_intersection() for the cases of Rectangle and Oval!
+
+        ### Step 2:
+
+        raise ValueError('still in dev')
+        
 
 class ShapeType(Enum):
     Circle = 'C'
@@ -122,7 +262,6 @@ class Infinity():
     def __str__(self) -> str:
         return '<Infinity bitches>'
 
-LASER_BEAM_THICKNESS = 0.05
 
 @dataclass
 class Coordinate:
@@ -553,6 +692,7 @@ class Coordinate:
         '''
         intersections = []
         if block.shape_type == ShapeType.Circle:
+
             a = coordinate.x
             b = coordinate.y
             r = round(block.thickness/2, 5)
@@ -580,7 +720,7 @@ class Coordinate:
                         intersections.append(Coordinate(x, y1))
 
                     # Within edge check and repeated root check
-                    if y2 <= y_max and y2 >= y_max and y1 != y2:
+                    if y2 <= y_max and y2 >= y_min and y1 != y2:
                         intersections.append(Coordinate(x, y2))
 
                 else:
@@ -610,7 +750,7 @@ class Coordinate:
                         intersections.append(Coordinate(x1, y))
 
                     # Within Edge check and same root check
-                    if x2 <= x_max and x2 >= x_max and x1 != x2:
+                    if x2 <= x_max and x2 >= x_min and x1 != x2:
                         intersections.append(Coordinate(x2, y))
 
                 else:
@@ -648,7 +788,7 @@ class Coordinate:
                         intersections.append(Coordinate(x1, y1))
 
                     # Within edge check and repeated root check
-                    if y2 <= y_max and y2 >= y_max and y1 != y2:
+                    if y2 <= y_max and y2 >= y_min and y1 != y2:
                         intersections.append(Coordinate(x2, y2))
 
                 else:
@@ -661,10 +801,6 @@ class Coordinate:
             return None
 
         else:
-            print(block.shape_type, type(block.shape_type))
-            print(ShapeType.Oval, type(ShapeType.Oval))
-            print(block.shape_type == ShapeType.Oval)
-            print(ShapeType.Oval == ShapeType.Oval)
             raise ValueError(f'Unkonwn ShapeType: {block.shape_type}')
 
         if len(intersections) > 1:
@@ -961,11 +1097,12 @@ class Graph:
     DEBUG_APPLY_OFFSET = False
     DEBUG_FILTER_TINY_EDGES = False
     DEBUG_ORDERED_EDGES = False
+    DEBUG_TO_SINGLY_LINKEDLIST = False
 
     def __init__(self, vertices: list[Coordinate] = []):
 
         # Dictionary to relate each vertices to its edges
-        self.vertex_edge: dict[Coordinate: list[Edge]] = {vertex: [] for vertex in vertices}
+        self.vertex_edges: dict[Coordinate: list[Edge]] = {vertex: [] for vertex in vertices}
 
         # Dictionary to relate each vertices to the vertices it is attached to in the other end
         self.vertex_vertices: dict[Coordinate: list[Coordinate]] = {vertex: [] for vertex in vertices}
@@ -978,14 +1115,14 @@ class Graph:
         '''
         return number of vertices in this graph
         '''
-        return len(self.vertex_edge)
+        return len(self.vertex_edges)
 
     @property
     def edge_count(self) -> int:
         '''
         return number of edges in this graph
         '''
-        return sum(len(edges) for edges in self.vertex_edge.values())
+        return sum(len(edges) for edges in self.vertex_edges.values())
 
     def add_vertex(self, vertex: Coordinate) -> None:
         '''
@@ -993,8 +1130,8 @@ class Graph:
 
         :param vertex: the new vertex to be added to our graph
         '''
-        if vertex not in self.vertex_edge:
-            self.vertex_edge[vertex] = []
+        if vertex not in self.vertex_edges:
+            self.vertex_edges[vertex] = []
             self.vertex_vertices[vertex] = []
 
     def add_edge(self, edge: Edge) -> None:
@@ -1008,10 +1145,10 @@ class Graph:
             raise ValueError("not an edge, it's a point")
 
         # Adding only if it's not there, ensure not duplicates
-        if edge not in self.vertex_edge[edge.start]:
-            self.vertex_edge[edge.start].append(edge)
-        if edge.reversed() not in self.vertex_edge[edge.end]:
-            self.vertex_edge[edge.end].append(edge.reversed())
+        if edge not in self.vertex_edges[edge.start]:
+            self.vertex_edges[edge.start].append(edge)
+        if edge.reversed() not in self.vertex_edges[edge.end]:
+            self.vertex_edges[edge.end].append(edge.reversed())
 
         if edge.end not in self.vertex_vertices[edge.start]:
             self.vertex_vertices[edge.start].append(edge.end)
@@ -1028,7 +1165,7 @@ class Graph:
         ordered_edges = []
 
         visited = set()
-        next_edge = list(self.vertex_edge.values())[0][0]
+        next_edge = list(self.vertex_edges.values())[0][0]
         while len(visited) < self.edge_count:
 
             # print()
@@ -1037,14 +1174,14 @@ class Graph:
             
             next_v = next_edge.end
 
-            if len(self.vertex_edge[next_v]) == 1:
+            if len(self.vertex_edges[next_v]) == 1:
                 # dead end must return
-                next_edge = self.vertex_edge[next_v][0]
+                next_edge = self.vertex_edges[next_v][0]
                 visited.add(next_edge)
                 # print(next_edge, 'DEADEND')
 
             else:
-                successors = next_edge.anticlockwise_successors(self.vertex_edge[next_v])
+                successors = next_edge.anticlockwise_successors(self.vertex_edges[next_v])
                 # print(successors, 'successors')
                 for edge in successors:
                     # print('potential edge', edge, edge not in visited, edge.reversed() != next_edge)
@@ -1082,7 +1219,7 @@ class Graph:
         ordered_edges = []
 
         visited = set()
-        next_edge = list(self.vertex_edge.values())[0][0]
+        next_edge = list(self.vertex_edges.values())[0][0]
         first_edge = deepcopy(next_edge)
         backtracking_frontier = Queue()
         while len(visited) < self.edge_count:
@@ -1095,14 +1232,14 @@ class Graph:
             
             next_v = next_edge.end
 
-            if len(self.vertex_edge[next_v]) == 1:
+            if len(self.vertex_edges[next_v]) == 1:
                 # dead end must return
-                next_edge = self.vertex_edge[next_v][0]
+                next_edge = self.vertex_edges[next_v][0]
                 visited.add(next_edge)
                 # print(next_edge, 'DEADEND')
 
             else:
-                successors = next_edge.anticlockwise_successors(self.vertex_edge[next_v])
+                successors = next_edge.anticlockwise_successors(self.vertex_edges[next_v])
                 # print(successors, 'successors')
                 for edge in successors:
                     # print('potential edge', edge, edge not in visited, edge.reversed() != next_edge)
@@ -1176,7 +1313,7 @@ class Graph:
 
         turtle.up()
 
-        for edges in self.vertex_edge.values():
+        for edges in self.vertex_edges.values():
             if edges != []:
                 turtle.setpos((edges[0].start.x - x_offset) * multiplier, (edges[0].start.y - y_offset) * multiplier)
                 for edge in edges:
@@ -1227,7 +1364,7 @@ class Graph:
         visited = set()
         # print(self)
         
-        for vertex in list(self.vertex_edge.keys()):
+        for vertex in list(self.vertex_edges.keys()):
 
             if vertex not in visited:
                 # print(vertex, 'added new')
@@ -1239,8 +1376,8 @@ class Graph:
                     new_graph.add_vertex(other_vertex)
                     visited.add(other_vertex)
 
-                for edge in self.vertex_edge[vertex]:
-                    # print(edge, 'added from vertex_edge')
+                for edge in self.vertex_edges[vertex]:
+                    # print(edge, 'added from.vertex_edges')
                     new_graph.add_edge(edge)
 
                 seperated_graphs.append(new_graph)
@@ -1286,16 +1423,16 @@ class Graph:
                     visited.add(other_vertex2)
                     seperated_graphs[wanted_ind].add_vertex(other_vertex2)
 
-                for edge in self.vertex_edge[vertex]:
-                    # print(edge, 'added from vertex_edge')
+                for edge in self.vertex_edges[vertex]:
+                    # print(edge, 'added from.vertex_edges')
                     seperated_graphs[wanted_ind].add_edge(edge)
                 # print()
         
         # Removing duplicate edges
         #TODO
         # for graph_ind, graph in enumerate(seperated_graphs):
-        #     for vertex in graph.vertex_edge:
-        #         seperated_graphs[graph_ind].vertex_edge[vertex] = list(set(graph.vertex_edge[vertex]))
+        #     for vertex in graph.vertex_edges:
+        #         seperated_graphs[graph_ind].vertex_edges[vertex] = list(set(graph.vertex_edges[vertex]))
 
 
         return seperated_graphs
@@ -1627,19 +1764,19 @@ class Graph:
         if (len(self.vertex_vertices[vertex]) == 1):
             # Step 1: Remove the key entirely
             previous_vertex = self.vertex_vertices.pop(vertex)[0]
-            self.vertex_edge.pop(vertex)
+            self.vertex_edges.pop(vertex)
 
             # Step 2: Remove the vertex and edge values from other key vertices
             self.vertex_vertices[previous_vertex].remove(vertex)
 
             # Step 3: Remove the edges in the previous vertex that has anything to do with the to be deleted vertex
             edges_to_be_removed = []
-            for edge in self.vertex_edge[previous_vertex]:
+            for edge in self.vertex_edges[previous_vertex]:
                 if edge.start == vertex or edge.end == vertex:
                     edges_to_be_removed.append(edge)
 
             for edge in edges_to_be_removed:
-                self.vertex_edge[previous_vertex].remove(edge)
+                self.vertex_edges[previous_vertex].remove(edge)
 
         # Case 2: vertex is a link
         else:
@@ -1678,7 +1815,7 @@ class Graph:
         if len(prev_vertex_list) == 1:
             # prev_vertex = prev_vertex_list[0]  # not needed anywhere
             self.vertex_vertices.pop(edge.start)
-            self.vertex_edge.pop(edge.start)
+            self.vertex_edges.pop(edge.start)
 
         # Step 4: Replace every existence of edge.start in each prev_vertex with after_vertex
         for prev_vertex in prev_vertex_list:
@@ -1688,12 +1825,12 @@ class Graph:
                     self.vertex_vertices[prev_vertex][ind1] = after_vertex
 
             # Replacing Edges
-            for ind2, prev_prev_edge in enumerate(self.vertex_edge[prev_vertex]):
+            for ind2, prev_prev_edge in enumerate(self.vertex_edges[prev_vertex]):
                 if prev_prev_edge.start == edge.start:
-                    self.vertex_edge[prev_vertex][ind2].start = after_vertex
+                    self.vertex_edges[prev_vertex][ind2].start = after_vertex
 
                 if prev_prev_edge.end == edge.start:
-                    self.vertex_edge[prev_vertex][ind2].end = after_vertex
+                    self.vertex_edges[prev_vertex][ind2].end = after_vertex
 
         # Step 5: Replace every existence of edge.start in after_vertex with all the vertices/edges of prev_vertex
         # Deleting Vertices
@@ -1705,12 +1842,12 @@ class Graph:
 
         # Deleting Edges
         edges_to_be_removed = []
-        for prev_edge in self.vertex_edge[after_vertex]:
+        for prev_edge in self.vertex_edges[after_vertex]:
             if prev_edge.start == edge.start or prev_edge.end == edge.start:
                 edges_to_be_removed.append(prev_edge)
 
         for edge_tobe_del in edges_to_be_removed:
-            self.vertex_edge[after_vertex].remove(edge_tobe_del)
+            self.vertex_edges[after_vertex].remove(edge_tobe_del)
 
         for prev_vertex in prev_vertex_list:
             # Adding Vertices
@@ -1719,12 +1856,12 @@ class Graph:
 
             # Adding Edges
             edge1 = Edge(prev_vertex, after_vertex, edge.thickness)
-            if edge1 not in self.vertex_edge[after_vertex]:
-                self.vertex_edge[after_vertex].append(edge1)
+            if edge1 not in self.vertex_edges[after_vertex]:
+                self.vertex_edges[after_vertex].append(edge1)
 
             edge2 = edge1.reversed()
-            if edge2 not in self.vertex_edge[after_vertex]:
-                self.vertex_edge[after_vertex].append(edge2)
+            if edge2 not in self.vertex_edges[after_vertex]:
+                self.vertex_edges[after_vertex].append(edge2)
 
     def filter_tiny_edges(self) -> None:
         '''
@@ -1733,7 +1870,7 @@ class Graph:
         '''
         edges_to_be_removed = []
         for vertex in self.vertex_vertices.keys():
-            for edge in self.vertex_edge[vertex]:
+            for edge in self.vertex_edges[vertex]:
                 if abs(edge.delta_x) <= Graph.TINY_EDGE_OFFSET and abs(edge.delta_y) <= Graph.TINY_EDGE_OFFSET:
                     edges_to_be_removed.append(edge)
         
@@ -1769,7 +1906,7 @@ class Graph:
 
         for graph in graphs:
             joined_graph.vertex_vertices.update(graph.vertex_vertices)
-            joined_graph.vertex_edge.update(graph.vertex_edge)
+            joined_graph.vertex_edges.update(graph.vertex_edges)
 
         return joined_graph
 
@@ -1795,34 +1932,61 @@ class Graph:
 # after that i can easily extract each trace by finding the coord that points to nothing:
         # I know that this is the start of a new trace and the end of a previous trace 
 
-    def to_singly_linked_list(self) -> Node:
+    def to_singly_linkedlist(self, terminate_after=False) -> Node:
         '''
         Converts Graph to singly linked list
 
         #IMP: ONLY WORKS FOR GRAPHS THAT DOESN'T HAVE BRANCHS
             every vertices point to the next and previous vertex ONLY, creating a loop (or not)
+
+        :return: Head Node of the linked list that has all the values of the graph
         '''
         # Checking if graph can be converted
-    
+        for vertex in self.vertex_vertices.keys():
+            if len(self.vertex_vertices[vertex]) != 2:
+                raise ValueError("every vertices must point to two other vertices only")
 
-    def add_comppad(self, blocks: list[Block], terminate_after=False):
-        '''
-        :param blocks: list of Block objects of BlockType ComponentPad
-        :param graph_sep_unoff: The original unoffseted graph object from which the offseted graph was created
+            if len(self.vertex_edges[vertex]) != 2:
+                raise ValueError("every vertices must point to two other edges only")
 
-        #NOTE: graph object to have this method executed on MUST be an offseted graph
+        #TODO: didn't test if the vertices list values of the current vertex has in their vertices list the current vertex value
 
-        modifies the offseted graph into offseted graph with component pads edges (hopefully) :)
-        '''
-        print('New Call!!')
+        # Converting!
+        visited = set()
 
-        for edges_ind, edges in enumerate(self.vertex_edge.values()):
-            if len(edges) != 2:
-                print(edges)
+        first_vertex = list(self.vertex_vertices.keys())[0]
+        visited.add(first_vertex)
+        next_node = Node(first_vertex, None)  # the last node, doesn't have any heads
 
-        print()
-        print()
-        print()
-        print()
-        print()
-        self.visualize()
+        while True:
+            for vertex in self.vertex_vertices[next_node.vertex]:
+                if vertex not in visited:
+                    next_node = Node(vertex, next_node)
+                    visited.add(vertex)
+                    break
+            else:
+                if first_vertex in self.vertex_vertices[next_node.vertex]:
+                    # it's a loop
+                    # adding the last link which couldn't be added normally as it's in visited
+                    next_node = Node(first_vertex, next_node)
+
+                break
+
+        # testing everything is ok, all vertices available in the linkedlist as the graph
+        node_vertex_set = set(next_node.to_list())
+        graph_vertex_set = set(self.vertex_vertices.keys())
+        if node_vertex_set != graph_vertex_set:
+            # print(next_node.to_list(), len(next_node.to_list()), len(node_vertex_set))
+            # print()
+            # print(self.vertex_vertices.keys(), len(self.vertex_vertices), len(graph_vertex_set))
+            print(node_vertex_set.difference(graph_vertex_set), 'node - graph')
+            print()
+            print(graph_vertex_set.difference(node_vertex_set), 'graph - node')
+
+            raise ValueError("HOW THE FUCK DID IT PASS THE FIRST TEST AND NOT PASS THIS ONE?!?!?!")
+
+        if Graph.DEBUG_TO_SINGLY_LINKEDLIST:
+            next_node.visualize(terminate=terminate_after)
+
+        return next_node
+

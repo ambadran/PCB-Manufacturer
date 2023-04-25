@@ -543,6 +543,7 @@ def get_laser_coordinates_lists(gerber: Gerber, debug=False) -> list[list[Coordi
     if debug:
         Graph.DEBUG_APPLY_OFFSET = True
         Graph.DEBUG_FILTER_TINY_EDGES = True
+        Graph.DEBUG_TO_SINGLY_LINKEDLIST = True
 
     # converting trace gerber blocks to one big graph
     graph_unsep_unoff: Graph = gerber.blocks_to_graph(gerber.blocks[BlockType.Conductor])
@@ -555,13 +556,16 @@ def get_laser_coordinates_lists(gerber: Gerber, debug=False) -> list[list[Coordi
 
     # apply thickness offset to the graphs
     graphs_sep_off: list[Graph] = [graph.apply_offsets() for graph in graphs_sep_unoff]
-    # trace_graphs_seperated_offseted.append(trace_graphs_seperated_unoffseted[-1].apply_offsets(terminate_after=True))
 
-    # Incorporating component pads
-    comppad_blocks = gerber.blocks[BlockType.ComponentPad]
-    graphs_sep_off_comppad = [graph.add_comppad(comppad_blocks) for graph in graphs_sep_off]
+    # Converting the graphs to singly linkedlists
+    linkedlists_sep_off: list[Node] = [graph.to_singly_linkedlist(terminate_after=True) for graph in graphs_sep_off]
 
-    return trace_coordinates_lists
+    # Incorporating component pads to the linked lists
+    comppad_blocks: list[Block] = gerber.blocks[BlockType.ComponentPad]
+    linkedlists_sep_off_comppad: list[Node] = [linkedlist.add_comppad(comppad_blocks) for linkedlist in linkedlists_sep_off]
+
+    raise ValueError('still in development')
+    return graphs_sep_off_comppad
 
 
 def generate_pcb_trace_gcode(gerber_file: str, tool: Callable, optimum_focal_distance: int, feedrate: int, laser_power: int, initiated_before: bool=False, terminate_after=True) -> str:

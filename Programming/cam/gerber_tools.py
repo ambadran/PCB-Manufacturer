@@ -24,7 +24,7 @@ class Block:
     def __init__(self, D_num: int, coordinates: list[Coordinate], block_type: BlockType, shape_type: ShapeType, 
                     thickness: float, thickness2: Optional[float]=None, 
                     coordinates_with_multiplier: Optional[list[Coordinate]]=None):
-        self.D_num = D_num
+        self.D_num = int(D_num)
         self.coordinates = coordinates
         self.block_type = block_type
         self.shape_type = shape_type
