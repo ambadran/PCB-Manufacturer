@@ -795,7 +795,98 @@ class Coordinate:
                     return None
 
         elif block.shape_type == ShapeType.Rectangle:
-            return None
+            # Refrence iPad Notes for more details
+            # Getting the Coordinates of the square
+            v1 = Coordinate(coordinate.x - round(block.thickness/2, 5), coordinate.y + round(block.thickness2/2, 5))
+            v2 = Coordinate(coordinate.x + round(block.thickness/2, 5), coordinate.y + round(block.thickness2/2, 5))
+            v3 = Coordinate(coordinate.x - round(block.thickness/2, 5), coordinate.y - round(block.thickness2/2, 5))
+            v4 = Coordinate(coordinate.x + round(block.thickness/2, 5), coordinate.y - round(block.thickness2/2, 5))
+            e1 = Edge(v1, v2, None)
+            e2 = Edge(v1, v3, None)
+            e3 = Edge(v2, v4, None)
+            e4 = Edge(v3, v4, None)
+
+            ### Step 1: Get intersection between the edge and all the four lines of the square
+            x_values = []
+            y_values = []
+            intersected_edges = []
+            if edge.gradient != e1.gradient:
+                intersected_edges.append(e1)
+                y_values.append(v1.y)  # or v2.y
+                if edge.gradient != Infinity():
+                    x_values.append(round((y_values[-1] - edge.y_intercept)/edge.gradient, 5))
+                else:
+                    x_values.append(edge.start.x)  # or edge.end.x
+
+            if edge.gradient != e2.gradient:
+                intersected_edges.append(e2)
+                x_values.append(v1.x)  # or v3.x
+                if edge.gradient != 0:
+                    y_values.append(edge.gradient*x_values[-1] + edge.y_intercept)
+                else:
+                    y_values.append(edge.start.y)  # or edge.end.y
+
+            if edge.gradient != e3.gradient:
+                intersected_edges.append(e3)
+                x_values.append(v1.x) # or v3.x
+                if edge.gradient != 0:
+                    y_values.append(edge.gradient*x_values[-1] + edge.y_intercept)
+                else:
+                    y_values.append(edge.start.y)  # or edge.end.y
+
+            if edge.gradient != e4.gradient:
+                intersected_edges.append(e4)
+                y_values.append(v1.y)  # or v2.y
+                if edge.gradient != Infinity():
+                    x_values.append(round((y_values[-1] - edge.y_intercept)/edge.gradient, 5))
+                else:
+                    x_values.append(edge.start.x)  # or edge.end.x
+
+              
+            ### Step 2: testing if intersection is within edge and square edge
+            # Getting min and maximum
+            if edge.start.x > edge.end.x:
+                x_min = edge.end.x
+                x_max = edge.start.x
+            else:
+                x_min = edge.start.x
+                x_max = edge.end.x
+
+            if edge.start.y > edge.end.y:
+                y_min = edge.end.y
+                y_max = edge.start.y
+            else:
+                y_min = edge.start.y
+                y_max = edge.end.y
+
+            x_mins = []
+            y_mins = []
+            x_maxs = []
+            y_maxs = []
+            for intersected_edge in intersected_edges:
+                if intersected_edge.start.x > intersected_edge.end.x:
+                    x_mins.append(edge.end.x)
+                    x_maxs.append(edge.start.x)
+                else:
+                    x_mins.append(edge.start.x)
+                    x_maxs.append(edge.end.x)
+
+                if intersected_edge.start.y > intersected_edge.end.y:
+                    y_mins.append(edge.end.y)
+                    y_maxs.append(edge.start.y)
+                else:
+                    y_mins.append(edge.start.y)
+                    y_maxs.append(edge.end.y)
+
+            intersections = []
+            for x, y, x_min2, x_max2, y_min2, y_max2 in zip(x_values, y_values, x_mins, x_maxs, y_mins, y_maxs):
+                if x <= x_max and x >= x_min and y <= y_max and y >= y_min and x <= x_max2 and x >= x_min2 and y <= y_max2 and y >= y_min2:
+                    intersections.append(Coordinate(x, y))
+
+            if intersections:
+                return intersections
+            else:
+                return None
 
         elif block.shape_type == ShapeType.Oval:
             return None
