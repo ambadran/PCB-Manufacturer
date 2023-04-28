@@ -28,9 +28,10 @@ class Node:
 
         else:
             next_node.parent = other_node
+
             # must join the last node with the first node to make the loop
             next_node2 = other_node
-            while next_node2.parent != None and next_node2.parent != self:
+            while next_node2.parent != None and next_node2.parent != other_node:
                next_node2 = next_node2.parent
 
             next_node2.parent = self

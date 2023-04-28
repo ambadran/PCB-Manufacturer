@@ -28,7 +28,7 @@ class Block:
         self.coordinates = coordinates
         self.block_type = block_type
         self.shape_type = shape_type
-        self.thickness = thickness  # Diameter for Circle
+        self.thickness = thickness  # Diameter for Circle, length of rectangle?
         self.thickness2 = thickness2
         self.coordinates_with_multiplier = coordinates_with_multiplier
 

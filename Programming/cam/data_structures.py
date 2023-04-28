@@ -91,14 +91,14 @@ class Node:
 
         return vertex_list
 
-    def extend(self, next_parent: Node) -> Node:
+    def extend(self, other_node: Node) -> None:
         '''
         just like list.extend() it extends the current linkedlist with other linkedlist
         finds the last node, the node with parent none (or head for looping linkedlists) 
-        then attaches the next_parent node to it and joins the loop or not depending on 
+        then attaches the other_node node to it and joins the loop or not depending on 
         original state
 
-        :param next_parent: the node to make parent of the last node in the current linkedlist
+        :param other_node: the node to make parent of the last node in the current linkedlist
         :return: the new head Node of the extended linkedlist
         '''
         next_node = self
@@ -106,15 +106,16 @@ class Node:
             next_node = next_node.parent
 
 
-        if last_node.parent == None:
+        if next_node.parent == None:
             # just join
-            next_node.parent = next_parent
+            next_node.parent = other_node
 
         else:
-            next_node.parent = next_parent
+            next_node.parent = other_node
+
             # must join the last node with the first node to make the loop
-            next_node2 = next_parent
-            while next_node2.parent != None and next_node2.parent != self:
+            next_node2 = other_node
+            while next_node2.parent != None and next_node2.parent != other_node:
                next_node2 = next_node2.parent
 
             next_node2.parent = self
@@ -206,7 +207,7 @@ class Node:
         :param blocks: list of ComponentPad Block objects
 
         '''
-        print('NEW CALLLL!!!!!!')
+        # print('NEW CALLLL!!!!!!')
 
         ### Step 1: Find all the intersection data between all the traces and all the component pads :)
         prev_vertex = self.vertex
@@ -217,8 +218,8 @@ class Node:
 
             # current working edge
             current_edge = Edge(prev_vertex, next_node.vertex, None)
-            print()
-            print(current_edge, 'current edge to be examined')
+            # print()
+            # print(current_edge, 'current edge to be examined')
 
             # testing to see if it intersects with any component pad what so ever
             if not found_first:
@@ -229,12 +230,12 @@ class Node:
                         if intersections != None:
                             if not found_first:
                                 if len(intersections) == 2:
-                                    print('found 2 intersections in one edge')
+                                    # print('found 2 intersections in one edge')
                                     intersections_data.append(Intersection(coordinate, block, intersections[0], intersections[1], 
                                         current_edge, current_edge, prev_node, prev_node))
 
                                 elif len(intersections) == 1:
-                                    print('found first intersection of an edge')
+                                    # print('found first intersection of an edge')
                                     found_first = True
                                     first_intersection = intersections[0]
                                     edge_at_inter1 = current_edge
@@ -247,7 +248,7 @@ class Node:
 
                 if intersections != None:
                     if len(intersections) == 1:
-                        print('found second intersection of an edge')
+                        # print('found second intersection of an edge')
                         intersections_data.append(Intersection(coordinate_to_find_inter2, 
                             block_to_find_inter2.shape_type, first_intersection, 
                             intersections[0], edge_at_inter1, current_edge,
@@ -264,26 +265,50 @@ class Node:
             next_node = next_node.parent
 
         print()
-        for datum in intersections_data:
-            print(datum)
+        for intersection in intersections_data:
+            print(intersection)
             print()
-
-        # self.visualize(terminate=True)
 
         ### Step 2: remove all old vertices in between intersections and add new component pad vertices
         for intersection in intersections_data:
-            print(intersection.pre_inter1_node)
-            print(intersection.pre_inter2_node)
-            print()
+            intersection.pre_inter1_node.parent = Node(intersection.inter1_coord, None)
+            self.extend(Coordinate.generate_comppad_nodes(intersection))
+            self.extend(Node(intersection.inter2_coord, None))
+            self.extend(Node(intersection.inter2_edge.end, intersection.pre_inter2_node.parent))
+
+        self.visualize(multiplier=20, x_offset=40, terminate=True)
 
     def __repr__(self) -> str:
         return f"{self.vertex}, Parent: {self.parent.vertex}"
+
+    def __str__(self) -> str:
+        '''
+        string representation of the linkedlist made of nodes
+        '''
+
+        string_representation = ""
+
+        next_node = self
+        while next_node.parent != None and next_node.parent != self:
+            string_representation += f"{next_node.vertex}, "
+            next_node = next_node.parent
+
+        string_representation += f"{next_node.vertex}, "
+
+        if next_node.parent == self:
+            string_representation += f"{next_node.parent.vertex}, ... (loops)"
+
+        else:
+            string_representation += f"{next_node.parent}"
+
+        return string_representation
 
 
 class ShapeType(Enum):
     Circle = 'C'
     Rectangle = 'R'
     Oval = 'O'
+
 
 class Infinity():
     def __init__(self):
@@ -487,18 +512,18 @@ class Coordinate:
             increment = round(x_range / (num_iterations + 1), 5)
             x_values = []
             for iter_ind in range(1, num_iterations+1):
-                x_values.append(x+ iter_ind*increment)
+                x_values.append(x + iter_ind*increment)
 
             ### Step 5: Getting the intersection between circle equation and all the intersection linear equations
-            semicircle_coords_positive_x = []
-            semicircle_coords_negative_x = []
+            semicircle_coords_positive = []
+            semicircle_coords_negative = []
             for current_x_value in x_values:
                 y1 = round(b + math.sqrt(round(r**2 - (current_x_value - a)**2, 6)), 5)
-                semicircle_coords_positive_x.append(Coordinate(current_x_value, y1))
+                semicircle_coords_positive.append(Coordinate(current_x_value, y1))
 
                 y2 = round(b - math.sqrt(round(r**2 - (current_x_value - a)**2, 6)), 5)
                 if y1 != y2: # to eleminate max point
-                    semicircle_coords_negative_x.append(Coordinate(current_x_value, y2))
+                    semicircle_coords_negative.append(Coordinate(current_x_value, y2))
 
         elif coordinate2.y == coordinate1.y:  # Gradient = 0.0
             ### Step 2: Get linear equation of the line that passes through the circle diameter, aka the 2 coordinates
@@ -523,15 +548,15 @@ class Coordinate:
                 y_values.append(y + iter_ind*increment)
 
             ### Step 5: Getting the intersection between circle equation and all the intersection linear equations
-            semicircle_coords_positive_x = []
-            semicircle_coords_negative_x = []
+            semicircle_coords_positive = []
+            semicircle_coords_negative = []
             for current_y_value in y_values:
                 x1 = round(a + math.sqrt(round(r**2 - (current_y_value - b)**2, 6)), 5)
-                semicircle_coords_positive_x.append(Coordinate(x1, current_y_value))
+                semicircle_coords_positive.append(Coordinate(x1, current_y_value))
 
                 x2 = round(a - math.sqrt(round(r**2 - (current_y_value - b)**2, 6)), 5)
                 if x1 != x2: # to eleminate max point
-                    semicircle_coords_negative_x.append(Coordinate(x2, current_y_value))
+                    semicircle_coords_negative.append(Coordinate(x2, current_y_value))
 
         else:
             ### Step 2: Get linear equation of the line that passes through the circle diameter, aka the 2 coordinates
@@ -582,8 +607,8 @@ class Coordinate:
 
             ### Step 5: Getting the intersection between circle equation and all the intersection linear equations
             # from the diameter to the maximum line.
-            semicircle_coords_positive_x = []
-            semicircle_coords_negative_x = []
+            semicircle_coords_positive = []
+            semicircle_coords_negative = []
             for current_y_intercept in y_intercept_list:
                 a_q = 1 + gradient**2
                 b_q = -2*a + 2*gradient*current_y_intercept - 2*b*gradient
@@ -592,11 +617,11 @@ class Coordinate:
                 if b_q**2 - 4*a_q*c_q > 0: 
                     x1 = round((-b_q + math.sqrt(round(b_q**2 - 4*a_q*c_q, 5))) / (2*a_q), 5)
                     y1 = gradient*x1 + current_y_intercept
-                    semicircle_coords_positive_x.append(Coordinate(x1, y1))
+                    semicircle_coords_positive.append(Coordinate(x1, y1))
 
                     x2 = round((-b_q - math.sqrt(round(b_q**2 - 4*a_q*c_q, 5))) / (2*a_q), 5)
                     y2 = gradient*x2 + current_y_intercept
-                    semicircle_coords_negative_x.append(Coordinate(x2, y2))
+                    semicircle_coords_negative.append(Coordinate(x2, y2))
                 else:
                     raise ValueError("SHITTT")
                     # print('SHITTTT')
@@ -607,35 +632,35 @@ class Coordinate:
         if delta_x > 0:
             if coordinate2.y > coordinate1.y:
                 if delta_y > 0:
-                    ordered_semicircle_coords.extend(semicircle_coords_positive_x)
+                    ordered_semicircle_coords.extend(semicircle_coords_positive)
                     ordered_semicircle_coords.append(max_coord)
-                    ordered_semicircle_coords.extend(reversed(semicircle_coords_negative_x))
+                    ordered_semicircle_coords.extend(reversed(semicircle_coords_negative))
 
                 elif delta_y < 0:
-                    ordered_semicircle_coords.extend(semicircle_coords_negative_x)
+                    ordered_semicircle_coords.extend(semicircle_coords_negative)
                     ordered_semicircle_coords.append(max_coord)
-                    ordered_semicircle_coords.extend(reversed(semicircle_coords_positive_x))
+                    ordered_semicircle_coords.extend(reversed(semicircle_coords_positive))
 
                 elif delta_y == 0:
-                    ordered_semicircle_coords.extend(semicircle_coords_negative_x)
+                    ordered_semicircle_coords.extend(semicircle_coords_negative)
                     ordered_semicircle_coords.append(max_coord)
-                    ordered_semicircle_coords.extend(reversed(semicircle_coords_positive_x))
+                    ordered_semicircle_coords.extend(reversed(semicircle_coords_positive))
 
             elif coordinate1.y > coordinate2.y:
                 if delta_y > 0:
-                    ordered_semicircle_coords.extend(semicircle_coords_negative_x)
+                    ordered_semicircle_coords.extend(semicircle_coords_negative)
                     ordered_semicircle_coords.append(max_coord)
-                    ordered_semicircle_coords.extend(reversed(semicircle_coords_positive_x))
+                    ordered_semicircle_coords.extend(reversed(semicircle_coords_positive))
 
                 elif delta_y < 0:
-                    ordered_semicircle_coords.extend(semicircle_coords_positive_x)
+                    ordered_semicircle_coords.extend(semicircle_coords_positive)
                     ordered_semicircle_coords.append(max_coord)
-                    ordered_semicircle_coords.extend(reversed(semicircle_coords_negative_x))
+                    ordered_semicircle_coords.extend(reversed(semicircle_coords_negative))
 
                 elif delta_y == 0:
-                    ordered_semicircle_coords.extend(semicircle_coords_positive_x)
+                    ordered_semicircle_coords.extend(semicircle_coords_positive)
                     ordered_semicircle_coords.append(max_coord)
-                    ordered_semicircle_coords.extend(reversed(semicircle_coords_negative_x))
+                    ordered_semicircle_coords.extend(reversed(semicircle_coords_negative))
 
             else:
                 raise ValueError('NOT FUCKING POSSIBLE (acoording to my calculations ;) )')
@@ -643,49 +668,49 @@ class Coordinate:
         elif delta_x < 0:
             if coordinate2.y > coordinate1.y:
                 if delta_y > 0:
-                    ordered_semicircle_coords.extend(semicircle_coords_negative_x)
+                    ordered_semicircle_coords.extend(semicircle_coords_negative)
                     ordered_semicircle_coords.append(max_coord)
-                    ordered_semicircle_coords.extend(reversed(semicircle_coords_positive_x))
+                    ordered_semicircle_coords.extend(reversed(semicircle_coords_positive))
 
                 elif delta_y < 0:
-                    ordered_semicircle_coords.extend(semicircle_coords_positive_x)
+                    ordered_semicircle_coords.extend(semicircle_coords_positive)
                     ordered_semicircle_coords.append(max_coord)
-                    ordered_semicircle_coords.extend(reversed(semicircle_coords_negative_x))
+                    ordered_semicircle_coords.extend(reversed(semicircle_coords_negative))
  
                 elif delta_y == 0:
-                    ordered_semicircle_coords.extend(semicircle_coords_negative_x)
+                    ordered_semicircle_coords.extend(semicircle_coords_negative)
                     ordered_semicircle_coords.append(max_coord)
-                    ordered_semicircle_coords.extend(reversed(semicircle_coords_positive_x))
+                    ordered_semicircle_coords.extend(reversed(semicircle_coords_positive))
 
             elif coordinate1.y > coordinate2.y:
                 if delta_y > 0:
-                    ordered_semicircle_coords.extend(semicircle_coords_positive_x)
+                    ordered_semicircle_coords.extend(semicircle_coords_positive)
                     ordered_semicircle_coords.append(max_coord)
-                    ordered_semicircle_coords.extend(reversed(semicircle_coords_negative_x))
+                    ordered_semicircle_coords.extend(reversed(semicircle_coords_negative))
 
                 elif delta_y < 0:
-                    ordered_semicircle_coords.extend(semicircle_coords_negative_x)
+                    ordered_semicircle_coords.extend(semicircle_coords_negative)
                     ordered_semicircle_coords.append(max_coord)
-                    ordered_semicircle_coords.extend(reversed(semicircle_coords_positive_x))
+                    ordered_semicircle_coords.extend(reversed(semicircle_coords_positive))
 
                 elif delta_y == 0:
-                    ordered_semicircle_coords.extend(semicircle_coords_positive_x)
+                    ordered_semicircle_coords.extend(semicircle_coords_positive)
                     ordered_semicircle_coords.append(max_coord)
-                    ordered_semicircle_coords.extend(reversed(semicircle_coords_negative_x))
+                    ordered_semicircle_coords.extend(reversed(semicircle_coords_negative))
 
             else:
                 raise ValueError('NOT FUCKING POSSIBLE (acoording to my calculations ;) )')
 
         elif delta_x == 0:
             if coordinate1.x > coordinate2.x:
-                ordered_semicircle_coords.extend(semicircle_coords_positive_x)
+                ordered_semicircle_coords.extend(semicircle_coords_positive)
                 ordered_semicircle_coords.append(max_coord)
-                ordered_semicircle_coords.extend(reversed(semicircle_coords_negative_x))
+                ordered_semicircle_coords.extend(reversed(semicircle_coords_negative))
 
             elif coordinate2.x > coordinate1.x:
-                ordered_semicircle_coords.extend(semicircle_coords_negative_x)
+                ordered_semicircle_coords.extend(semicircle_coords_negative)
                 ordered_semicircle_coords.append(max_coord)
-                ordered_semicircle_coords.extend(reversed(semicircle_coords_positive_x))
+                ordered_semicircle_coords.extend(reversed(semicircle_coords_positive))
 
             else:
                 raise ValueError('NOT FUCKING POSSIBLE (acoording to my calculations ;) )')
@@ -940,12 +965,6 @@ class Coordinate:
                 else:
                     x_values.append(edge.start.x)  # or edge.end.x
 
-                if coordinate == Coordinate(43.625424, 32.305) and edge == Edge(Coordinate(43.908, 32.022), Coordinate(42.865, 30.98), None):
-                    print('gotchaa')
-                    print(x_values[-1])
-                    print(y_values[-1])
-
-              
             ### Step 2: testing if intersection is within edge and square edge
             # Getting min and maximum
             if edge.start.x > edge.end.x:
@@ -1010,6 +1029,51 @@ class Coordinate:
                 intersections = [intersections[1], intersections[0]]
 
         return intersections
+
+    @classmethod
+    def generate_comppad_nodes(intersection: Intersection, resolution: int=5) -> Node:
+        '''
+        generates the coordinates of the component pad in the form of a linkedlist
+
+        :param intersection: Intersection object to determine all the variables needed to generate the coordinates
+        :param resolution: how many points per mm
+        :return: Node object representing the HEAD of the linkedlist of the coordinates of the component pad
+        '''
+        print(intersection, 'lskdjflksdjfkl')
+        delta_x = intersection.inter1_edge.delta_x
+        delta_y = intersection.inter1_edge.delta_y
+        if delta_x > 0:
+            orientation = False
+        elif delta_x < 0:
+            orientation = True
+        elif delta_x == 0:
+            if delta_y > 0:
+                orientation = False
+            elif delta_y < 0:
+                orientation = True
+
+        if intersection.block.shape_type == ShapeType.Circle:
+            a = round(intersection.comppad_coord.x, 6)
+            b = round(intersection.comppad_coord.y, 6)
+            r = round(intersection.block.thickness/2, 6)
+
+            length = round(math.sqrt(round((intersection.inter2_coord.y - intersection.inter1_coord.y)**2 + (intersection.inter2_coord.x - intersection.inter1_coord.x)**2, 5)), 5)
+
+            # resolution = num_points/mm, num_points = resolution*mm
+            num_iterations = resolution*length
+            x_range = intersection.inter2_coord.x - intersection.inter1_coord.x
+            increment = round(x_range / (num_iterations + 1), 5)
+            x_values = []
+            for iter_ind in range(1, num_iterations+1):
+                x_values.append(x + iter_ind*increment)
+
+            print(x_values, 'x_values')
+
+        elif intersection.block.shape_type == ShapeType.Rectangle:
+            pass
+
+        elif intersection.block.shape_type == ShapeType.Oval:
+            pass
 
 
 @dataclass
@@ -1857,7 +1921,7 @@ class Graph:
 
                 vertex2 = Coordinate(x2, y2)
 
-                semicircle_vertices =  Coordinate.generate_semicircle_coordinates(vertex1, vertex2, edge.delta_x, edge.delta_y)
+                semicircle_vertices = Coordinate.generate_semicircle_coordinates(vertex1, vertex2, edge.delta_x, edge.delta_y)
 
                 for semicircle_vertex in semicircle_vertices:
                     new_graph.add_vertex(semicircle_vertex)
