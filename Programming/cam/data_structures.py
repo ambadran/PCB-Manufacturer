@@ -55,6 +55,17 @@ class Node:
         self.vertex = vertex
         self.parent = parent
 
+    @classmethod
+    def from_list(cls, coordinate_list: list[Coordinate]):
+        '''
+        creates self
+        '''
+        next_node = Node(coordinate_list[0], None)  # the last node, doens't have any head
+        for coordinate in coordinate_list[1:]:
+            next_node = Node(coordinate, next_node)
+
+        return next_node
+
     def to_list(self) -> list[Coordinate]:
         '''
         converts the linkedlist to a normal list of coordinates
@@ -121,6 +132,16 @@ class Node:
         if terminate:
             turtle.done()
 
+    def round_all(self, accuracy: int):
+        '''
+        rounds all vertices to {accuracy} number of decimal places
+        '''
+        coordinate_list = self.to_list()
+        for ind, coord in enumerate(coordinate_list):
+            coordinate_list[ind] = round(coord, accuracy)
+
+        self = Node.from_list(coordinate_list)
+
     def add_comppad(self, blocks: list[Block], terminate_after=False) -> Node:
         '''
         :param blocks: list of ComponentPad Block objects
@@ -138,7 +159,7 @@ class Node:
             # current working edge
             current_edge = Edge(prev_vertex, next_node.vertex, None)
             print()
-            print(current_edge)
+            print(current_edge, 'current edge to be examined')
 
             # testing to see if it intersects with any component pad what so ever
             if not found_first:
@@ -167,7 +188,7 @@ class Node:
                 if intersections != None:
                     if len(intersections) == 1:
                         print('found second intersection of an edge')
-                        intersections_data.append([coordinate_to_find_inter2, block_to_find_inter2, first_intersection, 
+                        intersections_data.append([coordinate_to_find_inter2, block_to_find_inter2.shape_type, first_intersection, 
                             intersections[0], edge_at_inter1, current_edge])
 
                         found_first = False
@@ -186,11 +207,11 @@ class Node:
         for datum in intersections_data:
             print(datum)
             print()
-        #TODO: the intersection finding algorithm is working fine, only thing left is to coninue to develop in Coordinate.point_edge_intersection() for the cases of Rectangle and Oval!
+
+        # self.visualize(terminate=True)
 
         ### Step 2:
 
-        raise ValueError('still in dev')
         
 
 class ShapeType(Enum):
@@ -304,6 +325,15 @@ class Coordinate:
             return 2
         else:
             return 3
+
+    def __round__(self, accuracy: int) -> None:
+        '''
+        Rounds x, y and z values to 'accuracy' decimal place
+        '''
+        self.x = round(self.x, accuracy)
+        self.y = round(self.y, accuracy)
+        if self.z:
+            self.z = round(self.z, accuracy)
 
     @classmethod
     def get_min_max(cls, coordinates_list: list[Coordinate]) -> tuple[Coordinate, Coordinate]:
@@ -728,6 +758,7 @@ class Coordinate:
                     return None
 
             elif edge.gradient == 0:
+
                 # Getting equation of a horizontal line
                 y = edge.start.y
 
@@ -758,6 +789,7 @@ class Coordinate:
                     return None
 
             else:
+
                 # edge linear equation is given by getter attributes .gradient and .y_intercept
                 gradient = edge.gradient
                 y_intercept = edge.y_intercept
@@ -828,7 +860,7 @@ class Coordinate:
 
             if edge.gradient != e3.gradient:
                 intersected_edges.append(e3)
-                x_values.append(v1.x) # or v3.x
+                x_values.append(v2.x) # or v4.x
                 if edge.gradient != 0:
                     y_values.append(edge.gradient*x_values[-1] + edge.y_intercept)
                 else:
@@ -836,11 +868,16 @@ class Coordinate:
 
             if edge.gradient != e4.gradient:
                 intersected_edges.append(e4)
-                y_values.append(v1.y)  # or v2.y
+                y_values.append(v3.y)  # or v4.y
                 if edge.gradient != Infinity():
                     x_values.append(round((y_values[-1] - edge.y_intercept)/edge.gradient, 5))
                 else:
                     x_values.append(edge.start.x)  # or edge.end.x
+
+                if coordinate == Coordinate(43.625424, 32.305) and edge == Edge(Coordinate(43.908, 32.022), Coordinate(42.865, 30.98), None):
+                    print('gotchaa')
+                    print(x_values[-1])
+                    print(y_values[-1])
 
               
             ### Step 2: testing if intersection is within edge and square edge
@@ -865,23 +902,23 @@ class Coordinate:
             y_maxs = []
             for intersected_edge in intersected_edges:
                 if intersected_edge.start.x > intersected_edge.end.x:
-                    x_mins.append(edge.end.x)
-                    x_maxs.append(edge.start.x)
+                    x_mins.append(intersected_edge.end.x)
+                    x_maxs.append(intersected_edge.start.x)
                 else:
-                    x_mins.append(edge.start.x)
-                    x_maxs.append(edge.end.x)
+                    x_mins.append(intersected_edge.start.x)
+                    x_maxs.append(intersected_edge.end.x)
 
                 if intersected_edge.start.y > intersected_edge.end.y:
-                    y_mins.append(edge.end.y)
-                    y_maxs.append(edge.start.y)
+                    y_mins.append(intersected_edge.end.y)
+                    y_maxs.append(intersected_edge.start.y)
                 else:
-                    y_mins.append(edge.start.y)
-                    y_maxs.append(edge.end.y)
+                    y_mins.append(intersected_edge.start.y)
+                    y_maxs.append(intersected_edge.end.y)
 
             intersections = []
             for x, y, x_min2, x_max2, y_min2, y_max2 in zip(x_values, y_values, x_mins, x_maxs, y_mins, y_maxs):
                 if x <= x_max and x >= x_min and y <= y_max and y >= y_min and x <= x_max2 and x >= x_min2 and y <= y_max2 and y >= y_min2:
-                    intersections.append(Coordinate(x, y))
+                    intersections.append(Coordinate(round(x, 6), round(y, 6)))
 
             if intersections:
                 return intersections
@@ -920,14 +957,14 @@ class Edge:
         '''
         :return delta x
         '''
-        return self.end.x - self.start.x
+        return round(self.end.x - self.start.x, 5)
 
     @property
     def delta_y(self) -> float:
         '''
         :return delta y
         '''
-        return self.end.y - self.start.y
+        return round(self.end.y - self.start.y, 5)
     
     @property
     def gradient(self) -> float:

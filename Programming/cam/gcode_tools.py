@@ -562,7 +562,9 @@ def get_laser_coordinates_lists(gerber: Gerber, debug=False) -> list[list[Coordi
 
     # Incorporating component pads to the linked lists
     comppad_blocks: list[Block] = gerber.blocks[BlockType.ComponentPad]
-    linkedlists_sep_off_comppad: list[Node] = [linkedlist.add_comppad(comppad_blocks) for linkedlist in linkedlists_sep_off]
+    # linkedlists_sep_off_comppad: list[Node] = [linkedlist.add_comppad(comppad_blocks) for linkedlist in linkedlists_sep_off]
+    linkedlists_sep_off[2].round_all(5)
+    linkedlists_sep_off[2].add_comppad(comppad_blocks)
 
     raise ValueError('still in development')
     return graphs_sep_off_comppad
