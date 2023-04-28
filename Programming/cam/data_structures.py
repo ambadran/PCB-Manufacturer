@@ -50,6 +50,17 @@ class Queue:
     def __repr__(self):
         return repr(self._container)
 
+@dataclass
+class Intersection:
+    comppad_coord: Coordinate  # the center of the component pad coordinate
+    comppad_block: Block  # what block does the component pad belong to
+    inter1_coord: Coordinate  # the first intersection coordinate between the trace edges and the component pad edges
+    inter2_coord: Coordinate  # the second intersection coordinate between the trace edges and the component pad edges
+    inter1_edge: Edge  # the edge at which the first intersection coordinate lies
+    inter2_edge: Edge  # the edge at which the second intersection coordinate lies
+    pre_inter1_node: Node  # the node at inter1_edge.start
+    pre_inter2_node: Node  # the node at inter2_edge.start
+
 class Node:
     def __init__(self, vertex: Coordinate, parent: Optional[Node]):
         self.vertex = vertex
@@ -79,6 +90,34 @@ class Node:
         vertex_list.append(next_node.vertex)
 
         return vertex_list
+
+    def extend(self, next_parent: Node) -> Node:
+        '''
+        just like list.extend() it extends the current linkedlist with other linkedlist
+        finds the last node, the node with parent none (or head for looping linkedlists) 
+        then attaches the next_parent node to it and joins the loop or not depending on 
+        original state
+
+        :param next_parent: the node to make parent of the last node in the current linkedlist
+        :return: the new head Node of the extended linkedlist
+        '''
+        next_node = self
+        while next_node.parent != None and next_node.parent != self:
+            next_node = next_node.parent
+
+
+        if last_node.parent == None:
+            # just join
+            next_node.parent = next_parent
+
+        else:
+            next_node.parent = next_parent
+            # must join the last node with the first node to make the loop
+            next_node2 = next_parent
+            while next_node2.parent != None and next_node2.parent != self:
+               next_node2 = next_node2.parent
+
+            next_node2.parent = self
 
     @property
     def node_count(self) -> int:
@@ -142,6 +181,26 @@ class Node:
 
         self = Node.from_list(coordinate_list)
 
+    def find(self, wanted_vertex: Coordinate) -> Optional[Node]:
+        '''
+        binary search through the self node and it's parent if it contains the wanted vertex
+
+        :param vertex: the vertex to search for
+        :return: the Node with the wanted vertex or None if not found
+        '''
+        if type(wanted_vertex) != Coordinate:
+            raise ValueError('Node Objects only carry a Coordinate objects with attribute name .vertex')
+        
+        next_node = self
+        while next_node.parent != None and next_node.parent != self:
+
+            if next_node.vertex == wanted_vertex: 
+                return next_node
+
+            next_node = next_node.parent
+
+        return None
+
     def add_comppad(self, blocks: list[Block], terminate_after=False) -> Node:
         '''
         :param blocks: list of ComponentPad Block objects
@@ -171,8 +230,8 @@ class Node:
                             if not found_first:
                                 if len(intersections) == 2:
                                     print('found 2 intersections in one edge')
-                                    intersections_data.append([coordinate, block, intersections[0], intersections[1], 
-                                        current_edge, current_edge])
+                                    intersections_data.append(Intersection(coordinate, block, intersections[0], intersections[1], 
+                                        current_edge, current_edge, prev_node, prev_node))
 
                                 elif len(intersections) == 1:
                                     print('found first intersection of an edge')
@@ -180,6 +239,7 @@ class Node:
                                     first_intersection = intersections[0]
                                     edge_at_inter1 = current_edge
                                     coordinate_to_find_inter2 = coordinate
+                                    pre_inter1_node = prev_node
                                     block_to_find_inter2 = block
 
             else:
@@ -188,8 +248,10 @@ class Node:
                 if intersections != None:
                     if len(intersections) == 1:
                         print('found second intersection of an edge')
-                        intersections_data.append([coordinate_to_find_inter2, block_to_find_inter2.shape_type, first_intersection, 
-                            intersections[0], edge_at_inter1, current_edge])
+                        intersections_data.append(Intersection(coordinate_to_find_inter2, 
+                            block_to_find_inter2.shape_type, first_intersection, 
+                            intersections[0], edge_at_inter1, current_edge,
+                            pre_inter1_node, prev_node))
 
                         found_first = False
 
@@ -198,11 +260,9 @@ class Node:
 
 
             prev_vertex = next_node.vertex
+            prev_node = next_node
             next_node = next_node.parent
 
-        print()
-        print()
-        print('intersections_data')
         print()
         for datum in intersections_data:
             print(datum)
@@ -210,9 +270,15 @@ class Node:
 
         # self.visualize(terminate=True)
 
-        ### Step 2:
+        ### Step 2: remove all old vertices in between intersections and add new component pad vertices
+        for intersection in intersections_data:
+            print(intersection.pre_inter1_node)
+            print(intersection.pre_inter2_node)
+            print()
 
-        
+    def __repr__(self) -> str:
+        return f"{self.vertex}, Parent: {self.parent.vertex}"
+
 
 class ShapeType(Enum):
     Circle = 'C'
