@@ -61,6 +61,280 @@ class Intersection:
     pre_inter1_node: Node  # the node at inter1_edge.start
     pre_inter2_node: Node  # the node at inter2_edge.start
 
+    @staticmethod
+    def generate_comppad_nodes(intersection: Intersection, resolution: int=15) -> Node:
+        '''
+        generates the coordinates of the component pad in the form of a linkedlist
+
+        :param intersection: Intersection object to determine all the variables needed to generate the coordinates
+        :param resolution: how many points per mm
+        :return: Node object representing the HEAD of the linkedlist of the coordinates of the component pad
+        '''
+        if type(resolution) != int:
+            raise ValueError("resolution must be of type int")
+
+        delta_x = intersection.inter1_edge.delta_x
+        delta_y = intersection.inter1_edge.delta_y
+        if delta_x > 0:
+            orientation = False
+        elif delta_x < 0:
+            orientation = True
+        elif delta_x == 0:
+            if delta_y > 0:
+                orientation = False
+            elif delta_y < 0:
+                orientation = True
+
+        if intersection.comppad_block.shape_type == ShapeType.Circle:
+
+            coordinate1 = intersection.inter1_coord
+            coordinate2 = intersection.inter2_coord
+
+            if not(resolution // 2 != resolution /2):
+                raise ValueError('resolution argument MUST be ODD number, \nas there will be pairs of coordinates PLUS the final single coordinate which will always result in an odd number. \nRefer to iPad notes to understand more')
+
+            ### Step 1: Get circle equation attributes
+            # a and b are the x and y offset value from circle center respectively
+            # They are also the midpoints between coord1 and coord2
+            a = intersection.comppad_coord.x
+            b = intersection.comppad_coord.y
+
+            # r is the radius of circle
+            r = round(intersection.comppad_block.thickness/2 , 5)
+
+            if coordinate2.x == coordinate1.x:  # Gradient = infinity
+                ### Step 2: Get linear equation of the line that passes through the circle diameter, aka the 2 coordinates
+                # Getting equation of a vertical line
+                x = coordinate1.x
+                # y = y  # the independent variable of a vertical line is y
+
+                ### Step 3: Getting linear equation of tangent to the circle at the maximum
+                if orientation:
+                    x_max = intersection.comppad_coord.x + r
+                else:
+                    x_max = intersection.comppad_coord.x - r
+                y = b
+                max_coord = Coordinate(x_max, b)
+
+                ### Step 4: Getting the list of x values of vertical line equations that intersects the circle
+                x_range = x_max - x
+                num_iterations = int((resolution-1)/2)
+                increment = round(x_range / (num_iterations + 1), 5)
+                x_values = []
+                for iter_ind in range(1, num_iterations+1):
+                    x_values.append(x + iter_ind*increment)
+
+                ### Step 5: Getting the intersection between circle equation and all the intersection linear equations
+                arc_coords_positive = []
+                arc_coords_negative = []
+                for current_x_value in x_values:
+                    y1 = round(b + math.sqrt(round(r**2 - (current_x_value - a)**2, 6)), 5)
+                    arc_coords_positive.append(Coordinate(current_x_value, y1))
+
+                    y2 = round(b - math.sqrt(round(r**2 - (current_x_value - a)**2, 6)), 5)
+                    if y1 != y2: # to eleminate max point
+                        arc_coords_negative.append(Coordinate(current_x_value, y2))
+
+            elif coordinate2.y == coordinate1.y:  # Gradient = 0.0
+                ### Step 2: Get linear equation of the line that passes through the circle diameter, aka the 2 coordinates
+                # Getting equation of a horizontal line
+                # x = x  # the independent variable of a horizontal line is x
+                y = coordinate1.y
+
+                ### Step 3: Getting linear equation of tangent to the circle at the maximum and max coord
+                x = a
+                if orientation:
+                    y_max = y + r
+                else:
+                    y_max = y - r
+                max_coord = Coordinate(a, y_max)
+
+                ### Step 4: Getting the list of y_intercepts of linear equations that intersects the circle
+                y_range = y_max - y
+                num_iterations = int((resolution-1)/2)
+                increment = round(y_range / (num_iterations + 1), 5)
+                y_values = []
+                for iter_ind in range(1, num_iterations+1):
+                    y_values.append(y + iter_ind*increment)
+
+                ### Step 5: Getting the intersection between circle equation and all the intersection linear equations
+                arc_coords_positive = []
+                arc_coords_negative = []
+                for current_y_value in y_values:
+                    x1 = round(a + math.sqrt(round(r**2 - (current_y_value - b)**2, 6)), 5)
+                    arc_coords_positive.append(Coordinate(x1, current_y_value))
+
+                    x2 = round(a - math.sqrt(round(r**2 - (current_y_value - b)**2, 6)), 5)
+                    if x1 != x2: # to eleminate max point
+                        arc_coords_negative.append(Coordinate(x2, current_y_value))
+
+            else:
+                ### Step 2: Get linear equation of the line that passes through the circle diameter, aka the 2 coordinates
+                # Get the linear equation of the diameter coordinates
+                gradient = (coordinate2.y - coordinate1.y) / (coordinate2.x - coordinate1.x)
+                y_intercept = coordinate1.y - gradient*coordinate1.x
+
+                # Get the linear equation of the inverse of the diameter linear equation
+                inverse_gradient = -1/gradient
+                inverse_y_intercept = b - inverse_gradient*a
+
+                ### Step 3: Getting linear equation of tangent to the circle at the maximum
+                # This is done by solving simultaneous equation of circle and the inverse linear equation
+                # This is done to get the coordinates of the maximum and minimum points on the circle relative to our coordinates
+                # The following equations I completely derived on my own on the iPad
+                a_q = 1 + inverse_gradient**2
+                b_q = -2*a + 2*inverse_gradient*inverse_y_intercept - 2*b*inverse_gradient
+                c_q = inverse_y_intercept**2 - 2*b*inverse_y_intercept + b**2 - r**2 + a**2
+
+                # Now I have the quadratic equation 
+                # a_q * x**2 + b_q * x + c_q = 0
+                # Solving quadratic equation using quadratic formula
+                x1 = round((-b_q + math.sqrt(round(b_q**2 - 4*a_q*c_q, 5))) / (2*a_q), 5)
+                x2 = round((-b_q - math.sqrt(round(b_q**2 - 4*a_q*c_q, 5))) / (2*a_q), 5)
+
+                # Getting values of y by substituting in inverse linear equation
+                y1 = inverse_gradient*x1 + inverse_y_intercept
+                y2 = inverse_gradient*x2 + inverse_y_intercept
+
+                # Choosing the correct maximum point, according to orientation argument
+                if orientation:
+                    max_coord = Coordinate(x1, y1)
+                else:
+                    max_coord = Coordinate(x2, y2)
+
+
+                # Getting linear equation of correct maximum point and saving it in a variable, (ignoring minimum point)
+                maximum_line_gradient = gradient
+                maximum_line_y_intercept = max_coord.y - maximum_line_gradient*max_coord.x
+
+                ### Step 4: Getting the list of y_intercepts of linear equations that intersects the circle
+                y_intercept_range = maximum_line_y_intercept - y_intercept
+                num_iterations = int((resolution-1)/2)
+                increment = round(y_intercept_range / (num_iterations + 1), 5)
+                y_intercept_list = [] 
+                for iter_ind in range(1, num_iterations+1):
+                    y_intercept_list.append(y_intercept + iter_ind*increment)
+
+                ### Step 5: Getting the intersection between circle equation and all the intersection linear equations
+                # from the diameter to the maximum line.
+                arc_coords_positive = []
+                arc_coords_negative = []
+                for current_y_intercept in y_intercept_list:
+                    a_q = 1 + gradient**2
+                    b_q = -2*a + 2*gradient*current_y_intercept - 2*b*gradient
+                    c_q = current_y_intercept**2 - 2*b*current_y_intercept + b**2 - r**2 + a**2
+
+                    if b_q**2 - 4*a_q*c_q > 0: 
+                        x1 = round((-b_q + math.sqrt(round(b_q**2 - 4*a_q*c_q, 5))) / (2*a_q), 5)
+                        y1 = gradient*x1 + current_y_intercept
+                        arc_coords_positive.append(Coordinate(x1, y1))
+
+                        x2 = round((-b_q - math.sqrt(round(b_q**2 - 4*a_q*c_q, 5))) / (2*a_q), 5)
+                        y2 = gradient*x2 + current_y_intercept
+                        arc_coords_negative.append(Coordinate(x2, y2))
+                    else:
+                        raise ValueError("SHITTT")
+                        # print('SHITTTT')
+
+            ### Step 6: Get the final ordered list of coordinates
+            # PLEASE refer to iPad. The combination are truly ENORMOUS and was difficult to derive ;)
+            ordered_arc_coords = []
+            if delta_x > 0:
+                if coordinate2.y > coordinate1.y:
+                    if delta_y > 0:
+                        ordered_arc_coords.extend(arc_coords_positive)
+                        ordered_arc_coords.append(max_coord)
+                        ordered_arc_coords.extend(reversed(arc_coords_negative))
+
+                    elif delta_y < 0:
+                        ordered_arc_coords.extend(arc_coords_negative)
+                        ordered_arc_coords.append(max_coord)
+                        ordered_arc_coords.extend(reversed(arc_coords_positive))
+
+                    elif delta_y == 0:
+                        ordered_arc_coords.extend(arc_coords_negative)
+                        ordered_arc_coords.append(max_coord)
+                        ordered_arc_coords.extend(reversed(arc_coords_positive))
+
+                elif coordinate1.y > coordinate2.y:
+                    if delta_y > 0:
+                        ordered_arc_coords.extend(arc_coords_negative)
+                        ordered_arc_coords.append(max_coord)
+                        ordered_arc_coords.extend(reversed(arc_coords_positive))
+
+                    elif delta_y < 0:
+                        ordered_arc_coords.extend(arc_coords_positive)
+                        ordered_arc_coords.append(max_coord)
+                        ordered_arc_coords.extend(reversed(arc_coords_negative))
+
+                    elif delta_y == 0:
+                        ordered_arc_coords.extend(arc_coords_positive)
+                        ordered_arc_coords.append(max_coord)
+                        ordered_arc_coords.extend(reversed(arc_coords_negative))
+
+                else:
+                    raise ValueError('NOT FUCKING POSSIBLE (acoording to my calculations ;) )')
+
+            elif delta_x < 0:
+                if coordinate2.y > coordinate1.y:
+                    if delta_y > 0:
+                        ordered_arc_coords.extend(arc_coords_negative)
+                        ordered_arc_coords.append(max_coord)
+                        ordered_arc_coords.extend(reversed(arc_coords_positive))
+
+                    elif delta_y < 0:
+                        ordered_arc_coords.extend(arc_coords_positive)
+                        ordered_arc_coords.append(max_coord)
+                        ordered_arc_coords.extend(reversed(arc_coords_negative))
+     
+                    elif delta_y == 0:
+                        ordered_arc_coords.extend(arc_coords_negative)
+                        ordered_arc_coords.append(max_coord)
+                        ordered_arc_coords.extend(reversed(arc_coords_positive))
+
+                elif coordinate1.y > coordinate2.y:
+                    if delta_y > 0:
+                        ordered_arc_coords.extend(arc_coords_positive)
+                        ordered_arc_coords.append(max_coord)
+                        ordered_arc_coords.extend(reversed(arc_coords_negative))
+
+                    elif delta_y < 0:
+                        ordered_arc_coords.extend(arc_coords_negative)
+                        ordered_arc_coords.append(max_coord)
+                        ordered_arc_coords.extend(reversed(arc_coords_positive))
+
+                    elif delta_y == 0:
+                        ordered_arc_coords.extend(arc_coords_positive)
+                        ordered_arc_coords.append(max_coord)
+                        ordered_arc_coords.extend(reversed(arc_coords_negative))
+
+                else:
+                    raise ValueError('NOT FUCKING POSSIBLE (acoording to my calculations ;) )')
+
+            elif delta_x == 0:
+                if coordinate1.x > coordinate2.x:
+                    ordered_arc_coords.extend(arc_coords_positive)
+                    ordered_arc_coords.append(max_coord)
+                    ordered_arc_coords.extend(reversed(arc_coords_negative))
+
+                elif coordinate2.x > coordinate1.x:
+                    ordered_arc_coords.extend(arc_coords_negative)
+                    ordered_arc_coords.append(max_coord)
+                    ordered_arc_coords.extend(reversed(arc_coords_positive))
+
+                else:
+                    raise ValueError('NOT FUCKING POSSIBLE (acoording to my calculations ;) )')
+
+
+            return Node.from_list(ordered_arc_coords)
+
+        elif intersection.comppad_block.shape_type == ShapeType.Rectangle:
+            pass
+
+        elif intersection.comppad_block.shape_type == ShapeType.Oval:
+            pass
+
+
 class Node:
     def __init__(self, vertex: Coordinate, parent: Optional[Node]):
         self.vertex = vertex
@@ -250,7 +524,7 @@ class Node:
                     if len(intersections) == 1:
                         # print('found second intersection of an edge')
                         intersections_data.append(Intersection(coordinate_to_find_inter2, 
-                            block_to_find_inter2.shape_type, first_intersection, 
+                            block_to_find_inter2, first_intersection, 
                             intersections[0], edge_at_inter1, current_edge,
                             pre_inter1_node, prev_node))
 
@@ -272,7 +546,7 @@ class Node:
         ### Step 2: remove all old vertices in between intersections and add new component pad vertices
         for intersection in intersections_data:
             intersection.pre_inter1_node.parent = Node(intersection.inter1_coord, None)
-            self.extend(Coordinate.generate_comppad_nodes(intersection))
+            self.extend(Intersection.generate_comppad_nodes(intersection))
             self.extend(Node(intersection.inter2_coord, None))
             self.extend(Node(intersection.inter2_edge.end, intersection.pre_inter2_node.parent))
 
@@ -1029,51 +1303,6 @@ class Coordinate:
                 intersections = [intersections[1], intersections[0]]
 
         return intersections
-
-    @classmethod
-    def generate_comppad_nodes(intersection: Intersection, resolution: int=5) -> Node:
-        '''
-        generates the coordinates of the component pad in the form of a linkedlist
-
-        :param intersection: Intersection object to determine all the variables needed to generate the coordinates
-        :param resolution: how many points per mm
-        :return: Node object representing the HEAD of the linkedlist of the coordinates of the component pad
-        '''
-        print(intersection, 'lskdjflksdjfkl')
-        delta_x = intersection.inter1_edge.delta_x
-        delta_y = intersection.inter1_edge.delta_y
-        if delta_x > 0:
-            orientation = False
-        elif delta_x < 0:
-            orientation = True
-        elif delta_x == 0:
-            if delta_y > 0:
-                orientation = False
-            elif delta_y < 0:
-                orientation = True
-
-        if intersection.block.shape_type == ShapeType.Circle:
-            a = round(intersection.comppad_coord.x, 6)
-            b = round(intersection.comppad_coord.y, 6)
-            r = round(intersection.block.thickness/2, 6)
-
-            length = round(math.sqrt(round((intersection.inter2_coord.y - intersection.inter1_coord.y)**2 + (intersection.inter2_coord.x - intersection.inter1_coord.x)**2, 5)), 5)
-
-            # resolution = num_points/mm, num_points = resolution*mm
-            num_iterations = resolution*length
-            x_range = intersection.inter2_coord.x - intersection.inter1_coord.x
-            increment = round(x_range / (num_iterations + 1), 5)
-            x_values = []
-            for iter_ind in range(1, num_iterations+1):
-                x_values.append(x + iter_ind*increment)
-
-            print(x_values, 'x_values')
-
-        elif intersection.block.shape_type == ShapeType.Rectangle:
-            pass
-
-        elif intersection.block.shape_type == ShapeType.Oval:
-            pass
 
 
 @dataclass
