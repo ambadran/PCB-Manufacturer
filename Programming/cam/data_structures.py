@@ -85,7 +85,7 @@ class Intersection:
             elif delta_y < 0:
                 orientation = True
 
-        if intersection.comppad_block.shape_type == ShapeType.Circle:
+        if intersection.comppad_block.shape_type == ShapeType.Circle or (intersection.comppad_block.shape_type == ShapeType.Oval  and intersection.comppad_block.thickness == intersection.comppad_block.thickness2):
 
             coordinate1 = intersection.inter1_coord
             coordinate2 = intersection.inter2_coord
@@ -143,10 +143,10 @@ class Intersection:
 
                 ### Step 3: Getting linear equation of tangent to the circle at the maximum and max coord
                 x = a
-                if orientation:
-                    y_max = y + r
+                if not orientation:
+                    y_max = intersection.comppad_coord.y + r
                 else:
-                    y_max = y - r
+                    y_max = intersection.comppad_coord.y - r
                 max_coord = Coordinate(a, y_max)
 
                 ### Step 4: Getting the list of y_intercepts of linear equations that intersects the circle
@@ -197,7 +197,7 @@ class Intersection:
                 y2 = inverse_gradient*x2 + inverse_y_intercept
 
                 # Choosing the correct maximum point, according to orientation argument
-                if orientation:
+                if  orientation:
                     max_coord = Coordinate(x1, y1)
                 else:
                     max_coord = Coordinate(x2, y2)
@@ -325,7 +325,7 @@ class Intersection:
                 else:
                     raise ValueError('NOT FUCKING POSSIBLE (acoording to my calculations ;) )')
 
-
+            ordered_arc_coords.reverse()
             return Node.from_list(ordered_arc_coords)
 
         elif intersection.comppad_block.shape_type == ShapeType.Rectangle:
@@ -481,19 +481,26 @@ class Node:
         :param blocks: list of ComponentPad Block objects
 
         '''
-        # print('NEW CALLLL!!!!!!')
+        print('NEW CALLLL!!!!!!')
 
         ### Step 1: Find all the intersection data between all the traces and all the component pads :)
         prev_vertex = self.vertex
+        prev_node = self
         next_node = self.parent  # start iteration from second node
         intersections_data = []
         found_first = False
+        stupid_corner_case_once = True
+
+        # There is one stupid corner case where the first edge has the second intersection of a component pad ;)
+        #TODO:
+
+
         while next_node.parent != None and next_node.parent != self:
 
             # current working edge
             current_edge = Edge(prev_vertex, next_node.vertex, None)
-            # print()
-            # print(current_edge, 'current edge to be examined')
+            print()
+            print(current_edge, 'current edge to be examined')
 
             # testing to see if it intersects with any component pad what so ever
             if not found_first:
@@ -501,15 +508,22 @@ class Node:
                     for coordinate in block.coordinates:
                         intersections = Coordinate.point_edge_intersection(current_edge, coordinate, block)
 
+
                         if intersections != None:
                             if not found_first:
                                 if len(intersections) == 2:
-                                    # print('found 2 intersections in one edge')
+                                    print('found 2 intersections in one edge')
                                     intersections_data.append(Intersection(coordinate, block, intersections[0], intersections[1], 
                                         current_edge, current_edge, prev_node, prev_node))
 
                                 elif len(intersections) == 1:
-                                    # print('found first intersection of an edge')
+
+                                    if next_node == self.parent and stupid_corner_case_once:
+                                        print('skipped')
+                                        stupid_corner_case_once = False
+                                        continue
+
+                                    print('found first intersection of an edge')
                                     found_first = True
                                     first_intersection = intersections[0]
                                     edge_at_inter1 = current_edge
@@ -522,7 +536,7 @@ class Node:
 
                 if intersections != None:
                     if len(intersections) == 1:
-                        # print('found second intersection of an edge')
+                        print('found second intersection of an edge')
                         intersections_data.append(Intersection(coordinate_to_find_inter2, 
                             block_to_find_inter2, first_intersection, 
                             intersections[0], edge_at_inter1, current_edge,
@@ -1086,7 +1100,7 @@ class Coordinate:
         :return: None if no intersection, 1 coordinate of the single intersection found or 2 coordinates if 2 intersections found
         '''
         intersections = []
-        if block.shape_type == ShapeType.Circle:
+        if block.shape_type == ShapeType.Circle or (block.shape_type == ShapeType.Oval and block.thickness == block.thickness2):
 
             a = coordinate.x
             b = coordinate.y
@@ -1112,10 +1126,16 @@ class Coordinate:
                     
                     # Within edge check
                     if y1 <= y_max and y1 >= y_min:
+                        print(edge, coordinate, 'm inf 1')
+                        print(x, y1)
+                        print()
                         intersections.append(Coordinate(x, y1))
 
                     # Within edge check and repeated root check
                     if y2 <= y_max and y2 >= y_min and y1 != y2:
+                        print(edge, coordinate, 'm inf 2')
+                        print(x, y2)
+                        print()
                         intersections.append(Coordinate(x, y2))
 
                 else:
@@ -1143,10 +1163,16 @@ class Coordinate:
                     
                     # Within Edge check
                     if x1 <= x_max and x1 >= x_min:
+                        print(edge, coordinate, 'm0 1')
+                        print(x1, y)
+                        print()
                         intersections.append(Coordinate(x1, y))
 
                     # Within Edge check and same root check
                     if x2 <= x_max and x2 >= x_min and x1 != x2:
+                        print(edge, coordinate, 'm0 2')
+                        print(x2, y)
+                        print()
                         intersections.append(Coordinate(x2, y))
 
                 else:
@@ -1182,10 +1208,16 @@ class Coordinate:
 
                     # Within edge check
                     if y1 <= y_max and y1 >= y_min:
+                        print(edge, coordinate, 'else 1')
+                        print(x1, y1)
+                        print()
                         intersections.append(Coordinate(x1, y1))
 
                     # Within edge check and repeated root check
                     if y2 <= y_max and y2 >= y_min and y1 != y2:
+                        print(edge, coordinate, 'else 2')
+                        print(x2, y2)
+                        print()
                         intersections.append(Coordinate(x2, y2))
 
                 else:
