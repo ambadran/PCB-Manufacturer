@@ -5,7 +5,70 @@ from dataclasses import dataclass
 class Node:
     vertex: int
     parent: Node
-    
+
+    def reverse(self) -> None:
+        '''
+        reverses the order of self
+        '''
+        next_node = self
+        new_node = Node(next_node.vertex, None)
+        while next_node.parent != None and next_node.parent != self:
+            new_node = Node(next_node.vertex, new_node)
+
+            next_node = next_node.parent
+
+        self = new_node
+
+    @property
+    def does_loop(self) -> bool:
+        '''
+        return if it loops
+        '''
+        next_node = self
+        while next_node.parent != None and next_node.parent != self:
+            next_node = next_node.parent
+
+        if next_node.parent == self:
+            return True
+        else:
+            return False
+
+    def make_it_loop(self) -> None:
+        '''
+        converts a non looping linkedlist to a looping linkedlist
+        '''
+        next_node = self
+        while next_node.parent != None and next_node.parent != self:
+            next_node = next_node.parent
+
+        next_node.parent = self
+        
+   
+    @classmethod
+    def reversed(cls, node: Node) -> Node:
+        '''
+        reverses the argument node
+        '''
+        print('\n\nnew call ')
+        new_node = Node(node.vertex, None)
+        print(new_node, 'new_node')
+        print()
+        next_node = node.parent
+        while next_node.parent != None and next_node.parent != node:
+            new_node = Node(next_node.vertex, new_node)
+            print(new_node, 'new_node')
+
+            next_node = next_node.parent
+            print(next_node, 'next_node')
+            print()
+
+        new_node = Node(next_node.vertex, new_node)
+        print(new_node, 'new_node')
+
+        if node.does_loop:
+            new_node.make_it_loop()
+
+        return new_node
 
     def extend(self, other_node: Node) -> None:
         '''
@@ -36,6 +99,9 @@ class Node:
 
             next_node2.parent = self
 
+    def __repr__(self) -> str:
+        return f"{self.vertex}, Parent: {self.parent.vertex}"
+
     def __str__(self) -> str:
         '''
         string representation of the linkedlist made of nodes
@@ -65,6 +131,15 @@ node1.parent.parent.parent = node1
 node2 = Node(4, Node(5, Node(6, None)))
 node2.parent.parent.parent = node2
 
+# print(node1)
+# node1.extend(node2)
+# print(node1)
+
+# node1 = Node(1, Node(2, Node(3, Node(4, Node(5, Node(6, Node(7, Node(8, None))))))))
+# node1.parent.parent.parent.parent.parent.parent.parent.parent = node1
+
 print(node1)
-node1.extend(node2)
-print(node1)
+
+node1 = Node.reversed(node1)
+
+print('\nreturn: ', node1)

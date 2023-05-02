@@ -395,6 +395,49 @@ class Node:
             next_node2.parent = self
 
     @property
+    def does_loop(self) -> bool:
+        '''
+        return if it loops
+        '''
+        next_node = self
+        while next_node.parent != None and next_node.parent != self:
+            next_node = next_node.parent
+
+        if next_node.parent == self:
+            return True
+        else:
+            return False
+
+    def make_it_loop(self) -> None:
+        '''
+        converts a non looping linkedlist to a looping linkedlist
+        '''
+        next_node = self
+        while next_node.parent != None and next_node.parent != self:
+            next_node = next_node.parent
+
+        next_node.parent = self
+   
+    @classmethod
+    def reversed(cls, node: Node) -> Node:
+        '''
+        reverses the argument node
+        '''
+        new_node = Node(node.vertex, None)
+        next_node = node.parent
+        while next_node.parent != None and next_node.parent != node:
+            new_node = Node(next_node.vertex, new_node)
+
+            next_node = next_node.parent
+
+        new_node = Node(next_node.vertex, new_node)
+
+        if node.does_loop:
+            new_node.make_it_loop()
+
+        return new_node
+
+    @property
     def node_count(self) -> int:
         '''
         return the number of nodes in this linkedlist, starting with the head node to the last node
@@ -489,12 +532,65 @@ class Node:
         next_node = self.parent  # start iteration from second node
         intersections_data = []
         found_first = False
-        stupid_corner_case_once = True
 
         # There is one stupid corner case where the first edge has the second intersection of a component pad ;)
-        #TODO:
+        stupid_corner_case = []
+        current_edge = Edge(prev_vertex, next_node.vertex, None)
+        for block in blocks:
+            for coordinate in block.coordinates:
 
+                intersections = Coordinate.point_edge_intersection(current_edge, coordinate, block)
+                if intersections != None:
 
+                    if len(intersections) == 2:
+                        pass  # deal with it in the normal loop
+
+                    elif len(intersections) == 1:
+
+                        # found a single component pad intersection in the very first edge, first node to second node
+                        # finding out if this is the first intersection of a component pad or the second
+                        # if it's the first intersection of a component pad then ignore else it's a problem ;)
+                        first_or_second_inter= intersections[0]
+                        edge_at_inter1or2 = current_edge
+                        coordinate_to_find_inter1or2 = coordinate  # coordinate of center of componentpad
+                        pre_inter1or2_node = prev_node
+                        block_to_find_inter1or2 = block  # block of found componentpad
+
+                        # Reversing the Node to test the previous nodes if this intersection has a pair previously
+                        reversed_nodes = Node.reversed(prev_node)
+                        prev_vertex_t = reversed_nodes.vertex
+                        prev_node_t = reversed_nodes
+                        next_node_t = reversed_nodes.parent
+
+                        # Looking for the very next previous edge that has greater length than the average edge length
+                        # So as to account for if the intersection found is moving away from a deadend trace
+                        while next_node_t.parent != None and next_node_t.parent != reversed_nodes:
+
+                            current_edge = Edge(prev_vertex_t, next_node_t.vertex, None)
+                            if current_edge.absolute_length <= Graph.CURVE_THRESHOLD_LENGTH:
+                                prev_vertex_t = next_node_t.vertex
+                                prev_node_t = next_node_t
+                                next_node_t = next_node_t.parent
+
+                            else:
+                                break
+
+                        intersections = Coordinate.point_edge_intersection(current_edge, coordinate_to_find_inter1or2, block_to_find_inter1or2)
+
+                        if intersections != None:
+                            if len(intersections) == 1:
+                                print('Stupid corner case: found second intersection of an edge')
+                                intersections_data.append(Intersection(coordinate_to_find_inter1or2, 
+                                    block_to_find_inter1or2, first_or_second_inter, 
+                                    intersections[0], edge_at_inter1or2, current_edge,
+                                    pre_inter1or2_node, prev_node_t))  #TODO I think i should reverse prev_node_t
+
+                                stupid_corner_case.append(intersections_data[-1])
+
+                            elif len(intersections) == 2:
+                                raise ValueError('THIS IS NOT POSSIBLE!!!!!!!')
+
+        # Main Routine
         while next_node.parent != None and next_node.parent != self:
 
             # current working edge
@@ -510,6 +606,10 @@ class Node:
 
 
                         if intersections != None:
+
+                            if prev_node == self and stupid_corner_case:  # first run and we have the stupid_corner_case
+                                continue
+
                             if not found_first:
                                 if len(intersections) == 2:
                                     print('found 2 intersections in one edge')
@@ -518,18 +618,14 @@ class Node:
 
                                 elif len(intersections) == 1:
 
-                                    if next_node == self.parent and stupid_corner_case_once:
-                                        print('skipped')
-                                        stupid_corner_case_once = False
-                                        continue
-
                                     print('found first intersection of an edge')
                                     found_first = True
                                     first_intersection = intersections[0]
                                     edge_at_inter1 = current_edge
-                                    coordinate_to_find_inter2 = coordinate
+                                    coordinate_to_find_inter2 = coordinate  # coordinate of center of componentpad
                                     pre_inter1_node = prev_node
-                                    block_to_find_inter2 = block
+                                    block_to_find_inter2 = block  # block of found componentpad
+
 
             else:
                 intersections = Coordinate.point_edge_intersection(current_edge, coordinate_to_find_inter2, block_to_find_inter2)
@@ -551,6 +647,9 @@ class Node:
             prev_vertex = next_node.vertex
             prev_node = next_node
             next_node = next_node.parent
+
+        if stupid_corner_case:
+            intersections_data.extend(stupid_corner_case)
 
         print()
         for intersection in intersections_data:
@@ -1382,6 +1481,13 @@ class Edge:
         '''
         return self.start.y - self.gradient*self.start.x
 
+    @property
+    def absolute_length(self) -> float:
+        '''
+        return absolute length
+        '''
+        return round(math.sqrt(round((self.delta_x)**2 + (self.delta_y)**2, 5)), 6)
+
     def anticlockwise_successors(self, edge_list) -> list[Edge]:
         '''
         :returns: a list of the right most edge to the left most edge relative to self
@@ -1611,6 +1717,7 @@ class Graph:
     # class variables
     used_colors = set()
     TINY_EDGE_OFFSET = 0.2
+    CURVE_THRESHOLD_LENGTH = 0.8
 
     # Debuggin switches
     DEBUG_APPLY_OFFSET = False
