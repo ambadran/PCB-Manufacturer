@@ -123,7 +123,16 @@ class Block:
 
         return blocks
 
-    def __str__(self):
+    def __repr__(self) -> str:
+        '''
+        repr representatin
+        '''
+        return f"D{self.D_num} of shape {self.shape_type}"
+
+    def __str__(self) -> str:
+        '''
+        string representation
+        '''
         thickness2_str =  "" if self.thickness2 is None else f"x{self.thickness2}"
         return f"D{self.D_num} of shape {self.shape_type}, thickness {self.thickness}{thickness2_str} and {len(self.coordinates)} coordinates"
 

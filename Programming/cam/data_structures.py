@@ -438,6 +438,29 @@ class Node:
         return new_node
 
     @property
+    def pre_last_node(self) -> Node:
+        '''
+        returns last node in the linkedlist
+        '''
+        next_node = self
+        while next_node.parent != None and next_node.parent != self:
+            pre_node = next_node
+            next_node = next_node.parent
+
+        return pre_node
+
+    @property
+    def last_node(self) -> Node:
+        '''
+        returns last node in the linkedlist
+        '''
+        next_node = self
+        while next_node.parent != None and next_node.parent != self:
+            next_node = next_node.parent
+
+        return next_node
+
+    @property
     def node_count(self) -> int:
         '''
         return the number of nodes in this linkedlist, starting with the head node to the last node
@@ -524,7 +547,7 @@ class Node:
         :param blocks: list of ComponentPad Block objects
 
         '''
-        print('NEW CALLLL!!!!!!')
+        print('NEW CALLLL!!!!!!\n')
 
         ### Step 1: Find all the intersection data between all the traces and all the component pads :)
         prev_vertex = self.vertex
@@ -534,8 +557,10 @@ class Node:
         found_first = False
 
         # There is one stupid corner case where the first edge has the second intersection of a component pad ;)
+        print('STUPID CORNER CASE CODE\n')
         stupid_corner_case = []
         current_edge = Edge(prev_vertex, next_node.vertex, None)
+        print('stupid corner case: first edge', current_edge)
         for block in blocks:
             for coordinate in block.coordinates:
 
@@ -546,6 +571,8 @@ class Node:
                         pass  # deal with it in the normal loop
 
                     elif len(intersections) == 1:
+                        print('stupid corner case: found one intersection, could be a second intersection!')
+                        print()
 
                         # found a single component pad intersection in the very first edge, first node to second node
                         # finding out if this is the first intersection of a component pad or the second
@@ -575,15 +602,22 @@ class Node:
                             else:
                                 break
 
+                        current_edge = current_edge.reversed()
+
+                        print(f'stupid corner case: test previous edge {current_edge} if it has another intersection of the same componentpad')
                         intersections = Coordinate.point_edge_intersection(current_edge, coordinate_to_find_inter1or2, block_to_find_inter1or2)
 
                         if intersections != None:
                             if len(intersections) == 1:
-                                print('Stupid corner case: found second intersection of an edge')
+                                # pre_inter1_node = prev_node_t
+                                # pre_inter1_node = prev_node_t.last_node
+                                pre_inter1_node = Node.reversed(prev_node_t).pre_last_node
+
+                                print("Stupid corner case: found second intersection of an edge, it's the stupid corner case")
                                 intersections_data.append(Intersection(coordinate_to_find_inter1or2, 
-                                    block_to_find_inter1or2, first_or_second_inter, 
-                                    intersections[0], edge_at_inter1or2, current_edge,
-                                    pre_inter1or2_node, prev_node_t))  #TODO I think i should reverse prev_node_t
+                                    block_to_find_inter1or2, intersections[0], first_or_second_inter, 
+                                    current_edge, edge_at_inter1or2, 
+                                    pre_inter1_node, pre_inter1or2_node))
 
                                 stupid_corner_case.append(intersections_data[-1])
 
@@ -607,7 +641,8 @@ class Node:
 
                         if intersections != None:
 
-                            if prev_node == self and stupid_corner_case:  # first run and we have the stupid_corner_case
+                            if prev_node == self and stupid_corner_case and coordinate == stupid_corner_case[0].comppad_coord:  # first run and we have the stupid_corner_case
+                                print('happenneeeddddddd')
                                 continue
 
                             if not found_first:
@@ -648,8 +683,8 @@ class Node:
             prev_node = next_node
             next_node = next_node.parent
 
-        if stupid_corner_case:
-            intersections_data.extend(stupid_corner_case)
+        # if stupid_corner_case:
+        #     intersections_data.extend(stupid_corner_case)
 
         print()
         for intersection in intersections_data:
@@ -657,16 +692,22 @@ class Node:
             print()
 
         ### Step 2: remove all old vertices in between intersections and add new component pad vertices
-        for intersection in intersections_data:
-            intersection.pre_inter1_node.parent = Node(intersection.inter1_coord, None)
-            self.extend(Intersection.generate_comppad_nodes(intersection))
-            self.extend(Node(intersection.inter2_coord, None))
-            self.extend(Node(intersection.inter2_edge.end, intersection.pre_inter2_node.parent))
+        # for intersection in intersections_data:
+        #     intersection.pre_inter1_node.parent = Node(intersection.inter1_coord, None)
+        #     self.extend(Intersection.generate_comppad_nodes(intersection))
+        #     self.extend(Node(intersection.inter2_coord, None))
+        #     self.extend(Node(intersection.inter2_edge.end, intersection.pre_inter2_node.parent))
 
-        self.visualize(multiplier=20, x_offset=40, terminate=True)
+        # self.visualize(multiplier=20, x_offset=40, terminate=True)
 
     def __repr__(self) -> str:
-        return f"{self.vertex}, Parent: {self.parent.vertex}"
+        '''
+        repr representation
+        '''
+        if self.parent == None:
+            return f"{self.vertex}, Parent: None"
+        else:
+            return f"{self.vertex}, Parent: {self.parent.vertex}"
 
     def __str__(self) -> str:
         '''
@@ -1302,8 +1343,8 @@ class Coordinate:
                     x2 = round((-b_q - math.sqrt(round(b_q**2 - 4*a_q*c_q, 5))) / (2*a_q), 5)
 
                     # Getting values of y by substituting in inverse linear equation
-                    y1 = gradient*x1 + y_intercept
-                    y2 = gradient*x2 + y_intercept
+                    y1 = round(gradient*x1 + y_intercept, 5)
+                    y2 = round(gradient*x2 + y_intercept, 5)
 
                     # Within edge check
                     if y1 <= y_max and y1 >= y_min:

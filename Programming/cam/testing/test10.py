@@ -43,6 +43,16 @@ class Node:
 
         next_node.parent = self
         
+    @property
+    def last_node(self) -> Node:
+        '''
+        returns last node in the linkedlist
+        '''
+        next_node = self
+        while next_node.parent != None and next_node.parent != self:
+            next_node = next_node.parent
+
+        return next_node
    
     @classmethod
     def reversed(cls, node: Node) -> Node:
@@ -127,6 +137,7 @@ class Node:
 
 node1 = Node(1, Node(2, Node(3, None)))
 node1.parent.parent.parent = node1
+print(node1.last_node)
 
 node2 = Node(4, Node(5, Node(6, None)))
 node2.parent.parent.parent = node2
@@ -138,8 +149,6 @@ node2.parent.parent.parent = node2
 # node1 = Node(1, Node(2, Node(3, Node(4, Node(5, Node(6, Node(7, Node(8, None))))))))
 # node1.parent.parent.parent.parent.parent.parent.parent.parent = node1
 
-print(node1)
-
-node1 = Node.reversed(node1)
-
-print('\nreturn: ', node1)
+# print(node1)
+# node1 = Node.reversed(node1)
+# print('\nreturn: ', node1)
