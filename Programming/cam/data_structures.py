@@ -375,6 +375,7 @@ class Node:
         :param other_node: the node to make parent of the last node in the current linkedlist
         :return: the new head Node of the extended linkedlist
         '''
+        print(f"extending node {repr(self)} with node {repr(other_node)}")
         next_node = self
         while next_node.parent != None and next_node.parent != self:
             next_node = next_node.parent
@@ -542,14 +543,10 @@ class Node:
 
         return None
 
-    def add_comppad(self, blocks: list[Block], terminate_after=False) -> Node:
+    def get_intersections_data(self, blocks: list[block]) -> list[Intersection]:
         '''
-        :param blocks: list of ComponentPad Block objects
-
+        :return: list of Intersection objects        
         '''
-        print('NEW CALLLL!!!!!!\n')
-
-        ### Step 1: Find all the intersection data between all the traces and all the component pads :)
         prev_vertex = self.vertex
         prev_node = self
         next_node = self.parent  # start iteration from second node
@@ -558,7 +555,7 @@ class Node:
 
         # There is one stupid corner case where the first edge has the second intersection of a component pad ;)
         print('STUPID CORNER CASE CODE\n')
-        stupid_corner_case = []
+        done_intersections = []
         current_edge = Edge(prev_vertex, next_node.vertex, None)
         print('stupid corner case: first edge', current_edge)
         for block in blocks:
@@ -619,12 +616,13 @@ class Node:
                                     current_edge, edge_at_inter1or2, 
                                     pre_inter1_node, pre_inter1or2_node))
 
-                                stupid_corner_case.append(intersections_data[-1])
+                                done_intersections.append([edge_at_inter1or2, coordinate_to_find_inter1or2])
 
                             elif len(intersections) == 2:
                                 raise ValueError('THIS IS NOT POSSIBLE!!!!!!!')
 
         # Main Routine
+        print('\nStarting Main Routine....\n')
         while next_node.parent != None and next_node.parent != self:
 
             # current working edge
@@ -641,8 +639,8 @@ class Node:
 
                         if intersections != None:
 
-                            if prev_node == self and stupid_corner_case and coordinate == stupid_corner_case[0].comppad_coord:  # first run and we have the stupid_corner_case
-                                print('happenneeeddddddd')
+                            if [current_edge, coordinate] in done_intersections:
+                                print('happendddddddd22222')
                                 continue
 
                             if not found_first:
@@ -674,6 +672,8 @@ class Node:
                             pre_inter1_node, prev_node))
 
                         found_first = False
+                        done_intersections.append([current_edge, coordinate_to_find_inter2])
+                        continue
 
                     elif len(intersections) == 2:
                         raise ValueError('THIS IS NOT POSSIBLE!!!!!!!')
@@ -683,22 +683,32 @@ class Node:
             prev_node = next_node
             next_node = next_node.parent
 
-        # if stupid_corner_case:
-        #     intersections_data.extend(stupid_corner_case)
+        return intersections_data
 
-        print()
-        for intersection in intersections_data:
-            print(intersection)
-            print()
+    def add_comppad(self, blocks: list[Block], terminate_after=False) -> Node:
+        '''
+        :param blocks: list of ComponentPad Block objects
+
+        '''
+        print('NEW CALLLL!!!!!!\n')
+
+        ### Step 1: Find all the intersection data between all the traces and all the component pads :)
+        intersections_data = self.get_intersections_data(blocks)
 
         ### Step 2: remove all old vertices in between intersections and add new component pad vertices
-        # for intersection in intersections_data:
-        #     intersection.pre_inter1_node.parent = Node(intersection.inter1_coord, None)
-        #     self.extend(Intersection.generate_comppad_nodes(intersection))
-        #     self.extend(Node(intersection.inter2_coord, None))
-        #     self.extend(Node(intersection.inter2_edge.end, intersection.pre_inter2_node.parent))
+        print()
+        for intersection in intersections_data[0:1]:
+            print(intersection)
+            intersection.pre_inter1_node.parent = Node(intersection.inter1_coord, None)
+            # self.extend(Intersection.generate_comppad_nodes(intersection))
+            self.extend(Node(intersection.inter2_coord, None))
+            self.extend(Node(intersection.inter2_edge.end, intersection.pre_inter2_node.parent))
+            print()
 
-        # self.visualize(multiplier=20, x_offset=40, terminate=True)
+        print('length of intersections_data: ', len(intersections_data))
+        print()
+
+        self.visualize(multiplier=20, x_offset=40, terminate=True)
 
     def __repr__(self) -> str:
         '''
