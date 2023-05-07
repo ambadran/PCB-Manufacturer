@@ -560,11 +560,16 @@ def get_laser_coordinates_lists(gerber: Gerber, debug=False) -> list[list[Coordi
     # Converting the graphs to singly linkedlists
     linkedlists_sep_off: list[Node] = [graph.to_singly_linkedlist(terminate_after=True) for graph in graphs_sep_off]
 
+    # Rounding trace coordinates  #TODO: this step should not be necessary
+    # linkedlists_sep_off_comppad: list[Node] = [linkedlist.round_all(5) for linkedlist in linkedlists_sep_off]
+
     # Incorporating component pads to the linked lists
     comppad_blocks: list[Block] = gerber.blocks[BlockType.ComponentPad]
     # linkedlists_sep_off_comppad: list[Node] = [linkedlist.add_comppad(comppad_blocks) for linkedlist in linkedlists_sep_off]
-    linkedlists_sep_off[2].round_all(5)
-    linkedlists_sep_off[2].add_comppad(comppad_blocks)
+    linkedlists_sep_off[-2].round_all(5)
+    linkedlists_sep_off[-2].add_comppad(comppad_blocks)
+    #TODO: -2 and -4 don't output a looping linkedlist for some reason ;/ didn't test for more of this case
+    #TODO: -2 is wrong
 
     raise ValueError('still in development')
     return graphs_sep_off_comppad

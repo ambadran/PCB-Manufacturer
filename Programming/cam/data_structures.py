@@ -60,6 +60,7 @@ class Intersection:
     inter2_edge: Edge  # the edge at which the second intersection coordinate lies
     pre_inter1_node: Node  # the node at inter1_edge.start
     pre_inter2_node: Node  # the node at inter2_edge.start
+    stupid_corner_case_flag: bool = False  # fuck the stupid corner case
 
     @staticmethod
     def generate_comppad_nodes(intersection: Intersection, resolution: int=15) -> Node:
@@ -395,6 +396,26 @@ class Node:
 
             next_node2.parent = self
 
+    # def __eq__(self, other_node) -> bool:
+    #     '''
+    #     equality operator ==
+
+    #     Must be same variable, doesn't care if same vertex or even same vertex with same parents but initiated seperatly
+    #     '''
+    #     return self == other_node  
+
+    def __contains__(self, other_node) -> bool:
+        '''
+        in operator
+        '''
+        next_node = self
+        while next_node.parent != None and next_node.parent != self:
+            if next_node == other_node:
+                return True
+            next_node = next_node.parent
+
+        return next_node == other_node
+
     @property
     def does_loop(self) -> bool:
         '''
@@ -461,6 +482,24 @@ class Node:
 
         return next_node
 
+    def child(self, parent_node) -> Node:
+        '''
+        return child of node, the previous node
+        '''
+        pre_node = None
+        next_node = self
+        while next_node.parent != None and next_node.parent != self:
+            if next_node.vertex == parent_node.vertex:
+                print(f'child of {repr(parent_node)} is {repr(pre_node)}')
+                return pre_node
+            pre_node = next_node
+            next_node = next_node.parent
+            
+        if next_node.vertex == parent_node.vertex:
+            return pre_node
+        else:
+            raise ValueError('parent_node given is not in self node parents')
+
     @property
     def node_count(self) -> int:
         '''
@@ -501,7 +540,7 @@ class Node:
         next_node = self
         turtle.setpos((next_node.vertex.x - x_offset) * multiplier, (next_node.vertex.y - y_offset) * multiplier)
         turtle.down()
-        while next_node.parent != None:
+        while next_node.parent != None and next_node.parent != self:
             next_node = next_node.parent
             turtle.setpos((next_node.vertex.x - x_offset) * multiplier, (next_node.vertex.y - y_offset) * multiplier)
 
@@ -554,18 +593,30 @@ class Node:
         found_first = False
 
         # There is one stupid corner case where the first edge has the second intersection of a component pad ;)
-        print('STUPID CORNER CASE CODE\n')
+        print('\nSTUPID CORNER CASE DETECTIN AND DEALING WITH CODE\n')
         done_intersections = []
-        current_edge = Edge(prev_vertex, next_node.vertex, None)
+        current_edge = Edge(prev_vertex, next_node.vertex, None)  
+
+        # This is done only to compat the one single line trace with semicircles on both ends
+        # here the stupid_corner_case code will register the two intersections there is in the whole trace
+        #NOTE: if this solution breaks something in the future, could easily make a property method .is_single_line 
+        # to test for single line trace and only break when one is found and .is_single_line
+        break_upper = False
+
         print('stupid corner case: first edge', current_edge)
         for block in blocks:
+            if break_upper:
+                break_upper = False  # not needed as won't be used again (((I think, I'm pretty sure)))
+                break
             for coordinate in block.coordinates:
 
+                # Must refresh it every loop because code here sometimes changes current_edge in false alarm situations
+                current_edge = Edge(prev_vertex, next_node.vertex, None)  
                 intersections = Coordinate.point_edge_intersection(current_edge, coordinate, block)
                 if intersections != None:
 
                     if len(intersections) == 2:
-                        pass  # deal with it in the normal loop
+                        pass  # will deal with it in the normal loop
 
                     elif len(intersections) == 1:
                         print('stupid corner case: found one intersection, could be a second intersection!')
@@ -601,22 +652,36 @@ class Node:
 
                         current_edge = current_edge.reversed()
 
-                        print(f'stupid corner case: test previous edge {current_edge} if it has another intersection of the same componentpad')
+                        print(f'stupid corner case: test previous edge {current_edge} if it has another intersection of the same componentpad\n')
                         intersections = Coordinate.point_edge_intersection(current_edge, coordinate_to_find_inter1or2, block_to_find_inter1or2)
 
-                        if intersections != None:
+                        if intersections == None:
+                            print("False alarm, No second intersection of same component pad in previous edge, No stupid corner case\n")
+
+                        else:
                             if len(intersections) == 1:
                                 # pre_inter1_node = prev_node_t
                                 # pre_inter1_node = prev_node_t.last_node
-                                pre_inter1_node = Node.reversed(prev_node_t).pre_last_node
+                                pre_inter1_node_deep_copy = Node.reversed(prev_node_t).pre_last_node
+                                pre_inter1_node = self.find(pre_inter1_node_deep_copy.vertex)
 
-                                print("Stupid corner case: found second intersection of an edge, it's the stupid corner case")
+                                print("Stupid corner case: found second intersection of an edge, it's the stupid corner case\n")
                                 intersections_data.append(Intersection(coordinate_to_find_inter1or2, 
                                     block_to_find_inter1or2, intersections[0], first_or_second_inter, 
                                     current_edge, edge_at_inter1or2, 
-                                    pre_inter1_node, pre_inter1or2_node))
+                                    pre_inter1_node, pre_inter1or2_node, True))
 
+                                # So we don't process it again in first iteration
                                 done_intersections.append([edge_at_inter1or2, coordinate_to_find_inter1or2])
+                                # So we don't process it again in last iteration, this is especially important if it's a deadend stupid corner case
+                                done_intersections.append([current_edge, coordinate_to_find_inter1or2])
+
+                                # This is done only to compat the one single line trace with semicircles on both ends
+                                # here the stupid_corner_case code will register the two intersections there is in the whole trace
+                                #NOTE: if this solution breaks something in the future, could easily make a property method .is_single_line 
+                                # to test for single line trace and only break when one is found and .is_single_line
+                                break_upper = True
+                                break
 
                             elif len(intersections) == 2:
                                 raise ValueError('THIS IS NOT POSSIBLE!!!!!!!')
@@ -640,7 +705,7 @@ class Node:
                         if intersections != None:
 
                             if [current_edge, coordinate] in done_intersections:
-                                print('happendddddddd22222')
+                                print('skipping processed intersection!')
                                 continue
 
                             if not found_first:
@@ -672,6 +737,8 @@ class Node:
                             pre_inter1_node, prev_node))
 
                         found_first = False
+                        # so that when searching for the same edge on the next iteration, 
+                        # we don't detect the same intersection and maybe detect new ones or just move on
                         done_intersections.append([current_edge, coordinate_to_find_inter2])
                         continue
 
@@ -683,6 +750,70 @@ class Node:
             prev_node = next_node
             next_node = next_node.parent
 
+        # Final iteration !!!
+        print("\nLast Iteration!\n")
+        current_edge = Edge(prev_vertex, next_node.vertex, None)
+        print()
+        print(current_edge, 'current edge to be examined')
+
+        # testing to see if it intersects with any component pad what so ever
+        if not found_first:
+            for block in blocks:
+                for coordinate in block.coordinates:
+                    intersections = Coordinate.point_edge_intersection(current_edge, coordinate, block)
+
+
+                    if intersections != None:
+
+                        if [current_edge, coordinate] in done_intersections:
+                            print('skipping processed intersection!')
+
+                            # instead of the continue statement
+                            print("\nLoop Finished, Intersection data extracted!\n\n")
+                            return intersections_data
+
+                        if not found_first:
+                            if len(intersections) == 2:
+                                print('found 2 intersections in one edge')
+                                intersections_data.append(Intersection(coordinate, block, intersections[0], intersections[1], 
+                                    current_edge, current_edge, prev_node, prev_node))
+
+                            elif len(intersections) == 1:
+
+                                print('found first intersection of an edge')
+                                found_first = True
+                                first_intersection = intersections[0]
+                                edge_at_inter1 = current_edge
+                                coordinate_to_find_inter2 = coordinate  # coordinate of center of componentpad
+                                pre_inter1_node = prev_node
+                                block_to_find_inter2 = block  # block of found componentpad
+
+
+        else:
+            intersections = Coordinate.point_edge_intersection(current_edge, coordinate_to_find_inter2, block_to_find_inter2)
+
+            if intersections != None:
+                if len(intersections) == 1:
+                    print('found second intersection of an edge')
+                    intersections_data.append(Intersection(coordinate_to_find_inter2, 
+                        block_to_find_inter2, first_intersection, 
+                        intersections[0], edge_at_inter1, current_edge,
+                        pre_inter1_node, prev_node))
+
+                    found_first = False
+
+                    # this is the last iteration i don't think i need to do this but i won't remove anyway
+                    done_intersections.append([current_edge, coordinate_to_find_inter2])
+
+                    # instead of the continue statement
+                    print("\nLoop Finished, Intersection data extracted!\n\n")
+                    return intersections_data
+
+                elif len(intersections) == 2:
+                    raise ValueError('THIS IS NOT POSSIBLE!!!!!!!')
+
+        print("\nLoop Finished, Intersection data extracted!\n\n")
+
         return intersections_data
 
     def add_comppad(self, blocks: list[Block], terminate_after=False) -> Node:
@@ -693,22 +824,41 @@ class Node:
         print('NEW CALLLL!!!!!!\n')
 
         ### Step 1: Find all the intersection data between all the traces and all the component pads :)
+        print(self, 'before extracting intersection data')
         intersections_data = self.get_intersections_data(blocks)
+        print(self, 'after extracting intersection data, MUST BE THE SAME AS BEFORE')
 
         ### Step 2: remove all old vertices in between intersections and add new component pad vertices
         print()
-        for intersection in intersections_data[0:1]:
-            print(intersection)
-            intersection.pre_inter1_node.parent = Node(intersection.inter1_coord, None)
+        stupid_corner_case_flag = False
+        for intersection in intersections_data:
+
+            print('CURRENT INTERSECTION DATA TO EXECUTE:\n')
+            print(intersection, '\n')
+
+            if intersection.stupid_corner_case_flag:
+                self.vertex = intersection.inter2_coord
+
+            self.child(intersection.pre_inter1_node.parent).parent = Node(intersection.inter1_coord, None)
+            print(self, "Step 1: change pre_inter1_node parent\n")
+
             # self.extend(Intersection.generate_comppad_nodes(intersection))
+
             self.extend(Node(intersection.inter2_coord, None))
+            print(self, "Step 2: put inter2_coord as parent of parent of pre_inter1_node\n")
+
+            if intersection.stupid_corner_case_flag:
+                stupid_corner_case_flag = False
+                print()
+                continue
             self.extend(Node(intersection.inter2_edge.end, intersection.pre_inter2_node.parent))
+            print(self, "continue the rest of the trace (except if it's the stupid corner case)")
             print()
 
-        print('length of intersections_data: ', len(intersections_data))
+        print('Number of intersections_data: ', len(intersections_data))
         print()
 
-        self.visualize(multiplier=20, x_offset=40, terminate=True)
+        self.visualize(multiplier=15, x_offset=40, speed=5, terminate=True)
 
     def __repr__(self) -> str:
         '''
@@ -1374,6 +1524,8 @@ class Coordinate:
                     return None
 
         elif block.shape_type == ShapeType.Rectangle:
+            # if edge == Edge(Coordinate(47.925, 13.09), Coordinate(47.925, 9.939), None) and coordinate == (X47.535Y10.055)
+
             # Refrence iPad Notes for more details
             # Getting the Coordinates of the square
             v1 = Coordinate(coordinate.x - round(block.thickness/2, 5), coordinate.y + round(block.thickness2/2, 5))
@@ -1459,6 +1611,9 @@ class Coordinate:
             intersections = []
             for x, y, x_min2, x_max2, y_min2, y_max2 in zip(x_values, y_values, x_mins, x_maxs, y_mins, y_maxs):
                 if x <= x_max and x >= x_min and y <= y_max and y >= y_min and x <= x_max2 and x >= x_min2 and y <= y_max2 and y >= y_min2:
+                    print(edge, coordinate, 'Square')
+                    print(x, y)
+                    print()
                     intersections.append(Coordinate(round(x, 6), round(y, 6)))
 
             if intersections:
@@ -2648,6 +2803,9 @@ class Graph:
                     next_node = Node(first_vertex, next_node)
 
                 break
+
+        if next_node.last_node.vertex == first_vertex:
+            next_node.last_node.parent = next_node  # joining the node to end as it's a loop
 
         # testing everything is ok, all vertices available in the linkedlist as the graph
         node_vertex_set = set(next_node.to_list())
