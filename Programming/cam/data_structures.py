@@ -417,25 +417,20 @@ class Node:
         :param other_node: the node to make parent of the last node in the current linkedlist
         :return: the new head Node of the extended linkedlist
         '''
-        print(f"extending node {repr(self)} with node {repr(other_node)}")
-        next_node = self
-        while next_node.parent != None and next_node.parent != self:
-            next_node = next_node.parent
+        # next_node = self
+        # while next_node.parent != None and next_node.parent != self:
+        #     next_node = next_node.parent
 
-
-        if next_node.parent == None:
+        # .last_node == None
+        if self.last_node.parent == None:
             # just join
-            next_node.parent = other_node
+            self.last_node.parent = other_node
 
         else:
-            next_node.parent = other_node
+            self.last_node.parent = other_node
 
             # must join the last node with the first node to make the loop
-            next_node2 = other_node
-            while next_node2.parent != None and next_node2.parent != other_node:
-               next_node2 = next_node2.parent
-
-            next_node2.parent = self
+            self.make_it_loop()
 
     # def __eq__(self, other_node) -> bool:
     #     '''
@@ -471,16 +466,12 @@ class Node:
         else:
             return False
 
-    def make_it_loop(self) -> None:
+    def make_it_loop(self) -> None: 
         '''
         converts a non looping linkedlist to a looping linkedlist
         '''
-        next_node = self
-        while next_node.parent != None and next_node.parent != self:
-            next_node = next_node.parent
-
-        next_node.parent = self
-   
+        self.last_node.parent = self
+  
     @classmethod
     def reversed(cls, node: Node) -> Node:
         '''
@@ -530,9 +521,10 @@ class Node:
         pre_node = None
         next_node = self
         while next_node.parent != None and next_node.parent != self:
+
             if next_node.vertex == parent_node.vertex:
-                print(f'child of {repr(parent_node)} is {repr(pre_node)}')
                 return pre_node
+
             pre_node = next_node
             next_node = next_node.parent
             
@@ -540,6 +532,37 @@ class Node:
             return pre_node
         else:
             raise ValueError('parent_node given is not in self node parents')
+
+    @property
+    def single_line_trace_with_comppad_at_ends_only(self) -> bool:
+        '''
+        :returns: whether this trace is a single line trace or not
+        '''
+        next_node = self
+        real_edge_count = 0
+        while next_node.parent != None and next_node.parent != self:
+
+            current_edge = Edge(next_node.vertex, next_node.parent.vertex, None)
+
+            if current_edge.absolute_length <= Graph.CURVE_THRESHOLD_LENGTH:
+               pass  # ignore
+
+            else:
+                real_edge_count += 1
+            
+            next_node = next_node.parent  # ignore
+
+        # last edge if available (if it's a loop)
+        if next_node.parent == self:
+            current_edge = Edge(next_node.vertex, next_node.parent.vertex, None)
+
+            if current_edge.absolute_length <= Graph.CURVE_THRESHOLD_LENGTH:
+               pass  # ignore
+
+            else:
+                real_edge_count += 1
+
+        return real_edge_count == 2
 
     @property
     def node_count(self) -> int:
@@ -582,6 +605,11 @@ class Node:
         turtle.setpos((next_node.vertex.x - x_offset) * multiplier, (next_node.vertex.y - y_offset) * multiplier)
         turtle.down()
         while next_node.parent != None and next_node.parent != self:
+            turtle.setpos((next_node.vertex.x - x_offset) * multiplier, (next_node.vertex.y - y_offset) * multiplier)
+            next_node = next_node.parent
+
+        turtle.setpos((next_node.vertex.x - x_offset) * multiplier, (next_node.vertex.y - y_offset) * multiplier)
+        if next_node.parent == self:
             next_node = next_node.parent
             turtle.setpos((next_node.vertex.x - x_offset) * multiplier, (next_node.vertex.y - y_offset) * multiplier)
 
@@ -637,18 +665,8 @@ class Node:
         print('\nSTUPID CORNER CASE DETECTIN AND DEALING WITH CODE\n')
         done_intersections = []
         current_edge = Edge(prev_vertex, next_node.vertex, None)  
-
-        # This is done only to compat the one single line trace with semicircles on both ends
-        # here the stupid_corner_case code will register the two intersections there is in the whole trace
-        #NOTE: if this solution breaks something in the future, could easily make a property method .is_single_line 
-        # to test for single line trace and only break when one is found and .is_single_line
-        break_upper = False
-
         print('stupid corner case: first edge', current_edge)
         for block in blocks:
-            if break_upper:
-                break_upper = False  # not needed as won't be used again (((I think, I'm pretty sure)))
-                break
             for coordinate in block.coordinates:
 
                 # Must refresh it every loop because code here sometimes changes current_edge in false alarm situations
@@ -660,7 +678,7 @@ class Node:
                         pass  # will deal with it in the normal loop
 
                     elif len(intersections) == 1:
-                        print('stupid corner case: found one intersection, could be a second intersection!')
+                        print('POSSIBLE stupid corner case: found one intersection, could be a second intersection!')
                         print()
 
                         # found a single component pad intersection in the very first edge, first node to second node
@@ -706,23 +724,29 @@ class Node:
                                 pre_inter1_node_deep_copy = Node.reversed(prev_node_t).pre_last_node
                                 pre_inter1_node = self.find(pre_inter1_node_deep_copy.vertex)
 
-                                print("Stupid corner case: found second intersection of an edge, it's the stupid corner case\n")
-                                intersections_data.append(Intersection(coordinate_to_find_inter1or2, 
+
+                                found_intersection = Intersection(coordinate_to_find_inter1or2, 
                                     block_to_find_inter1or2, intersections[0], first_or_second_inter, 
                                     current_edge, edge_at_inter1or2, 
-                                    pre_inter1_node, pre_inter1or2_node, True))
+                                    pre_inter1_node, pre_inter1or2_node, True)
 
-                                # So we don't process it again in first iteration
-                                done_intersections.append([edge_at_inter1or2, coordinate_to_find_inter1or2])
-                                # So we don't process it again in last iteration, this is especially important if it's a deadend stupid corner case
-                                done_intersections.append([current_edge, coordinate_to_find_inter1or2])
+                                #IMP: Corner Case for trace of one single line, the algorithm detects two stupid_corner_case 
+                                # Must detect which one is the real one, keep it and the other ignore it
+                                # stupid_corner_case must have the very first edge of the trace pointing away from the componentpad behind it
+                                if self.single_line_trace_with_comppad_at_ends_only and not edge_at_inter1or2.pointing_away_from_coord(coordinate_to_find_inter1or2):
 
-                                # This is done only to compat the one single line trace with semicircles on both ends
-                                # here the stupid_corner_case code will register the two intersections there is in the whole trace
-                                #NOTE: if this solution breaks something in the future, could easily make a property method .is_single_line 
-                                # to test for single line trace and only break when one is found and .is_single_line
-                                break_upper = True
-                                break
+                                        # False alarm it's not the stupid_corner_case it's the other componentpad >:)
+                                        print("False alarm, it's the second false stupid_corner_case for a single line trace >:)")
+                                        continue
+
+                                else:
+                                    print("Stupid corner case: found second intersection of an edge, stupid corner case DETECTED\n")
+                                    intersections_data.append(found_intersection)
+
+                                    # So we don't process it again in first iteration
+                                    done_intersections.append([edge_at_inter1or2, coordinate_to_find_inter1or2])
+                                    # So we don't process it again in last iteration, this is especially important if it's a deadend stupid corner case
+                                    done_intersections.append([current_edge, coordinate_to_find_inter1or2])
 
                             elif len(intersections) == 2:
                                 raise ValueError('THIS IS NOT POSSIBLE!!!!!!!')
@@ -792,7 +816,7 @@ class Node:
             next_node = next_node.parent
 
         # Final iteration !!!
-        print("\nLast Iteration!\n")
+        print("\nLast Iteration:\n")
         current_edge = Edge(prev_vertex, next_node.vertex, None)
         print()
         print(current_edge, 'current edge to be examined')
@@ -865,42 +889,70 @@ class Node:
         print('NEW CALLLL!!!!!!\n')
 
         ### Step 1: Find all the intersection data between all the traces and all the component pads :)
+        temp_self = deepcopy(self)
+
         print(self, 'before extracting intersection data')
         intersections_data = self.get_intersections_data(blocks)
-        print(self, 'after extracting intersection data, MUST BE THE SAME AS BEFORE')
+        print(self, 'after extracting intersection data, MUST BE THE SAME AS BEFORE INTERSECTION DATA EXTRACTOR ALGORITHM RAN')
+
+        # if not self.test_all_parents_values(temp_self):
+        #     return ValueError('Node.get_intersections_data() ulters the linkedlist, THIS IS HIGHLY UNACCEPTABLE!')
+
+        if self.single_line_trace_with_comppad_at_ends_only and len(intersections_data) != 2:
+            raise ValueError("WHAT THE FUCK?!??!?!?!??!!!!!???!!!!!!!")
+
+        if [intersection.stupid_corner_case_flag for intersection in intersections_data].count(True) > 1:
+            raise ValueError("Somehow the intersecion data extraction algorithm detected more than one stupid_corner_case ;(")
 
         ### Step 2: remove all old vertices in between intersections and add new component pad vertices
         print()
         stupid_corner_case_flag = False
+        single_line_trace_with_comppad_at_ends_only_flag = self.single_line_trace_with_comppad_at_ends_only
         for intersection in intersections_data:
 
             print('CURRENT INTERSECTION DATA TO EXECUTE:\n')
             print(intersection, '\n')
 
             if intersection.stupid_corner_case_flag:
+                print('Pre-Step for stupid corner case: changed vertex value of headnode to intersection.inter2_coord:')
+                print(f"from {self.vertex} to {intersection.inter2_coord}\n")
                 self.vertex = intersection.inter2_coord
 
+            print(f"Step 1: change parent of node pre_inter1_node: <{repr(self.child(intersection.pre_inter1_node.parent))}> to: <{repr(Node(intersection.inter1_coord, None))}>")
             self.child(intersection.pre_inter1_node.parent).parent = Node(intersection.inter1_coord, None)
-            print(self, "Step 1: change pre_inter1_node parent\n")
+            print(self, '\n')
 
             # self.extend(Intersection.generate_comppad_nodes(intersection))
-            # print(self, "Step 2: fill in the componentpad nodes")
+            # print("Step 2: fill in the componentpad nodes\n", f"{self}\n")
 
+            print(f"Step 3: extending the current linkedlist with a node of inter2_coord: {intersection.inter2_coord}")
             self.extend(Node(intersection.inter2_coord, None))
-            print(self, "Step 3: put inter2_coord as parent of parent of pre_inter1_node\n")
+            print(self, '\n')
 
             if intersection.stupid_corner_case_flag:
+                print('Post-Step for stupid corner case: Joining the linkedlist')
+                self.pre_last_node.parent = self  # I don't use normal .make_it_loop() because the last node is already added in step 3
                 stupid_corner_case_flag = False
-                print()
-                continue
-            self.extend(Node(intersection.inter2_edge.end, intersection.pre_inter2_node.parent))
-            print(self, "continue the rest of the trace (except if it's the stupid corner case)")
+
+            else:
+
+                if single_line_trace_with_comppad_at_ends_only_flag:
+                    print("single_line_trace_with_comppad_at_ends_only Corner Case Step 4: ")
+                    #TODO: write explanation
+                    self.extend(intersection.pre_inter2_node.parent)
+
+                else:
+                    print(f"Step 4: extending the current linkedlist with a node of value intersection.inter2_edge.end: {intersection.inter2_edge.end}")
+                    print(f"and parent intersection.pre_inter2_node.parent: {repr(intersection.pre_inter2_node.parent)}")
+                    self.extend(Node(intersection.inter2_edge.end, intersection.pre_inter2_node.parent))
+            print(self, '\n')
+
             print()
 
         print('Number of intersections_data: ', len(intersections_data))
         print()
 
-        self.visualize(multiplier=15, x_offset=40, speed=5, terminate=True)
+        self.visualize(multiplier=15, x_offset=40, speed=5, terminate=False)
 
     def __repr__(self) -> str:
         '''
@@ -1734,6 +1786,13 @@ class Edge:
         '''
         return round(math.sqrt(round((self.delta_x)**2 + (self.delta_y)**2, 5)), 6)
 
+    @property
+    def midpoint(self) -> Coordinate:
+        '''
+        :returns the midpoint coordinate of an edge
+        '''
+        return Coordinate(round((self.start.x + self.end.x)/2, 6), round((self.start.y + self.end.y)/2, 6))
+
     def anticlockwise_successors(self, edge_list) -> list[Edge]:
         '''
         :returns: a list of the right most edge to the left most edge relative to self
@@ -1922,7 +1981,26 @@ class Edge:
 
         else:
             return (self.delta_y > 0 and other.delta_y > 0) or (self.delta_y < 0 and other.delta_y < 0)
-            
+           
+    def pointing_away_from_coord(self, coordinate: Coordinate) -> bool:
+        '''
+        if the coordinate exists before the receprical line intersecting the midpoint of the edge, 
+        it's behind the edge if it exists after the receprical line intersecting the midpoint of the edge it's after
+
+        :returns: whether the direction of the edge is pointing away from the coordinate or towards the coordinate behind it
+        '''
+        l1 = Edge(self.start, coordinate, None).absolute_length
+        l2 = Edge(self.end, coordinate, None).absolute_length
+
+        if l1 < l2:
+            return True
+
+        elif l1 > l2:
+            return False
+
+        else:
+            raise ValueError("coordinate exactly on top in between, couldn't determine whether it's pointing away or to")
+
     def __eq__(self, other) -> bool:
         '''
         Equality Definition
@@ -2845,7 +2923,7 @@ class Graph:
                 break
 
         if next_node.last_node.vertex == first_vertex:
-            next_node.last_node.parent = next_node  # joining the node to end as it's a loop
+            next_node.pre_last_node.parent = next_node  # joining the node to end as it's a loop
 
         # testing everything is ok, all vertices available in the linkedlist as the graph
         node_vertex_set = set(next_node.to_list())

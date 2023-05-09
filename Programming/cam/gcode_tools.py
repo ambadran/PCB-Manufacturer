@@ -534,7 +534,7 @@ def get_laser_coordinates_lists(gerber: Gerber, debug=False) -> list[list[Coordi
     '''
     Get list of list of coordinates, each list is one continious piece of trace.
 
-    Meant to go to first coordinate in a list, turn laser on, go to all coordinates, then laser OFF, then
+    Meant for laser gcode where the laser go to first coordinate in a list, turn laser on, go to all coordinates, then laser OFF, then
     go to first coordinate in the next list, turn laser on , go to all coordiantes, then laser OFF, etc..
 
     :param gerber: Gerber Object
@@ -561,15 +561,13 @@ def get_laser_coordinates_lists(gerber: Gerber, debug=False) -> list[list[Coordi
     linkedlists_sep_off: list[Node] = [graph.to_singly_linkedlist(terminate_after=True) for graph in graphs_sep_off]
 
     # Rounding trace coordinates  #TODO: this step should not be necessary
-    # linkedlists_sep_off_comppad: list[Node] = [linkedlist.round_all(5) for linkedlist in linkedlists_sep_off]
+    linkedlists_sep_off_comppad: list[Node] = [linkedlist.round_all(5) for linkedlist in linkedlists_sep_off]
 
     # Incorporating component pads to the linked lists
     comppad_blocks: list[Block] = gerber.blocks[BlockType.ComponentPad]
-    # linkedlists_sep_off_comppad: list[Node] = [linkedlist.add_comppad(comppad_blocks) for linkedlist in linkedlists_sep_off]
-    linkedlists_sep_off[-2].round_all(5)
-    linkedlists_sep_off[-2].add_comppad(comppad_blocks)
-    #TODO: -2 and -4 don't output a looping linkedlist for some reason ;/ didn't test for more of this case
-    #TODO: -2 is wrong
+    linkedlists_sep_off_comppad: list[Node] = [linkedlist.add_comppad(comppad_blocks) for linkedlist in linkedlists_sep_off]
+
+    # linkedlists_sep_off[-2].add_comppad(comppad_blocks)
 
     raise ValueError('still in development')
     return graphs_sep_off_comppad
