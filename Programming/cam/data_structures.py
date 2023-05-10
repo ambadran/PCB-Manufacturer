@@ -461,16 +461,20 @@ class Node:
         while next_node.parent != None and next_node.parent != self:
             next_node = next_node.parent
 
-        if next_node.parent == self:
-            return True
-        else:
-            return False
+        return next_node.parent == self
 
     def make_it_loop(self) -> None: 
         '''
         converts a non looping linkedlist to a looping linkedlist
         '''
-        self.last_node.parent = self
+        temp_node = self.last_node
+        # print(repr(temp_node), 'pre')
+        while temp_node.vertex == self.vertex:
+            temp_node = self.child(temp_node)
+            # print(repr(temp_node), 'in')
+        # print(repr(temp_node), 'out')
+
+        temp_node.parent = self
   
     @classmethod
     def reversed(cls, node: Node) -> Node:
@@ -486,8 +490,14 @@ class Node:
 
         new_node = Node(next_node.vertex, new_node)
 
+        if next_node.parent == node:
+            next_node = next_node.parent
+            new_node = Node(next_node.vertex, new_node)
+
         if node.does_loop:
             new_node.make_it_loop()
+
+        # print(new_node, 'reversed\n')
 
         return new_node
 
@@ -514,11 +524,20 @@ class Node:
 
         return next_node
 
-    def child(self, parent_node) -> Node:
+    def child(self, parent_node: Node) -> Node:
         '''
         return child of node, the previous node
         '''
-        pre_node = None
+        if self.does_loop:
+            pre_node = self.last_node
+
+        elif self.last_node.vertex == self.vertex:
+            # print('lsjdflkajsd;flkjasd;lkfja;sldkfj')
+            pre_node = self.pre_last_node
+
+        else:
+            pre_node = None
+
         next_node = self
         while next_node.parent != None and next_node.parent != self:
 
@@ -631,7 +650,7 @@ class Node:
 
         self = Node.from_list(coordinate_list)
 
-    def find(self, wanted_vertex: Coordinate) -> Optional[Node]:
+    def find(self, wanted_vertex: Coordinate, enable_error=True) -> Optional[Node]:
         '''
         binary search through the self node and it's parent if it contains the wanted vertex
 
@@ -649,7 +668,10 @@ class Node:
 
             next_node = next_node.parent
 
-        return None
+        if enable_error:
+            raise ValueError("Didn't find wanted vertex in given linkedlist")
+        else:
+            return None
 
     def get_intersections_data(self, blocks: list[block]) -> list[Intersection]:
         '''
@@ -722,8 +744,7 @@ class Node:
                                 # pre_inter1_node = prev_node_t
                                 # pre_inter1_node = prev_node_t.last_node
                                 pre_inter1_node_deep_copy = Node.reversed(prev_node_t).pre_last_node
-                                pre_inter1_node = self.find(pre_inter1_node_deep_copy.vertex)
-
+                                pre_inter1_node = self.find(pre_inter1_node_deep_copy.vertex).parent
 
                                 found_intersection = Intersection(coordinate_to_find_inter1or2, 
                                     block_to_find_inter1or2, intersections[0], first_or_second_inter, 
@@ -815,8 +836,8 @@ class Node:
             prev_node = next_node
             next_node = next_node.parent
 
-        # Final iteration !!!
-        print("\nLast Iteration:\n")
+        # Pre-Final iteration, the node which points to the node which has parent None or self
+        print("\nPre-Last Iteration:\n")
         current_edge = Edge(prev_vertex, next_node.vertex, None)
         print()
         print(current_edge, 'current edge to be examined')
@@ -832,10 +853,7 @@ class Node:
 
                         if [current_edge, coordinate] in done_intersections:
                             print('skipping processed intersection!')
-
-                            # instead of the continue statement
-                            print("\nLoop Finished, Intersection data extracted!\n\n")
-                            return intersections_data
+                            continue
 
                         if not found_first:
                             if len(intersections) == 2:
@@ -859,7 +877,7 @@ class Node:
 
             if intersections != None:
                 if len(intersections) == 1:
-                    print('found second intersection of an edge')
+                    print('found second intersection of an edge in Pre-last iteration')
                     intersections_data.append(Intersection(coordinate_to_find_inter2, 
                         block_to_find_inter2, first_intersection, 
                         intersections[0], edge_at_inter1, current_edge,
@@ -870,12 +888,117 @@ class Node:
                     # this is the last iteration i don't think i need to do this but i won't remove anyway
                     done_intersections.append([current_edge, coordinate_to_find_inter2])
 
-                    # instead of the continue statement
-                    print("\nLoop Finished, Intersection data extracted!\n\n")
-                    return intersections_data
+                    # Instead of the continue statement, which in Main Routine, checks for first intersections for same node
+                    for block in blocks:
+                        for coordinate in block.coordinates:
+                            intersections = Coordinate.point_edge_intersection(current_edge, coordinate, block)
+
+
+                            if intersections != None:
+
+                                if [current_edge, coordinate] in done_intersections:
+                                    print('skipping processed intersection!')
+                                    continue
+
+                                if not found_first:
+                                    if len(intersections) == 2:
+                                        print('found 2 intersections in one edge')
+                                        intersections_data.append(Intersection(coordinate, block, intersections[0], intersections[1], 
+                                            current_edge, current_edge, prev_node, prev_node))
+
+                                    elif len(intersections) == 1:
+
+                                        print('found first intersection of an edge')
+                                        found_first = True
+                                        first_intersection = intersections[0]
+                                        edge_at_inter1 = current_edge
+                                        coordinate_to_find_inter2 = coordinate  # coordinate of center of componentpad
+                                        pre_inter1_node = prev_node
+                                        block_to_find_inter2 = block  # block of found componentpad
 
                 elif len(intersections) == 2:
                     raise ValueError('THIS IS NOT POSSIBLE!!!!!!!')
+
+        # Checking if there will be a final iteration
+        prev_vertex = next_node.vertex
+        prev_node = next_node
+        next_node = next_node.parent
+
+        if next_node == self:
+            # Final Iteration !!!
+            print("\nLast Iteration:\n")
+            current_edge = Edge(prev_vertex, next_node.vertex, None)
+            print()
+            print(current_edge, 'current edge to be examined')
+
+            # testing to see if it intersects with any component pad what so ever
+            if not found_first:
+                for block in blocks:
+                    for coordinate in block.coordinates:
+                        intersections = Coordinate.point_edge_intersection(current_edge, coordinate, block)
+
+
+                        if intersections != None:
+
+                            if [current_edge, coordinate] in done_intersections:
+                                print('skipping processed intersection!')
+
+                                # instead of the continue statement
+                                print("\nLoop Finished, Intersection data extracted!\n\n")
+                                return intersections_data
+
+                            if not found_first:
+                                if len(intersections) == 2:
+                                    print('found 2 intersections in one edge')
+                                    intersections_data.append(Intersection(coordinate, block, intersections[0], intersections[1], 
+                                        current_edge, current_edge, prev_node, prev_node))
+
+                                elif len(intersections) == 1:
+                                    pass  # This is stupid_corner_case from the other side :)
+
+
+            else:
+                intersections = Coordinate.point_edge_intersection(current_edge, coordinate_to_find_inter2, block_to_find_inter2)
+
+                if intersections != None:
+                    if len(intersections) == 1:
+                        print('found second intersection of an edge in Pre-last iteration')
+                        intersections_data.append(Intersection(coordinate_to_find_inter2, 
+                            block_to_find_inter2, first_intersection, 
+                            intersections[0], edge_at_inter1, current_edge,
+                            pre_inter1_node, prev_node))
+
+                        found_first = False
+
+                        # this is the last iteration i don't think i need to do this but i won't remove anyway
+                        done_intersections.append([current_edge, coordinate_to_find_inter2])
+
+                        # Instead of the continue statement, which in Main Routine, checks for first intersections for same node
+                        for block in blocks:
+                            for coordinate in block.coordinates:
+                                intersections = Coordinate.point_edge_intersection(current_edge, coordinate, block)
+
+
+                                if intersections != None:
+
+                                    if [current_edge, coordinate] in done_intersections:
+                                        print('skipping processed intersection!')
+
+                                        # instead of the continue statement
+                                        print("\nLoop Finished, Intersection data extracted!\n\n")
+                                        return intersections_data
+
+                                    if not found_first:
+                                        if len(intersections) == 2:
+                                            print('found 2 intersections in one edge')
+                                            intersections_data.append(Intersection(coordinate, block, intersections[0], intersections[1], 
+                                                current_edge, current_edge, prev_node, prev_node))
+
+                                        elif len(intersections) == 1:
+                                            pass  # This is stupid_corner_case from the other side :)
+                                           
+                    elif len(intersections) == 2:
+                        raise ValueError('THIS IS NOT POSSIBLE!!!!!!!')
 
         print("\nLoop Finished, Intersection data extracted!\n\n")
 
@@ -899,7 +1022,7 @@ class Node:
         #     return ValueError('Node.get_intersections_data() ulters the linkedlist, THIS IS HIGHLY UNACCEPTABLE!')
 
         if self.single_line_trace_with_comppad_at_ends_only and len(intersections_data) != 2:
-            raise ValueError("WHAT THE FUCK?!??!?!?!??!!!!!???!!!!!!!")
+            raise ValueError(f"WHAT THE FUCK?!??!?!?!??!!!!!???!!!!!!!\n{self}")
 
         if [intersection.stupid_corner_case_flag for intersection in intersections_data].count(True) > 1:
             raise ValueError("Somehow the intersecion data extraction algorithm detected more than one stupid_corner_case ;(")
@@ -952,16 +1075,16 @@ class Node:
         print('Number of intersections_data: ', len(intersections_data))
         print()
 
-        self.visualize(multiplier=15, x_offset=40, speed=5, terminate=False)
+        self.visualize(multiplier=15, x_offset=40, speed=5, terminate=terminate_after)
 
     def __repr__(self) -> str:
         '''
         repr representation
         '''
-        if self.parent == None:
-            return f"{self.vertex}, Parent: None"
-        else:
+        try:
             return f"{self.vertex}, Parent: {self.parent.vertex}"
+        except AttributeError:
+            return f"{self.vertex}, Parent: None"
 
     def __str__(self) -> str:
         '''
@@ -981,7 +1104,7 @@ class Node:
             string_representation += f"{next_node.parent.vertex}, ... (loops)"
 
         else:
-            string_representation += f"{next_node.parent}"
+            string_representation += f"{next_node.parent}"  # aka None
 
         return string_representation
 
@@ -1116,6 +1239,15 @@ class Coordinate:
         :param coordinates: list of coordinates [(x, y), ..]
         :return: ((x_min, y_min), (x_max, y_max))
         '''
+
+        if len(coordinates_list) == 0:
+            raise ValueError('An empty list is passed')
+
+        if len(set([type(i) for i in coordinates_list])) != 1:
+            raise ValueError('All values in coordinates_list argument must be of type Coordinate')
+
+        if type(coordinates_list[0]) != Coordinate:
+            raise ValueError('All values in coordinates_list argument must be of type Coordinate')
 
         x_min, y_min = coordinates_list[0].x, coordinates_list[0].y
         x_max, y_max = x_min, y_min

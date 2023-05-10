@@ -141,8 +141,25 @@ class Gerber:
     '''
     Class to implement basic functionlity to read, manipulate and write gerber files
     '''
-    def __init__(self, file_path: str):
-        self.gerber_file = self.read_gerber_file(file_path)
+    def __init__(self, *arg, file_path: str=None, file_content: str=None):
+        '''
+        Initializing the Gerber object!
+        '''
+        if file_path == None and file_content == None or (type(file_path) == str and type(file_content) == str):
+            raise ValueError("Must pass only one of file_path or file_content parameters")
+
+        if type(file_path) not in [str, type(None)] or type(file_content) not in [str, type(None)]:
+            raise ValueError('Must only pass String or not')
+
+        if file_path:
+            self.gerber_file = self.read_gerber_file(file_path)
+
+        elif file_content:
+            self.gerber_file = file_content
+
+        else:
+            raise ValueError("HOWWW ;;;;;(")
+
         self.x_multiplier, self.y_multiplier = self.get_x_y_multiplier()
 
         self.blocks: dict[BlockType: list[Block]] = {
@@ -206,6 +223,7 @@ class Gerber:
         self.check_GerberFile()
 
         with open(gerber_file_name, 'w') as g_file:
+            print('sldjflksdjf')
             g_file.write(gerber_file)
 
     @classmethod
@@ -291,6 +309,7 @@ class Gerber:
         '''
         return Coordinate(int(coordinate.x * self.x_multiplier), int(coordinate.y * self.y_multiplier))
 
+    @staticmethod
     def recenter_gerber_file(self, user_x_offset: int, user_y_offset: int) -> None:
         '''
         self.gerber_file is recentered according to input offsets
@@ -324,7 +343,8 @@ class Gerber:
 
         new_file = "\n".join(g_file_lines)
 
-        self.gerber_file = new_file
+        self = Gerber(file_content=new_file)
+        return self
 
     def blocks_to_graph(self, blocks: list[Block]) -> Graph:
         '''

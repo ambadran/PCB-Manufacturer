@@ -558,16 +558,19 @@ def get_laser_coordinates_lists(gerber: Gerber, debug=False) -> list[list[Coordi
     graphs_sep_off: list[Graph] = [graph.apply_offsets() for graph in graphs_sep_unoff]
 
     # Converting the graphs to singly linkedlists
-    linkedlists_sep_off: list[Node] = [graph.to_singly_linkedlist(terminate_after=True) for graph in graphs_sep_off]
+    linkedlists_sep_off: list[Node] = [graph.to_singly_linkedlist() for graph in graphs_sep_off]
+    # linkedlists_sep_off: list[Node] = [graph.to_singly_linkedlist() for graph in graphs_sep_off[:-1]]
+    # linkedlists_sep_off: list[Node].extend([graph.to_singly_linkedlist(terminate_after=True) for graph in graphs_sep_off[-1:]])
 
     # Rounding trace coordinates  #TODO: this step should not be necessary
     linkedlists_sep_off_comppad: list[Node] = [linkedlist.round_all(5) for linkedlist in linkedlists_sep_off]
 
     # Incorporating component pads to the linked lists
     comppad_blocks: list[Block] = gerber.blocks[BlockType.ComponentPad]
-    linkedlists_sep_off_comppad: list[Node] = [linkedlist.add_comppad(comppad_blocks) for linkedlist in linkedlists_sep_off]
+    # linkedlists_sep_off_comppad: list[Node] = [linkedlist.add_comppad(comppad_blocks) for linkedlist in linkedlists_sep_off[:-1]]
+    # linkedlists_sep_off[-1].add_comppad(comppad_blocks, terminate_after=True)
 
-    # linkedlists_sep_off[-2].add_comppad(comppad_blocks)
+    linkedlists_sep_off[0].add_comppad(comppad_blocks, terminate_after=True)
 
     raise ValueError('still in development')
     return graphs_sep_off_comppad
@@ -645,7 +648,7 @@ def export_gcode(gcode: str, file_name: str) -> None:
 if __name__ == '__main__':
 
     #NOTE!!!! The gerber file is assumed to be mirrorred!!!!!
-    gerber_file_path = 'gerber_files/default.gbr'
+    gerber_file_path = 'gerber_files/test2.gbr'
     # gerber_file_path = 'gerber_files/test.gbr'
     gcode_file_path = 'gcode_files/default.gcode'
     new_file_name = 'test2.gbr'
@@ -695,10 +698,12 @@ if __name__ == '__main__':
 
     ### Main Code ###
     # Read the gerber file
-    gerber = Gerber(gerber_file_path)
+    gerber = Gerber(file_path=gerber_file_path)
 
     # Recenter Gerber File with wanted Offset
-    gerber.recenter_gerber_file(user_x_offset, user_y_offset)
+    gerber = Gerber.recenter_gerber_file(gerber, user_x_offset, user_y_offset)
+
+    gerber.create_gerber_file('gerber_files/test2_offseted.gbr')
 
     gcode = ''
 
