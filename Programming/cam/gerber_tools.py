@@ -309,7 +309,7 @@ class Gerber:
         '''
         return Coordinate(int(coordinate.x * self.x_multiplier), int(coordinate.y * self.y_multiplier))
 
-    @staticmethod
+    @classmethod
     def recenter_gerber_file(self, user_x_offset: int, user_y_offset: int) -> None:
         '''
         self.gerber_file is recentered according to input offsets
