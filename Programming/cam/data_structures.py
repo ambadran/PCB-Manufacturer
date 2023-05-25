@@ -390,46 +390,104 @@ class Intersection:
             else:  # can't decide will let the inter1 decide so will add all of them
                 inter2_passed_vertices.update(set(vertices))
 
-        #TODO: CONTINUE HERERERERE, MUST DEBUG THIS FUNCTION
-        print(inter1_passed_vertices)
-        print(inter2_passed_vertices)
-        passed_vertices = list(inter1_passed_vertices.intersection(inter2_passed_vertices))
+        print('\n\n\nRec Vertices')
+        print(inter1_passed_vertices, 'passing inter1')
+        print(inter2_passed_vertices, 'passing inter2')
+        passed_vertices = inter1_passed_vertices.union(inter2_passed_vertices)
+        # ONLY FOR DEADENDS, the vertix after the end of the trace must be put in passed vertices
+        if intersection.inter1_edge.gradient == intersection.inter2_edge.gradient and not intersection.inter1_edge.is_same_direction(intersection.inter2_edge):
+            other_2_vertices = [v for v in vertices if v not in passed_vertices]
+
+            inv_edge_pass_vs = set()
+            inverse_edge = Edge(intersection.inter1_coord, intersection.inter2_coord, None)
+            if inverse_edge.gradient == Infinity(): 
+                if intersection.comppad_coord.x < inverse_edge.start.x:
+                    for vertex in vertices:
+                        if vertex.x > inverse_edge.start.x:
+                            inv_edge_pass_vs.add(vertex)
+
+                elif intersection.comppad_coord.x > inverse_edge.start.x:
+                    for vertex in vertices:
+                        if vertex.x < inverse_edge.start.x:
+                            inv_edge_pass_vs.add(vertex)
+
+                else:
+                    inv_edge_pass_vs.update(set(vertices))
+
+            elif inverse_edge.gradient == 0: 
+                if intersection.comppad_coord.y < inverse_edge.start.y:
+                    for vertex in vertices:
+                        if vertex.y > inverse_edge.start.y:
+                            inv_edge_pass_vs.add(vertex)
+
+                elif intersection.comppad_coord.y > inverse_edge.start.y:
+                    for vertex in vertices:
+                        if vertex.y < inverse_edge.start.y:
+                            inv_edge_pass_vs.add(vertex)
+
+                else:  # can't decide will let the inter2 decide so will add all of them
+                    inv_edge_pass_vs.update(set(vertices))
+
+            else:
+                inter1_comppad_y = inverse_edge.gradient*intersection.comppad_coord.x + inverse_edge.y_intercept
+                if intersection.comppad_coord.y < inter1_comppad_y:
+                    for vertex in vertices:
+                        inter1_vertex_y = inverse_edge.gradient*vertex.x + inverse_edge.y_intercept
+                        if vertex.y > inter1_vertex_y:
+                            inv_edge_pass_vs.add(vertex)
+
+                elif intersection.comppad_coord.y > inter1_comppad_y:
+                    for vertex in vertices:
+                        inter1_vertex_y = inverse_edge.gradient*vertex.x + inverse_edge.y_intercept
+                        if vertex.y < inter1_vertex_y:
+                            inv_edge_pass_vs.add(vertex)
+
+                else:  # can't decide will let the inter2 decide so will add all of them
+                    inv_edge_pass_vs.update(set(vertices))
+
+            passed_vertices.union(inv_edge_pass_vs)
+
         print(passed_vertices)
+        print('\n\n\n')
 
         ### STEP 2: ORDERING THE VERTICES
-        min_v_inter1 = Edge(intersection.inter1_coord, passed_vertices[0]).absolute_length
-        min_v_inter2 = Edge(intersection.inter2_coord, passed_vertices[0]).absolute_length
+        min_v_inter1 = Edge(intersection.inter1_coord, passed_vertices[0], None).absolute_length
+        min_v_1 = passed_vertices[0]
+        min_v_inter2 = Edge(intersection.inter2_coord, passed_vertices[0], None).absolute_length
+        min_v_2 = passed_vertices[0]
         for vertex in passed_vertices[1:]:
-            current_v_inter1 = Edge(intersection.inter1_coord, vertex).absolute_length
-            current_v_inter2 = Edge(intersection.inter2_coord, vertex).absolute_length
+            current_v_inter1 = Edge(intersection.inter1_coord, vertex, None).absolute_length
+            current_v_inter2 = Edge(intersection.inter2_coord, vertex, None).absolute_length
 
             if current_v_inter1 < min_v_inter1:
                 min_v_inter1 = current_v_inter1
+                min_v_1 = vertex
 
             if current_v_inter2 < min_v_inter2:
                 min_v_inter2 = current_v_inter2
+                min_v_2 = vertex
 
-        the_rest = [v for v in passed_vertices if (v != min_v_inter1 and v != min_v_inter2)]
+        the_rest = [v for v in passed_vertices if (v != min_v_1 and v != min_v_2)]
         if len(the_rest) == 1:
             middle_vertices = the_rest
 
         elif len(the_rest) == 2:
-            min_v_inter1_1 = Edge(intersection.inter1_coord, the_rest[0]).absolute_length
-            min_v_inter1_2 = Edge(intersection.inter1_coord, the_rest[1]).absolute_length
+            min_v_inter1_1 = Edge(intersection.inter1_coord, the_rest[0], None).absolute_length
+            min_v_inter1_2 = Edge(intersection.inter1_coord, the_rest[1], None).absolute_length
 
             if min_v_inter1_1 < min_v_inter1_2:
-                middle_vertices = [min_v_inter1, min_v_inter2]
+                middle_vertices = [the_rest[0], the_rest[1]]
 
             else:
-                middle_vertices = [min_v_inter2, min_v_inter1]
+                middle_vertices = [the_rest[1], the_rest[0]]
 
         else:
             middle_vertices = []
 
         ordered_rec_coords = []
-        ordered_arc_coords.append(min_v_inter1)
+        ordered_rec_coords.append(min_v_1)
         ordered_rec_coords.extend(middle_vertices)
-        ordered_rec_coords.append(min_v_inter2)
+        ordered_rec_coords.append(min_v_2)
 
         # coords are reversed to create the linkedlist 
         ordered_rec_coords.reverse()
