@@ -71,17 +71,32 @@ class Intersection:
         :param resolution: how many points per mm
         :return: Node object representing the HEAD of the linkedlist of the coordinates of the component pad
         '''
-        delta_x = intersection.inter1_edge.delta_x
-        delta_y = intersection.inter1_edge.delta_y
+        ### Determining Orientation
+        # orientation is determined by looking at inter1_edge.end or inter2_edge.start 
+        #        (should be the same thing before intersection is processed and it's not a deadend)
+        # and the comppad_coord
+
+        delta_x = intersection.comppad_coord.x - intersection.inter1_edge.end.x
+        delta_y = intersection.comppad_coord.y - intersection.inter1_edge.end.y
+        # delta_x = intersection.inter1_edge.delta_x
+        # delta_y = intersection.inter1_edge.delta_y
+
         if delta_x > 0:
-            orientation = False
-        elif delta_x < 0:
+            print('t1')
             orientation = True
+        elif delta_x < 0:
+            print('f1')
+            orientation = False
         elif delta_x == 0:
             if delta_y > 0:
-                orientation = False
-            elif delta_y < 0:
+                print('t2')
                 orientation = True
+            elif delta_y < 0:
+                print('f2')
+                orientation = False
+
+        if intersection.inter1_edge.end == intersection.inter2_edge.start or delta_x == 0:
+            orientation = not orientation
 
         coordinate1 = intersection.inter1_coord
         coordinate2 = intersection.inter2_coord
@@ -98,7 +113,9 @@ class Intersection:
         # r is the radius of circle
         r = round(intersection.comppad_block.thickness/2 , 5)
 
-        if coordinate2.x == coordinate1.x:  # Gradient = infinity
+        if coordinate2.x == coordinate1.x:  # Gradient = infinity  # trace itself is m=0
+            print(f'\n\n\n{orientation} herererere\n\n\n')
+        # if intersection.inter1_edge.gradient == 0:
             ### Step 2: Get linear equation of the line that passes through the circle diameter, aka the 2 coordinates
             # Getting equation of a vertical line
             x = coordinate1.x
@@ -125,13 +142,14 @@ class Intersection:
             arc_coords_negative = []
             for current_x_value in x_values:
                 y1 = round(b + math.sqrt(round(r**2 - (current_x_value - a)**2, 6)), 5)
-                arc_coords_positive.append(Coordinate(current_x_value, y1))
+                arc_coords_positive.append(Coordinate(round(current_x_value, 6), y1))
 
                 y2 = round(b - math.sqrt(round(r**2 - (current_x_value - a)**2, 6)), 5)
                 if y1 != y2: # to eleminate max point
-                    arc_coords_negative.append(Coordinate(current_x_value, y2))
+                    arc_coords_negative.append(Coordinate(round(current_x_value, 6), y2))
 
-        elif coordinate2.y == coordinate1.y:  # Gradient = 0.0
+        elif coordinate2.y == coordinate1.y:  # Gradient = 0.0, trace itself is m=infinity
+        # elif intersection.inter1_edge.gradient == Infinity():
             ### Step 2: Get linear equation of the line that passes through the circle diameter, aka the 2 coordinates
             # Getting equation of a horizontal line
             # x = x  # the independent variable of a horizontal line is x
@@ -139,7 +157,7 @@ class Intersection:
 
             ### Step 3: Getting linear equation of tangent to the circle at the maximum and max coord
             x = a
-            if not orientation:
+            if orientation:
                 y_max = intersection.comppad_coord.y + r
             else:
                 y_max = intersection.comppad_coord.y - r
@@ -158,11 +176,11 @@ class Intersection:
             arc_coords_negative = []
             for current_y_value in y_values:
                 x1 = round(a + math.sqrt(round(r**2 - (current_y_value - b)**2, 6)), 5)
-                arc_coords_positive.append(Coordinate(x1, current_y_value))
+                arc_coords_positive.append(Coordinate(x1, round(current_y_value, 6)))
 
                 x2 = round(a - math.sqrt(round(r**2 - (current_y_value - b)**2, 6)), 5)
                 if x1 != x2: # to eleminate max point
-                    arc_coords_negative.append(Coordinate(x2, current_y_value))
+                    arc_coords_negative.append(Coordinate(x2, round(current_y_value, 6)))
 
         else:
             ### Step 2: Get linear equation of the line that passes through the circle diameter, aka the 2 coordinates
@@ -200,6 +218,7 @@ class Intersection:
 
 
             # Getting linear equation of correct maximum point and saving it in a variable, (ignoring minimum point)
+            # tangent line of the comppad circle touching the maximum point from the parallel line passing through the 2 interseciton coords
             maximum_line_gradient = gradient
             maximum_line_y_intercept = max_coord.y - maximum_line_gradient*max_coord.x
 
@@ -220,13 +239,13 @@ class Intersection:
                 b_q = -2*a + 2*gradient*current_y_intercept - 2*b*gradient
                 c_q = current_y_intercept**2 - 2*b*current_y_intercept + b**2 - r**2 + a**2
 
-                if b_q**2 - 4*a_q*c_q > 0: 
+                if b_q**2 - 4*a_q*c_q > 0:  # >0 means maximum point isn't there (it's at ==0)
                     x1 = round((-b_q + math.sqrt(round(b_q**2 - 4*a_q*c_q, 5))) / (2*a_q), 5)
-                    y1 = gradient*x1 + current_y_intercept
+                    y1 = round(gradient*x1 + current_y_intercept, 5)
                     arc_coords_positive.append(Coordinate(x1, y1))
 
                     x2 = round((-b_q - math.sqrt(round(b_q**2 - 4*a_q*c_q, 5))) / (2*a_q), 5)
-                    y2 = gradient*x2 + current_y_intercept
+                    y2 = round(gradient*x2 + current_y_intercept, 5)
                     arc_coords_negative.append(Coordinate(x2, y2))
                 else:
                     raise ValueError("SHITTT")
@@ -235,92 +254,23 @@ class Intersection:
         ### Step 6: Get the final ordered list of coordinates
         # PLEASE refer to iPad. The combination are truly ENORMOUS and was difficult to derive ;)
         ordered_arc_coords = []
-        if delta_x > 0:
-            if coordinate2.y > coordinate1.y:
-                if delta_y > 0:
-                    ordered_arc_coords.extend(arc_coords_positive)
-                    ordered_arc_coords.append(max_coord)
-                    ordered_arc_coords.extend(reversed(arc_coords_negative))
 
-                elif delta_y < 0:
-                    ordered_arc_coords.extend(arc_coords_negative)
-                    ordered_arc_coords.append(max_coord)
-                    ordered_arc_coords.extend(reversed(arc_coords_positive))
+        # creating tmp edges from intersection coord to first point of -ve and to +ve
+        test_e1 = Edge(intersection.inter1_coord, arc_coords_positive[0], None)
+        test_e2 = Edge(intersection.inter1_coord, arc_coords_negative[0], None)
+        
+        # deciding who goes first according to who is nearer
+        if test_e1.absolute_length == test_e2.absolute_length:
+            raise ValueError("HOWWWWWWWWWWW, THIS IS IMPOSSIBLE!!! I CAN'T IMAGINE THIS !!!!!!!!")
+        leading_list = arc_coords_positive if test_e1.absolute_length < test_e2.absolute_length else arc_coords_negative
+        trailing_list = arc_coords_positive if test_e1.absolute_length > test_e2.absolute_length else arc_coords_negative
 
-                elif delta_y == 0:
-                    ordered_arc_coords.extend(arc_coords_negative)
-                    ordered_arc_coords.append(max_coord)
-                    ordered_arc_coords.extend(reversed(arc_coords_positive))
+        # creating the final properly ordered list of coordinates
+        ordered_arc_coords.extend(leading_list)
+        ordered_arc_coords.append(max_coord)
+        ordered_arc_coords.extend(reversed(trailing_list))
 
-            elif coordinate1.y > coordinate2.y:
-                if delta_y > 0:
-                    ordered_arc_coords.extend(arc_coords_negative)
-                    ordered_arc_coords.append(max_coord)
-                    ordered_arc_coords.extend(reversed(arc_coords_positive))
-
-                elif delta_y < 0:
-                    ordered_arc_coords.extend(arc_coords_positive)
-                    ordered_arc_coords.append(max_coord)
-                    ordered_arc_coords.extend(reversed(arc_coords_negative))
-
-                elif delta_y == 0:
-                    ordered_arc_coords.extend(arc_coords_positive)
-                    ordered_arc_coords.append(max_coord)
-                    ordered_arc_coords.extend(reversed(arc_coords_negative))
-
-            else:
-                raise ValueError('NOT FUCKING POSSIBLE (acoording to my calculations ;) )')
-
-        elif delta_x < 0:
-            if coordinate2.y > coordinate1.y:
-                if delta_y > 0:
-                    ordered_arc_coords.extend(arc_coords_negative)
-                    ordered_arc_coords.append(max_coord)
-                    ordered_arc_coords.extend(reversed(arc_coords_positive))
-
-                elif delta_y < 0:
-                    ordered_arc_coords.extend(arc_coords_positive)
-                    ordered_arc_coords.append(max_coord)
-                    ordered_arc_coords.extend(reversed(arc_coords_negative))
- 
-                elif delta_y == 0:
-                    ordered_arc_coords.extend(arc_coords_negative)
-                    ordered_arc_coords.append(max_coord)
-                    ordered_arc_coords.extend(reversed(arc_coords_positive))
-
-            elif coordinate1.y > coordinate2.y:
-                if delta_y > 0:
-                    ordered_arc_coords.extend(arc_coords_positive)
-                    ordered_arc_coords.append(max_coord)
-                    ordered_arc_coords.extend(reversed(arc_coords_negative))
-
-                elif delta_y < 0:
-                    ordered_arc_coords.extend(arc_coords_negative)
-                    ordered_arc_coords.append(max_coord)
-                    ordered_arc_coords.extend(reversed(arc_coords_positive))
-
-                elif delta_y == 0:
-                    ordered_arc_coords.extend(arc_coords_positive)
-                    ordered_arc_coords.append(max_coord)
-                    ordered_arc_coords.extend(reversed(arc_coords_negative))
-
-            else:
-                raise ValueError('NOT FUCKING POSSIBLE (acoording to my calculations ;) )')
-
-        elif delta_x == 0:
-            if coordinate1.x > coordinate2.x:
-                ordered_arc_coords.extend(arc_coords_positive)
-                ordered_arc_coords.append(max_coord)
-                ordered_arc_coords.extend(reversed(arc_coords_negative))
-
-            elif coordinate2.x > coordinate1.x:
-                ordered_arc_coords.extend(arc_coords_negative)
-                ordered_arc_coords.append(max_coord)
-                ordered_arc_coords.extend(reversed(arc_coords_positive))
-
-            else:
-                raise ValueError('NOT FUCKING POSSIBLE (acoording to my calculations ;) )')
-
+        # coords are reversed to create the linkedlist 
         ordered_arc_coords.reverse()
         return Node.from_list(ordered_arc_coords)
 
@@ -335,14 +285,46 @@ class Intersection:
         '''
         ### Step 1: Get intersection between the edge and all the four lines of the square
         # Getting the Coordinates of the square
+        block = intersection.comppad_block
         v1 = Coordinate(intersection.comppad_coord.x - round(block.thickness/2, 5), intersection.comppad_coord.y + round(block.thickness2/2, 5))
         v2 = Coordinate(intersection.comppad_coord.x + round(block.thickness/2, 5), intersection.comppad_coord.y + round(block.thickness2/2, 5))
         v3 = Coordinate(intersection.comppad_coord.x - round(block.thickness/2, 5), intersection.comppad_coord.y - round(block.thickness2/2, 5))
         v4 = Coordinate(intersection.comppad_coord.x + round(block.thickness/2, 5), intersection.comppad_coord.y - round(block.thickness2/2, 5))
+        vertices = [v1, v2, v3, v4]
         e1 = Edge(v1, v2, None)
         e2 = Edge(v1, v3, None)
         e3 = Edge(v2, v4, None)
         e4 = Edge(v3, v4, None)
+        edges = [e1, e2, e3, e4]
+
+        wanted_vertices = []
+        if intersection.inter1_edge.gradient == intersection.inter1_edge.gradient:  # aka deadend
+
+            trace_gradient = intersection.inter1_edge.gradient
+            if trace_gradient == Infinity():
+                for vertex in vertices:
+                    if (vertex.x < intersection.inter1_edge.start.x) != (vertex.x > intersection.inter2_edge.start.x):
+                        wanted_vertices.append(vertex)
+
+            elif trace_gradient == 0:
+                for vertex in vertices:
+                    if (vertex.y < intersection.inter1_edge.start.y) != (vertex.y > intersection.inter2_edge.start.y):
+                        wanted_vertices.append(vertex)
+
+            else:
+                for vertex in vertices:
+                    rec_y = vertex.y
+                    inter1_edge_y = intersection.inter1_edge.gradient*vertex.x + intersection.inter1_edge.y_intercept
+                    inter2_edge_y = intersection.inter2_edge.gradient*vertex.x + intersection.inter2_edge.y_intercept
+
+                    if (rec_y < inter1_edge_y) != (rec_y > inter2_edge_y):
+                        wanted_vertices.append(vertex)
+
+        else:
+            pass #TODO: CONTINUE DEVELOPMENT HERERERE 25/5
+
+
+
 
     @staticmethod
     def generate_comppad_nodes_oval(intersection: Intersection, resolution: int) -> Node:
@@ -1037,22 +1019,27 @@ class Node:
             print(intersection, '\n')
 
             if intersection.stupid_corner_case_flag:
+                ### Pre-Step for stupid corner case
                 print('Pre-Step for stupid corner case: changed vertex value of headnode to intersection.inter2_coord:')
                 print(f"from {self.vertex} to {intersection.inter2_coord}\n")
                 self.vertex = intersection.inter2_coord
 
+            ### Step 1:
             print(f"Step 1: change parent of node pre_inter1_node: <{repr(self.child(intersection.pre_inter1_node.parent))}> to: <{repr(Node(intersection.inter1_coord, None))}>")
             self.child(intersection.pre_inter1_node.parent).parent = Node(intersection.inter1_coord, None)
             print(self, '\n')
 
-            # self.extend(Intersection.generate_comppad_nodes(intersection))
-            # print("Step 2: fill in the componentpad nodes\n", f"{self}\n")
+            ### Step 2:
+            self.extend(Intersection.generate_comppad_nodes(intersection))
+            print("Step 2: fill in the componentpad nodes\n", f"{self}\n")
 
+            ### Step 3:
             print(f"Step 3: extending the current linkedlist with a node of inter2_coord: {intersection.inter2_coord}")
             self.extend(Node(intersection.inter2_coord, None))
             print(self, '\n')
 
             if intersection.stupid_corner_case_flag:
+                ### Post Step for stupid corner case
                 print('Post-Step for stupid corner case: Joining the linkedlist')
                 self.pre_last_node.parent = self  # I don't use normal .make_it_loop() because the last node is already added in step 3
                 stupid_corner_case_flag = False
@@ -1065,6 +1052,7 @@ class Node:
                     self.extend(intersection.pre_inter2_node.parent)
 
                 else:
+                    ### Step 4:
                     print(f"Step 4: extending the current linkedlist with a node of value intersection.inter2_edge.end: {intersection.inter2_edge.end}")
                     print(f"and parent intersection.pre_inter2_node.parent: {repr(intersection.pre_inter2_node.parent)}")
                     self.extend(Node(intersection.inter2_edge.end, intersection.pre_inter2_node.parent))
@@ -1075,7 +1063,7 @@ class Node:
         print('Number of intersections_data: ', len(intersections_data))
         print()
 
-        self.visualize(multiplier=15, x_offset=40, speed=5, terminate=terminate_after)
+        self.visualize(multiplier=15, x_offset=27, speed=5, terminate=terminate_after)
 
     def __repr__(self) -> str:
         '''
@@ -1333,11 +1321,11 @@ class Coordinate:
             semicircle_coords_negative = []
             for current_x_value in x_values:
                 y1 = round(b + math.sqrt(round(r**2 - (current_x_value - a)**2, 6)), 5)
-                semicircle_coords_positive.append(Coordinate(current_x_value, y1))
+                semicircle_coords_positive.append(Coordinate(round(current_x_value, 6), y1))
 
                 y2 = round(b - math.sqrt(round(r**2 - (current_x_value - a)**2, 6)), 5)
                 if y1 != y2: # to eleminate max point
-                    semicircle_coords_negative.append(Coordinate(current_x_value, y2))
+                    semicircle_coords_negative.append(Coordinate(round(current_x_value, 6), y2))
 
         elif coordinate2.y == coordinate1.y:  # Gradient = 0.0
             ### Step 2: Get linear equation of the line that passes through the circle diameter, aka the 2 coordinates
@@ -1366,11 +1354,11 @@ class Coordinate:
             semicircle_coords_negative = []
             for current_y_value in y_values:
                 x1 = round(a + math.sqrt(round(r**2 - (current_y_value - b)**2, 6)), 5)
-                semicircle_coords_positive.append(Coordinate(x1, current_y_value))
+                semicircle_coords_positive.append(Coordinate(x1, round(current_y_value, 6)))
 
                 x2 = round(a - math.sqrt(round(r**2 - (current_y_value - b)**2, 6)), 5)
                 if x1 != x2: # to eleminate max point
-                    semicircle_coords_negative.append(Coordinate(x2, current_y_value))
+                    semicircle_coords_negative.append(Coordinate(x2, round(current_y_value, 6)))
 
         else:
             ### Step 2: Get linear equation of the line that passes through the circle diameter, aka the 2 coordinates
@@ -1430,11 +1418,11 @@ class Coordinate:
 
                 if b_q**2 - 4*a_q*c_q > 0: 
                     x1 = round((-b_q + math.sqrt(round(b_q**2 - 4*a_q*c_q, 5))) / (2*a_q), 5)
-                    y1 = gradient*x1 + current_y_intercept
+                    y1 = round(gradient*x1 + current_y_intercept, 6)
                     semicircle_coords_positive.append(Coordinate(x1, y1))
 
                     x2 = round((-b_q - math.sqrt(round(b_q**2 - 4*a_q*c_q, 5))) / (2*a_q), 5)
-                    y2 = gradient*x2 + current_y_intercept
+                    y2 = round(gradient*x2 + current_y_intercept, 6)
                     semicircle_coords_negative.append(Coordinate(x2, y2))
                 else:
                     raise ValueError("SHITTT")

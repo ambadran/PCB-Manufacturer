@@ -100,13 +100,13 @@ settings.settings_dict.update(vars(parser.parse_args()))
 gerber = Gerber(file_path=settings.src)
 
 # Recenter Gerber File with wanted Offset
-gerber.recenter_gerber_file(settings.user_x_offset, settings.user_y_offset)
+gerber = Gerber.recenter_gerber_file(gerber, settings.user_x_offset, settings.user_y_offset)
 
 gcode = ''
 
 # Creating the holes_gcode
 gcode += generate_holes_gcode(gerber, settings.tool, settings.router_Z_up_position, 
-                              settingsrouter_Z_down_position, settings.router_feedrate_XY, 
+                              settings.router_Z_down_position, settings.router_feedrate_XY, 
                               settings.router_feedrate_Z, settings.spindle_speed, 
                               terminate_after = False)
 

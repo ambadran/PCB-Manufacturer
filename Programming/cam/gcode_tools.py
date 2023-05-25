@@ -567,10 +567,10 @@ def get_laser_coordinates_lists(gerber: Gerber, debug=False) -> list[list[Coordi
 
     # Incorporating component pads to the linked lists
     comppad_blocks: list[Block] = gerber.blocks[BlockType.ComponentPad]
-    # linkedlists_sep_off_comppad: list[Node] = [linkedlist.add_comppad(comppad_blocks) for linkedlist in linkedlists_sep_off[:-1]]
-    # linkedlists_sep_off[-1].add_comppad(comppad_blocks, terminate_after=True)
-
-    linkedlists_sep_off[0].add_comppad(comppad_blocks, terminate_after=True)
+    # linkedlists_sep_off_comppad: list[Node] = [linkedlist.add_comppad(comppad_blocks) for linkedlist in linkedlists_sep_off]
+    linkedlists_sep_off_comppad: list[Node] = [linkedlist.add_comppad(comppad_blocks) for linkedlist in linkedlists_sep_off[:-1]]
+    linkedlists_sep_off[-1].add_comppad(comppad_blocks, terminate_after=True)
+    # linkedlists_sep_off[-3].add_comppad(comppad_blocks, terminate_after=True)
 
     raise ValueError('still in development')
     return graphs_sep_off_comppad
@@ -648,7 +648,8 @@ def export_gcode(gcode: str, file_name: str) -> None:
 if __name__ == '__main__':
 
     #NOTE!!!! The gerber file is assumed to be mirrorred!!!!!
-    gerber_file_path = 'gerber_files/test2.gbr'
+    gerber_file_path = 'gerber_files/default.gbr'
+    # gerber_file_path = 'gerber_files/test2.gbr'
     # gerber_file_path = 'gerber_files/test.gbr'
     gcode_file_path = 'gcode_files/default.gcode'
     new_file_name = 'test2.gbr'
@@ -703,7 +704,7 @@ if __name__ == '__main__':
     # Recenter Gerber File with wanted Offset
     gerber = Gerber.recenter_gerber_file(gerber, user_x_offset, user_y_offset)
 
-    gerber.create_gerber_file('gerber_files/test2_offseted.gbr')
+    # gerber.create_gerber_file('gerber_files/default.gbr')
 
     gcode = ''
 
