@@ -570,7 +570,7 @@ def get_laser_coordinates_lists(gerber: Gerber, debug=False) -> list[list[Coordi
     # linkedlists_sep_off_comppad: list[Node] = [linkedlist.add_comppad(comppad_blocks) for linkedlist in linkedlists_sep_off]
     linkedlists_sep_off_comppad: list[Node] = [linkedlist.add_comppad(comppad_blocks) for linkedlist in linkedlists_sep_off[:-1]]
     linkedlists_sep_off[-1].add_comppad(comppad_blocks, terminate_after=True)
-    # linkedlists_sep_off[-3].add_comppad(comppad_blocks, terminate_after=True)
+    # linkedlists_sep_off[2].add_comppad(comppad_blocks, terminate_after=True)
 
     raise ValueError('still in development')
     return graphs_sep_off_comppad

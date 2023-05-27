@@ -390,23 +390,17 @@ class Intersection:
             else:  # can't decide will let the inter1 decide so will add all of them
                 inter2_passed_vertices.update(set(vertices))
 
-        print('\n\n\nRec Vertices')
-        print(inter1_passed_vertices, 'passing inter1')
-        print(inter2_passed_vertices, 'passing inter2')
-        passed_vertices = inter1_passed_vertices.union(inter2_passed_vertices)
         # ONLY FOR DEADENDS, the vertix after the end of the trace must be put in passed vertices
-        if intersection.inter1_edge.gradient == intersection.inter2_edge.gradient and not intersection.inter1_edge.is_same_direction(intersection.inter2_edge):
-            other_2_vertices = [v for v in vertices if v not in passed_vertices]
-
-            inv_edge_pass_vs = set()
-            inverse_edge = Edge(intersection.inter1_coord, intersection.inter2_coord, None)
+        inv_edge_pass_vs = set()
+        if intersection.inter1_edge.gradient == intersection.inter2_edge.gradient and intersection.inter1_edge.is_same_direction(intersection.inter2_edge.reversed()):
+            inverse_edge = Edge(intersection.inter1_edge.end, intersection.inter2_edge.start, None)
             if inverse_edge.gradient == Infinity(): 
-                if intersection.comppad_coord.x < inverse_edge.start.x:
+                if intersection.comppad_coord.x < (inverse_edge.start.x+ round(intersection.comppad_block.thickness/2, 3)):
                     for vertex in vertices:
                         if vertex.x > inverse_edge.start.x:
                             inv_edge_pass_vs.add(vertex)
 
-                elif intersection.comppad_coord.x > inverse_edge.start.x:
+                elif intersection.comppad_coord.x > (inverse_edge.start.x + round(intersection.comppad_block.thickness/2, 3)):
                     for vertex in vertices:
                         if vertex.x < inverse_edge.start.x:
                             inv_edge_pass_vs.add(vertex)
@@ -415,12 +409,12 @@ class Intersection:
                     inv_edge_pass_vs.update(set(vertices))
 
             elif inverse_edge.gradient == 0: 
-                if intersection.comppad_coord.y < inverse_edge.start.y:
+                if intersection.comppad_coord.y < (inverse_edge.start.y + round(intersection.comppad_block.thickness/2, 3)):
                     for vertex in vertices:
                         if vertex.y > inverse_edge.start.y:
                             inv_edge_pass_vs.add(vertex)
 
-                elif intersection.comppad_coord.y > inverse_edge.start.y:
+                elif intersection.comppad_coord.y > (inverse_edge.start.y + round(intersection.comppad_block.thickness/2, 3)):
                     for vertex in vertices:
                         if vertex.y < inverse_edge.start.y:
                             inv_edge_pass_vs.add(vertex)
@@ -429,14 +423,18 @@ class Intersection:
                     inv_edge_pass_vs.update(set(vertices))
 
             else:
-                inter1_comppad_y = inverse_edge.gradient*intersection.comppad_coord.x + inverse_edge.y_intercept
+                inter1_comppad_y = inverse_edge.gradient*intersection.comppad_coord.x + inverse_edge.y_intercept + round(intersection.comppad_block.thickness/2, 3)
                 if intersection.comppad_coord.y < inter1_comppad_y:
+                    print('hererere')
                     for vertex in vertices:
                         inter1_vertex_y = inverse_edge.gradient*vertex.x + inverse_edge.y_intercept
                         if vertex.y > inter1_vertex_y:
                             inv_edge_pass_vs.add(vertex)
 
                 elif intersection.comppad_coord.y > inter1_comppad_y:
+                    print('hererererer222222222')
+                    print(inverse_edge, 'inverse_edge')
+                    print(inter1_comppad_y, 'inter1_comppad_y')
                     for vertex in vertices:
                         inter1_vertex_y = inverse_edge.gradient*vertex.x + inverse_edge.y_intercept
                         if vertex.y < inter1_vertex_y:
@@ -445,12 +443,17 @@ class Intersection:
                 else:  # can't decide will let the inter2 decide so will add all of them
                     inv_edge_pass_vs.update(set(vertices))
 
-            passed_vertices.union(inv_edge_pass_vs)
-
+        print('\n\n\nRec Vertices')
+        print(inter1_passed_vertices, 'passing inter1')
+        print(inter2_passed_vertices, 'passing inter2')
+        print(inv_edge_pass_vs, 'passing deadend')
+        passed_vertices = inter1_passed_vertices.union(inter2_passed_vertices)
+        passed_vertices = passed_vertices.union(inv_edge_pass_vs)
         print(passed_vertices)
         print('\n\n\n')
 
         ### STEP 2: ORDERING THE VERTICES
+        passed_vertices = list(passed_vertices)
         min_v_inter1 = Edge(intersection.inter1_coord, passed_vertices[0], None).absolute_length
         min_v_1 = passed_vertices[0]
         min_v_inter2 = Edge(intersection.inter2_coord, passed_vertices[0], None).absolute_length
