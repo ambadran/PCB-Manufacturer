@@ -8,6 +8,18 @@ import math
 from enum import Enum
 from heapq import heappush, heappop
 
+def sin(angle):
+    return math.sin(math.radians(angle))
+
+def cos(angle):
+    return math.cos(math.radians(angle))
+
+def tan(angle):
+    return math.tan(math.radians(angle))
+
+def atan(value):
+    return math.degrees(math.atan(value))
+
 LASER_BEAM_THICKNESS = 0.05
 
 class Stack:
@@ -61,6 +73,118 @@ class Intersection:
     pre_inter1_node: Node  # the node at inter1_edge.start
     pre_inter2_node: Node  # the node at inter2_edge.start
     stupid_corner_case_flag: bool = False  # fuck the stupid corner case
+
+    @staticmethod
+    def rotate_vertices_90(vertex: Coordinate, e_start: Coordinate, e_end: Coordinate) -> Tuple[Coordinate, Coordinate, Coordinate]:
+        '''
+        Rotating e_end to be 90 degrees from +ve x axis, 
+        then rotating vertex and e_start to perserve the Orientation
+        This is to enable us to compare y values to ensure the inter_edge affect the correct vertices
+        within its area of authority
+        '''
+        # Get current angle of e_end
+        temp_e = Edge(Coordinate(0, 0), e_end, None)
+        end_coord_angle = round(atan(temp_e.gradient), 5)
+
+        # converting arctan value to proper angle value according to position of end coord
+        if e_end.x > 0:
+            # converting negative arctan output to +ve value
+            if end_coord_angle < 0:
+                end_coord_angle += 360
+
+        else:
+            # converting negative arctan output to +ve value
+            end_coord_angle += 180
+
+        # end_coord_angle + angle_to_move = 90, 90 is the wanted angle for e_end coord
+        angle_to_move = 90 - end_coord_angle
+
+        # new rotated vertices to compare
+        r_e_end = e_end.rotate(90, absolute_value=True)
+        r_e_start = e_start.rotate(angle_to_move, absolute_value=False)
+        r_vertex = vertex.rotate(angle_to_move, absolute_value=False)
+
+        return r_vertex, r_e_start, r_e_end
+
+    @staticmethod
+    def get_rec_passing_vertices(intersection: Intersection, edge: Edge, vertices: list[Coordinate]) -> set:
+        '''
+        return the passing edges
+        '''
+        inter1_passed_vertices = set()
+        e_gradient = edge.gradient
+        e_y_intercept = edge.y_intercept
+        e_start = edge.start
+        e_end = edge.end  # not used
+        if e_gradient == Infinity(): 
+            if intersection.comppad_coord.x < e_start.x:
+                for vertex in vertices:
+                    if vertex.x > e_start.x:  # continious line testing
+                        if (vertex.y < e_end.y and vertex.y > e_start.y) or (vertex.y > e_end.y and vertex.y < e_start.y):  # edge start and end coordinates testing
+                            inter1_passed_vertices.add(vertex)
+
+            elif intersection.comppad_coord.x > e_start.x:
+                for vertex in vertices:
+                    if vertex.x < e_start.x:
+                        if (vertex.y < e_end.y and vertex.y > e_start.y) or (vertex.y > e_end.y and vertex.y < e_start.y):  # edge start and end coordinates testing
+                            inter1_passed_vertices.add(vertex)
+
+            else:
+                for vertex in vertices:
+                    if (vertex.y < e_end.y and vertex.y > e_start.y) or (vertex.y > e_end.y and vertex.y < e_start.y):  # edge start and end coordinates testing
+                        inter1_passed_vertices.update(set(vertices))
+
+        elif e_gradient == 0: 
+            if intersection.comppad_coord.y < e_start.y:
+                for vertex in vertices:
+                    if vertex.y > e_start.y:
+                        if (vertex.x < e_end.x and vertex.x > e_start.x) or (vertex.x > e_end.x and vertex.x < e_start.x):  # edge start and end coordinates testing
+                            inter1_passed_vertices.add(vertex)
+
+            elif intersection.comppad_coord.y > e_start.y:
+                for vertex in vertices:
+                    if vertex.y < e_start.y:
+                        if (vertex.x < e_end.x and vertex.x > e_start.x) or (vertex.x > e_end.x and vertex.x < e_start.x):  # edge start and end coordinates testing
+                            inter1_passed_vertices.add(vertex)
+
+            else:  # can't decide will let the inter2 decide so will add all of them
+                for vertex in vertices:
+                    if (vertex.x < e_end.x and vertex.x > e_start.x) or (vertex.x > e_end.x and vertex.x < e_start.x):  # edge start and end coordinates testing
+                        inter1_passed_vertices.update(set(vertices))
+
+        else:
+            inter1_comppad_y = e_gradient*intersection.comppad_coord.x + e_y_intercept
+            if intersection.comppad_coord.y < inter1_comppad_y:
+
+                for vertex in vertices:
+                    inter1_vertex_y = e_gradient*vertex.x + e_y_intercept
+                    if vertex.y > inter1_vertex_y:
+
+                        r_vertex, r_e_start, r_e_end = Intersection.rotate_vertices_90(vertex, e_start, e_end)
+                        if (r_vertex.y < r_e_end.y and r_vertex.y > r_e_start.y) or (r_vertex.y > r_e_end.y and r_vertex.y < r_e_start.y):  # edge start and end coordinates testing
+                            inter1_passed_vertices.add(vertex)
+
+            elif intersection.comppad_coord.y > inter1_comppad_y:
+
+                for vertex in vertices:
+                    inter1_vertex_y = e_gradient*vertex.x + e_y_intercept
+                    if vertex.y < inter1_vertex_y:
+
+                        r_vertex, r_e_start, r_e_end = Intersection.rotate_vertices_90(vertex, e_start, e_end)
+                        if (r_vertex.y < r_e_end.y and r_vertex.y > r_e_start.y) or (r_vertex.y > r_e_end.y and r_vertex.y < r_e_start.y):  # edge start and end coordinates testing
+                            inter1_passed_vertices.add(vertex)
+
+            else:  # can't decide will let the inter2 decide so will add all of them
+                for vertex in vertices:
+
+                    r_vertex, r_e_start, r_e_end = Intersection.rotate_vertices_90(vertex, e_start, e_end)
+                    if (r_vertex.y < r_e_end.y and r_vertex.y > r_e_start.y) or (r_vertex.y > r_e_end.y and r_vertex.y < r_e_start.y):  # edge start and end coordinates testing
+                        inter1_passed_vertices.add(vertex)
+
+
+
+        return inter1_passed_vertices
+
 
     @staticmethod
     def generate_comppad_nodes_circle(intersection: Intersection, resolution: int) -> Node:
@@ -297,158 +421,15 @@ class Intersection:
         ### STEP 1: Getting the vertices of the rectangle comppad that will be 
         ### displayed in the pcb (not the ones inbetween the trace)
         # Getting vertices that are outside intersection edge 1
-        inter1_passed_vertices = set()
-        if intersection.inter1_edge.gradient == Infinity(): 
-            if intersection.comppad_coord.x < intersection.inter1_edge.start.x:
-                for vertex in vertices:
-                    if vertex.x > intersection.inter1_edge.start.x:
-                        inter1_passed_vertices.add(vertex)
-
-            elif intersection.comppad_coord.x > intersection.inter1_edge.start.x:
-                for vertex in vertices:
-                    if vertex.x < intersection.inter1_edge.start.x:
-                        inter1_passed_vertices.add(vertex)
-
-            else:
-                inter1_passed_vertices.update(set(vertices))
-
-        elif intersection.inter1_edge.gradient == 0: 
-            if intersection.comppad_coord.y < intersection.inter1_edge.start.y:
-                for vertex in vertices:
-                    if vertex.y > intersection.inter1_edge.start.y:
-                        inter1_passed_vertices.add(vertex)
-
-            elif intersection.comppad_coord.y > intersection.inter1_edge.start.y:
-                for vertex in vertices:
-                    if vertex.y < intersection.inter1_edge.start.y:
-                        inter1_passed_vertices.add(vertex)
-
-            else:  # can't decide will let the inter2 decide so will add all of them
-                inter1_passed_vertices.update(set(vertices))
-
-        else:
-            inter1_comppad_y = intersection.inter1_edge.gradient*intersection.comppad_coord.x + intersection.inter1_edge.y_intercept
-            if intersection.comppad_coord.y < inter1_comppad_y:
-                for vertex in vertices:
-                    inter1_vertex_y = intersection.inter1_edge.gradient*vertex.x + intersection.inter1_edge.y_intercept
-                    if vertex.y > inter1_vertex_y:
-                        inter1_passed_vertices.add(vertex)
-
-            elif intersection.comppad_coord.y > inter1_comppad_y:
-                for vertex in vertices:
-                    inter1_vertex_y = intersection.inter1_edge.gradient*vertex.x + intersection.inter1_edge.y_intercept
-                    if vertex.y < inter1_vertex_y:
-                        inter1_passed_vertices.add(vertex)
-
-            else:  # can't decide will let the inter2 decide so will add all of them
-                inter1_passed_vertices.update(set(vertices))
+        inter1_passed_vertices = Intersection.get_rec_passing_vertices(intersection, intersection.inter1_edge, vertices)
 
         # Getting vertices that is outside intersection edge 2
-        inter2_passed_vertices = set()
-        if intersection.inter2_edge.gradient == Infinity(): 
-            if intersection.comppad_coord.x < intersection.inter2_edge.start.x:
-                for vertex in vertices:
-                    if vertex.x > intersection.inter2_edge.start.x:
-                        inter2_passed_vertices.add(vertex)
-
-            elif intersection.comppad_coord.x > intersection.inter2_edge.start.x:
-                for vertex in vertices:
-                    if vertex.x < intersection.inter2_edge.start.x:
-                        inter2_passed_vertices.add(vertex)
-
-            else:
-                inter2_passed_vertices.update(set(vertices))
-
-        elif intersection.inter2_edge.gradient == 0: 
-            if intersection.comppad_coord.y < intersection.inter2_edge.start.y:
-                for vertex in vertices:
-                    if vertex.y > intersection.inter2_edge.start.y:
-                        inter2_passed_vertices.add(vertex)
-
-            elif intersection.comppad_coord.y > intersection.inter2_edge.start.y:
-                for vertex in vertices:
-                    if vertex.y < intersection.inter2_edge.start.y:
-                        inter2_passed_vertices.add(vertex)
-
-            else:  # can't decide will let the inter2 decide so will add all of them
-                inter2_passed_vertices.update(set(vertices))
-
-        else:
-            inter2_comppad_y = intersection.inter2_edge.gradient*intersection.comppad_coord.x + intersection.inter2_edge.y_intercept
-            if intersection.comppad_coord.y < inter2_comppad_y:
-                for vertex in vertices:
-                    inter2_vertex_y = intersection.inter2_edge.gradient*vertex.x + intersection.inter2_edge.y_intercept
-                    if vertex.y > inter2_vertex_y:
-                        inter2_passed_vertices.add(vertex)
-
-            elif intersection.comppad_coord.y > inter2_comppad_y:
-                for vertex in vertices:
-                    inter2_vertex_y = intersection.inter2_edge.gradient*vertex.x + intersection.inter2_edge.y_intercept
-                    if vertex.y < inter2_vertex_y:
-                        inter2_passed_vertices.add(vertex)
-
-            else:  # can't decide will let the inter1 decide so will add all of them
-                inter2_passed_vertices.update(set(vertices))
-
-        # ONLY FOR DEADENDS, the vertix after the end of the trace must be put in passed vertices
-        inv_edge_pass_vs = set()
-        if intersection.inter1_edge.gradient == intersection.inter2_edge.gradient and intersection.inter1_edge.is_same_direction(intersection.inter2_edge.reversed()):
-            inverse_edge = Edge(intersection.inter1_edge.end, intersection.inter2_edge.start, None)
-            if inverse_edge.gradient == Infinity(): 
-                if intersection.comppad_coord.x < (inverse_edge.start.x+ round(intersection.comppad_block.thickness/2, 3)):
-                    for vertex in vertices:
-                        if vertex.x > inverse_edge.start.x:
-                            inv_edge_pass_vs.add(vertex)
-
-                elif intersection.comppad_coord.x > (inverse_edge.start.x + round(intersection.comppad_block.thickness/2, 3)):
-                    for vertex in vertices:
-                        if vertex.x < inverse_edge.start.x:
-                            inv_edge_pass_vs.add(vertex)
-
-                else:
-                    inv_edge_pass_vs.update(set(vertices))
-
-            elif inverse_edge.gradient == 0: 
-                if intersection.comppad_coord.y < (inverse_edge.start.y + round(intersection.comppad_block.thickness/2, 3)):
-                    for vertex in vertices:
-                        if vertex.y > inverse_edge.start.y:
-                            inv_edge_pass_vs.add(vertex)
-
-                elif intersection.comppad_coord.y > (inverse_edge.start.y + round(intersection.comppad_block.thickness/2, 3)):
-                    for vertex in vertices:
-                        if vertex.y < inverse_edge.start.y:
-                            inv_edge_pass_vs.add(vertex)
-
-                else:  # can't decide will let the inter2 decide so will add all of them
-                    inv_edge_pass_vs.update(set(vertices))
-
-            else:
-                inter1_comppad_y = inverse_edge.gradient*intersection.comppad_coord.x + inverse_edge.y_intercept + round(intersection.comppad_block.thickness/2, 3)
-                if intersection.comppad_coord.y < inter1_comppad_y:
-                    print('hererere')
-                    for vertex in vertices:
-                        inter1_vertex_y = inverse_edge.gradient*vertex.x + inverse_edge.y_intercept
-                        if vertex.y > inter1_vertex_y:
-                            inv_edge_pass_vs.add(vertex)
-
-                elif intersection.comppad_coord.y > inter1_comppad_y:
-                    print('hererererer222222222')
-                    print(inverse_edge, 'inverse_edge')
-                    print(inter1_comppad_y, 'inter1_comppad_y')
-                    for vertex in vertices:
-                        inter1_vertex_y = inverse_edge.gradient*vertex.x + inverse_edge.y_intercept
-                        if vertex.y < inter1_vertex_y:
-                            inv_edge_pass_vs.add(vertex)
-
-                else:  # can't decide will let the inter2 decide so will add all of them
-                    inv_edge_pass_vs.update(set(vertices))
+        inter2_passed_vertices = Intersection.get_rec_passing_vertices(intersection, intersection.inter2_edge, vertices)
 
         print('\n\n\nRec Vertices')
         print(inter1_passed_vertices, 'passing inter1')
         print(inter2_passed_vertices, 'passing inter2')
-        print(inv_edge_pass_vs, 'passing deadend')
         passed_vertices = inter1_passed_vertices.union(inter2_passed_vertices)
-        passed_vertices = passed_vertices.union(inv_edge_pass_vs)
         print(passed_vertices)
         print('\n\n\n')
 
@@ -495,8 +476,6 @@ class Intersection:
         # coords are reversed to create the linkedlist 
         ordered_rec_coords.reverse()
         return Node.from_list(ordered_rec_coords)
-
-
 
     @staticmethod
     def generate_comppad_nodes_oval(intersection: Intersection, resolution: int) -> Node:
@@ -1391,6 +1370,27 @@ class Coordinate:
         if self.z:
             self.z = round(self.z, accuracy)
 
+    @property
+    def origin(self) -> Coordinate:
+        '''
+        returns the origin coordinate
+        '''
+        return Coordinate(0, 0)
+
+    def rotate(self, angle: float, absolute_value=True) -> Coordinate:
+        '''
+        returns the new coordinate of the point after  getting it to wanted angle from origin
+        '''
+        temp_e = Edge(Coordinate(0, 0), self, None)
+        hypotenuse = temp_e.absolute_length
+        new_angle = angle
+
+        if not absolute_value:
+            current_angle = round(atan(temp_e.gradient), 5)
+            new_angle = current_angle + angle
+
+        return Coordinate(round(hypotenuse*cos(new_angle), 5), round(hypotenuse*sin(new_angle), 5))
+
     @classmethod
     def get_min_max(cls, coordinates_list: list[Coordinate]) -> tuple[Coordinate, Coordinate]:
         '''
@@ -2069,6 +2069,8 @@ class Edge:
 
         :return: y intercept of the edge
         '''
+        if self.gradient == Infinity():
+            return Infinity()
         return self.start.y - self.gradient*self.start.x
 
     @property
