@@ -568,9 +568,9 @@ def get_laser_coordinates_lists(gerber: Gerber, debug=False) -> list[list[Coordi
     # Incorporating component pads to the linked lists
     comppad_blocks: list[Block] = gerber.blocks[BlockType.ComponentPad]
     # linkedlists_sep_off_comppad: list[Node] = [linkedlist.add_comppad(comppad_blocks) for linkedlist in linkedlists_sep_off]
-    # linkedlists_sep_off_comppad: list[Node] = [linkedlist.add_comppad(comppad_blocks) for linkedlist in linkedlists_sep_off[:-1]]
-    # linkedlists_sep_off[-1].add_comppad(comppad_blocks, terminate_after=True)
-    linkedlists_sep_off[3].add_comppad(comppad_blocks, terminate_after=True)
+    linkedlists_sep_off_comppad: list[Node] = [linkedlist.add_comppad(comppad_blocks) for linkedlist in linkedlists_sep_off[:-1]]
+    linkedlists_sep_off[-1].add_comppad(comppad_blocks, terminate_after=True)
+    # linkedlists_sep_off[3].add_comppad(comppad_blocks, terminate_after=True)
 
     raise ValueError('still in development')
     return graphs_sep_off_comppad
@@ -634,8 +634,8 @@ def generate_pcb_trace_gcode(gerber_file: str, tool: Callable, optimum_focal_dis
 
     return gcode
 
-
 def export_gcode(gcode: str, file_name: str) -> None:
+
     '''
     :param gcode: the actual gcode file content
     :param file_name: the wanted gcode filename
