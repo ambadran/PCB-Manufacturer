@@ -75,43 +75,45 @@ class Intersection:
     stupid_corner_case_flag: bool = False  # fuck the stupid corner case
 
     @staticmethod
-    def rotate_vertices_90(vertex: Coordinate, e_start: Coordinate, e_end: Coordinate) -> Tuple[Coordinate, Coordinate, Coordinate]:
+    def get_slop_y_coords_after_rotate_90(vertex: Coordinate, e_start: Coordinate, e_end: Coordinate) -> Tuple[Coordinate, Coordinate, Coordinate]:
         '''
         Rotating e_end to be 90 degrees from +ve x axis, 
         then rotating vertex and e_start to perserve the Orientation
         This is to enable us to compare y values to ensure the inter_edge affect the correct vertices
         within its area of authority
+
+        PLEASE REFER TO IPAD NOTES TO UNDERSTAND WHAT'S happening, pg-85
+
         '''
         # Get current angle of e_end
-        temp_e = Edge(Coordinate(0, 0), e_end, None)
-        end_coord_angle = round(atan(temp_e.gradient), 5)
+        s_e = Edge(e_start, e_end, None)
+        s_v = Edge(e_start, vertex, None)
+        h1 = s_e.absolute_length
+        h2 = s_v.absolute_length
+        beta = s_e.angle_from_x_axis
+        alpha = s_v.angle_from_x_axis
+        
+        print(beta, 'e_end angle from x axis')
 
-        # converting arctan value to proper angle value according to position of end coord
-        if e_end.x > 0:
-            # converting negative arctan output to +ve value
-            if end_coord_angle < 0:
-                end_coord_angle += 360
+        theta = 90 - beta
+        print(theta, 'angle to move')
 
-        else:
-            # converting negative arctan output to +ve value
-            end_coord_angle += 180
-
-        # end_coord_angle + angle_to_move = 90, 90 is the wanted angle for e_end coord
-        angle_to_move = 90 - end_coord_angle
+        r_vertex = vertex.rotate(theta, absolute_value=False)
+        print(r_vertex)
 
         # new rotated vertices to compare
-        r_e_end = e_end.rotate(90, absolute_value=True)
-        r_e_start = e_start.rotate(angle_to_move, absolute_value=False)
-        r_vertex = vertex.rotate(angle_to_move, absolute_value=False)
+        start_y = e_start.y
+        end_y = start_y + h1
+        vertex_y = r_vertex.y
 
-        return r_vertex, r_e_start, r_e_end
+        return start_y, end_y, vertex_y
 
     @staticmethod
     def get_rec_passing_vertices(intersection: Intersection, edge: Edge, vertices: list[Coordinate]) -> set:
         '''
         return the passing edges
         '''
-        inter1_passed_vertices = set()
+        inter_passed_vertices = set()
         e_gradient = edge.gradient
         e_y_intercept = edge.y_intercept
         e_start = edge.start
@@ -121,69 +123,77 @@ class Intersection:
                 for vertex in vertices:
                     if vertex.x > e_start.x:  # continious line testing
                         if (vertex.y < e_end.y and vertex.y > e_start.y) or (vertex.y > e_end.y and vertex.y < e_start.y):  # edge start and end coordinates testing
-                            inter1_passed_vertices.add(vertex)
+                            inter_passed_vertices.add(vertex)
 
             elif intersection.comppad_coord.x > e_start.x:
                 for vertex in vertices:
                     if vertex.x < e_start.x:
                         if (vertex.y < e_end.y and vertex.y > e_start.y) or (vertex.y > e_end.y and vertex.y < e_start.y):  # edge start and end coordinates testing
-                            inter1_passed_vertices.add(vertex)
+                            inter_passed_vertices.add(vertex)
 
             else:
                 for vertex in vertices:
                     if (vertex.y < e_end.y and vertex.y > e_start.y) or (vertex.y > e_end.y and vertex.y < e_start.y):  # edge start and end coordinates testing
-                        inter1_passed_vertices.update(set(vertices))
+                        inter_passed_vertices.update(set(vertices))
 
         elif e_gradient == 0: 
             if intersection.comppad_coord.y < e_start.y:
                 for vertex in vertices:
                     if vertex.y > e_start.y:
                         if (vertex.x < e_end.x and vertex.x > e_start.x) or (vertex.x > e_end.x and vertex.x < e_start.x):  # edge start and end coordinates testing
-                            inter1_passed_vertices.add(vertex)
+                            inter_passed_vertices.add(vertex)
 
             elif intersection.comppad_coord.y > e_start.y:
                 for vertex in vertices:
                     if vertex.y < e_start.y:
                         if (vertex.x < e_end.x and vertex.x > e_start.x) or (vertex.x > e_end.x and vertex.x < e_start.x):  # edge start and end coordinates testing
-                            inter1_passed_vertices.add(vertex)
+                            inter_passed_vertices.add(vertex)
 
             else:  # can't decide will let the inter2 decide so will add all of them
                 for vertex in vertices:
                     if (vertex.x < e_end.x and vertex.x > e_start.x) or (vertex.x > e_end.x and vertex.x < e_start.x):  # edge start and end coordinates testing
-                        inter1_passed_vertices.update(set(vertices))
+                        inter_passed_vertices.update(set(vertices))
 
         else:
-            inter1_comppad_y = e_gradient*intersection.comppad_coord.x + e_y_intercept
-            if intersection.comppad_coord.y < inter1_comppad_y:
+            inter_comppad_y = e_gradient*intersection.comppad_coord.x + e_y_intercept
+            if intersection.comppad_coord.y < inter_comppad_y:
+                print('\n\n\nhererererer1\n\n\n')
 
                 for vertex in vertices:
-                    inter1_vertex_y = e_gradient*vertex.x + e_y_intercept
-                    if vertex.y > inter1_vertex_y:
+                    inter_vertex_y = e_gradient*vertex.x + e_y_intercept
+                    if vertex.y > inter_vertex_y:
+                        print(vertex)
+                        print(vertex, e_start, e_end, '\n')
+                        start_y, end_y, vertex_y = Intersection.get_slop_y_coords_after_rotate_90(vertex, e_start, e_end)
+                        print()
+                        print(start_y, end_y, vertex_y)
+                        if (vertex_y < end_y and vertex_y > start_y) or (vertex_y > end_y and vertex_y < start_y):  # edge start and end coordinates testing
+                            inter_passed_vertices.add(vertex)
 
-                        r_vertex, r_e_start, r_e_end = Intersection.rotate_vertices_90(vertex, e_start, e_end)
-                        if (r_vertex.y < r_e_end.y and r_vertex.y > r_e_start.y) or (r_vertex.y > r_e_end.y and r_vertex.y < r_e_start.y):  # edge start and end coordinates testing
-                            inter1_passed_vertices.add(vertex)
-
-            elif intersection.comppad_coord.y > inter1_comppad_y:
+            elif intersection.comppad_coord.y > inter_comppad_y:
+                print(f'\n\n\nhererere2')
 
                 for vertex in vertices:
-                    inter1_vertex_y = e_gradient*vertex.x + e_y_intercept
-                    if vertex.y < inter1_vertex_y:
-
-                        r_vertex, r_e_start, r_e_end = Intersection.rotate_vertices_90(vertex, e_start, e_end)
-                        if (r_vertex.y < r_e_end.y and r_vertex.y > r_e_start.y) or (r_vertex.y > r_e_end.y and r_vertex.y < r_e_start.y):  # edge start and end coordinates testing
-                            inter1_passed_vertices.add(vertex)
+                    inter_vertex_y = e_gradient*vertex.x + e_y_intercept
+                    if vertex.y < inter_vertex_y:
+                        print(vertex)
+                        print(vertex, e_start, e_end, '\n')
+                        start_y, end_y, vertex_y = Intersection.get_slop_y_coords_after_rotate_90(vertex, e_start, e_end)
+                        print()
+                        print(start_y, end_y, vertex_y)
+                        if (vertex_y < end_y and vertex_y > start_y) or (vertex_y > end_y and vertex_y < start_y):  # edge start and end coordinates testing
+                            inter_passed_vertices.add(vertex)
 
             else:  # can't decide will let the inter2 decide so will add all of them
                 for vertex in vertices:
 
                     r_vertex, r_e_start, r_e_end = Intersection.rotate_vertices_90(vertex, e_start, e_end)
                     if (r_vertex.y < r_e_end.y and r_vertex.y > r_e_start.y) or (r_vertex.y > r_e_end.y and r_vertex.y < r_e_start.y):  # edge start and end coordinates testing
-                        inter1_passed_vertices.add(vertex)
+                        inter_passed_vertices.add(vertex)
 
 
 
-        return inter1_passed_vertices
+        return inter_passed_vertices
 
 
     @staticmethod
@@ -234,7 +244,6 @@ class Intersection:
         r = round(intersection.comppad_block.thickness/2 , 5)
 
         if coordinate2.x == coordinate1.x:  # Gradient = infinity  # trace itself is m=0
-            print(f'\n\n\n{orientation} herererere\n\n\n')
         # if intersection.inter1_edge.gradient == 0:
             ### Step 2: Get linear equation of the line that passes through the circle diameter, aka the 2 coordinates
             # Getting equation of a vertical line
@@ -420,6 +429,7 @@ class Intersection:
 
         ### STEP 1: Getting the vertices of the rectangle comppad that will be 
         ### displayed in the pcb (not the ones inbetween the trace)
+
         # Getting vertices that are outside intersection edge 1
         inter1_passed_vertices = Intersection.get_rec_passing_vertices(intersection, intersection.inter1_edge, vertices)
 
@@ -1381,6 +1391,7 @@ class Coordinate:
         '''
         returns the new coordinate of the point after  getting it to wanted angle from origin
         '''
+
         temp_e = Edge(Coordinate(0, 0), self, None)
         hypotenuse = temp_e.absolute_length
         new_angle = angle
@@ -2086,6 +2097,24 @@ class Edge:
         :returns the midpoint coordinate of an edge
         '''
         return Coordinate(round((self.start.x + self.end.x)/2, 6), round((self.start.y + self.end.y)/2, 6))
+
+    @property
+    def angle_from_x_axis(self) -> float:
+        '''
+        return positive degrees from the x axis
+        '''
+        angle = round(atan(self.gradient), 5)
+        # converting arctan value to proper angle value according to position of end coord
+        if self.end.x > 0:
+            # converting negative arctan output to +ve value
+            if angle < 0:
+                angle += 360
+
+        else:
+            # converting negative arctan output to +ve value
+            angle += 180
+
+        return angle
 
     def anticlockwise_successors(self, edge_list) -> list[Edge]:
         '''
