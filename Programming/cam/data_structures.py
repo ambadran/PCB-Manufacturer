@@ -81,92 +81,7 @@ class Intersection:
     stupid_corner_case_flag: bool = False  # fuck the stupid corner case
 
     @staticmethod
-    def get_rec_passing_vertices(intersection: Intersection, edge: Edge, vertices: list[Coordinate]) -> tuple[set, set]:
-        '''
-        return the passing edges
-        '''
-        gradient_test_passed = set()
-        range_test_passed = set()
-        e_gradient = edge.gradient
-        e_y_intercept = edge.y_intercept
-        e_start = edge.start
-        e_end = edge.end  # not used
-        if e_gradient == Infinity(): 
-            if intersection.comppad_coord.x < e_start.x:
-                for vertex in vertices:
-                    if (vertex.y < e_end.y and vertex.y > e_start.y) or (vertex.y > e_end.y and vertex.y < e_start.y):  # edge start and end coordinates testing
-                        range_test_passed.add(vertex)
-
-                    if vertex.x > e_start.x:  # continious line testing
-                        gradient_test_passed.add(vertex)
-
-            elif intersection.comppad_coord.x > e_start.x:
-                for vertex in vertices:
-                    if (vertex.y < e_end.y and vertex.y > e_start.y) or (vertex.y > e_end.y and vertex.y < e_start.y):  # edge start and end coordinates testing
-                        range_test_passed.add(vertex)
-
-                    if vertex.x < e_start.x:
-                        gradient_test_passed.add(vertex)
-
-            else:
-                for vertex in vertices:
-                    if (vertex.y < e_end.y and vertex.y > e_start.y) or (vertex.y > e_end.y and vertex.y < e_start.y):  # edge start and end coordinates testing
-                        range_test_passed.add(vertices)
-
-        elif e_gradient == 0: 
-            if intersection.comppad_coord.y < e_start.y:
-                for vertex in vertices:
-                    if (vertex.x < e_end.x and vertex.x > e_start.x) or (vertex.x > e_end.x and vertex.x < e_start.x):  # edge start and end coordinates testing
-                        range_test_passed.add(vertex)
-
-                    if vertex.y > e_start.y:
-                        gradient_test_passed.add(vertex)
-
-            elif intersection.comppad_coord.y > e_start.y:
-                for vertex in vertices:
-                    if (vertex.x < e_end.x and vertex.x > e_start.x) or (vertex.x > e_end.x and vertex.x < e_start.x):  # edge start and end coordinates testing
-                        range_test_passed.add(vertex)
-
-                    if vertex.y < e_start.y:
-                        gradient_test_passed.add(vertex)
-
-            else:  # can't decide will let the inter2 decide so will add all of them
-                for vertex in vertices:
-                    if (vertex.x < e_end.x and vertex.x > e_start.x) or (vertex.x > e_end.x and vertex.x < e_start.x):  # edge start and end coordinates testing
-                        range_test_passed.add(vertex)
-
-        else:
-            inter_comppad_y = e_gradient*intersection.comppad_coord.x + e_y_intercept
-            if intersection.comppad_coord.y < inter_comppad_y:
-
-                for vertex in vertices:
-                    if vertex.within_edge(Edge(e_start, e_end, None), intersection.comppad_block.thickness):
-                        range_test_passed.add(vertex)
-
-                    inter_vertex_y = e_gradient*vertex.x + e_y_intercept
-                    if vertex.y > inter_vertex_y:
-                        gradient_test_passed.add(vertex)
-
-            elif intersection.comppad_coord.y > inter_comppad_y:
-
-                for vertex in vertices:
-                    if vertex.within_edge(Edge(e_start, e_end, None), intersection.comppad_block.thickness):
-                        range_test_passed.add(vertex)
-
-                    inter_vertex_y = e_gradient*vertex.x + e_y_intercept
-                    if vertex.y < inter_vertex_y:
-                        gradient_test_passed.add(vertex)
-
-
-            else:  # inter_edge is exactly on comppad_coord, so can't decide will let the inter2 decide so will add all of them
-                for vertex in vertices:
-                    if vertex.within_edge(Edge(e_start, e_end, None)):
-                        range_test_passed.add(vertex)
-
-        return (gradient_test_passed, range_test_passed)
-
-    @staticmethod
-    def generate_comppad_nodes_rectangle(intersection: Intersection, resolution: int) -> Node:
+    def generate_comppad_nodes_rectangle(intersection: Intersection, trace_nodes: Node, resolution: int) -> Node:
         '''
         generates the coordinates of the rectangle component pad 
 
@@ -188,31 +103,14 @@ class Intersection:
         e4 = Edge(v3, v4, None)
         edges = [e1, e2, e3, e4]
 
-
         ### STEP 1: Getting the vertices of the rectangle comppad that will be 
         ### displayed in the pcb (not the ones inbetween the trace)
-
-        # Getting vertices that are outside intersection edge 1
-        grad_passed1, range_passed1 = Intersection.get_rec_passing_vertices(intersection, intersection.inter1_edge, vertices)
-
-        # Getting vertices that is outside intersection edge 2
-        grad_passed2, range_passed2 = Intersection.get_rec_passing_vertices(intersection, intersection.inter2_edge, vertices)
-
-        passed_vertices = set()
+        passed_vertices = []
         for vertex in vertices:
-            if (vertex in grad_passed1 and vertex in range_passed1) or (vertex in grad_passed2 and vertex in range_passed2):
-                passed_vertices.add(vertex)
-
-            angle = round(intersection.inter2_edge.angle_between(intersection.inter1_edge.reversed()))
-            print(f'\n\n\n{angle}\n\n\n')
-            #TODO: must do (360-angle) according to comppad_coord relative to the 2 inter_edges
-            if angle > 180 or angle == 0:
-                if (vertex not in range_passed1 and vertex not in range_passed2):
-                    passed_vertices.add(vertex)
-
+            if not vertex.inside_polygon(trace_nodes):
+                passed_vertices.append(vertex)
 
         ### STEP 2: ORDERING THE VERTICES
-        passed_vertices = list(passed_vertices)
         min_v_inter1 = Edge(intersection.inter1_coord, passed_vertices[0], None).absolute_length
         min_v_1 = passed_vertices[0]
         min_v_inter2 = Edge(intersection.inter2_coord, passed_vertices[0], None).absolute_length
@@ -474,7 +372,7 @@ class Intersection:
         pass
 
     @staticmethod
-    def generate_comppad_nodes(intersection: Intersection, resolution: int=15) -> Node:
+    def generate_comppad_nodes(intersection: Intersection, trace_nodes: Node, resolution: int=15) -> Node:
         '''
         generates the coordinates of the component pad in the form of a linkedlist
 
@@ -489,7 +387,7 @@ class Intersection:
             return Intersection.generate_comppad_nodes_circle(intersection, resolution)
 
         elif intersection.comppad_block.shape_type == ShapeType.Rectangle:
-            return Intersection.generate_comppad_nodes_rectangle(intersection, resolution)
+            return Intersection.generate_comppad_nodes_rectangle(intersection, trace_nodes, resolution)
 
         elif intersection.comppad_block.shape_type == ShapeType.Oval:
             return Intersection.generate_comppad_nodes_oval(intersection, resolution)
@@ -524,6 +422,22 @@ class Node:
         vertex_list.append(next_node.vertex)
 
         return vertex_list
+
+    def to_edge_list(self) -> list[Edge]:
+        '''
+        converts nodes to list of edges
+        '''
+        coordinates = self.to_list()
+        pre_coord = coordinates[0]
+        edges = []
+        for coordinate in coordinates[1:]:
+            edges.append(Edge(pre_coord, coordinate, None))
+            pre_coord = coordinate
+
+        if self.does_loop:
+            edges.append(Edge(pre_coord, coordinates[0], None))
+
+        return edges
 
     def extend(self, other_node: Node) -> None:
         '''
@@ -1130,7 +1044,7 @@ class Node:
         print('NEW CALLLL!!!!!!\n')
 
         ### Step 1: Find all the intersection data between all the traces and all the component pads :)
-        temp_self = deepcopy(self)
+        trace_nodes = deepcopy(self)
 
         print(self, 'before extracting intersection data')
         intersections_data = self.get_intersections_data(blocks)
@@ -1162,11 +1076,12 @@ class Node:
 
             ### Step 1:
             print(f"Step 1: change parent of node pre_inter1_node: <{repr(self.child(intersection.pre_inter1_node.parent))}> to: <{repr(Node(intersection.inter1_coord, None))}>")
+
             self.child(intersection.pre_inter1_node.parent).parent = Node(intersection.inter1_coord, None)
             print(self, '\n')
 
             ### Step 2:
-            self.extend(Intersection.generate_comppad_nodes(intersection))
+            self.extend(Intersection.generate_comppad_nodes(intersection, trace_nodes))
             print("Step 2: fill in the componentpad nodes\n", f"{self}\n")
 
             ### Step 3:
@@ -1249,7 +1164,19 @@ class Infinity():
         '''
         return Infinity()
 
+    def __radd__(self, other) -> Infinity:
+        '''
+        add magic method to divide addition
+        '''
+        return Infinity()
+
     def __sub__(self, other) -> Infinity:
+        '''
+        add magic method to divide addition
+        '''
+        return Infinity()
+
+    def __rsub__(self, other) -> Infinity:
         '''
         add magic method to divide addition
         '''
@@ -1261,7 +1188,19 @@ class Infinity():
         '''
         return Infinity()
 
+    def __rmul__(self, other) -> Infinity:
+        '''
+        add magic method to divide addition
+        '''
+        return Infinity()
+
     def __truediv__(self, other) -> Infinity:
+        '''
+        add magic method to divide addition
+        '''
+        return Infinity()
+
+    def __rtruediv__(self, other) -> Infinity:
         '''
         add magic method to divide addition
         '''
@@ -1299,6 +1238,12 @@ class Infinity():
             return False
         else:
             return True
+
+    def __round__(self, value: int) -> Infinity:
+        '''
+        inifinity is rounded to infinity
+        '''
+        return Infinity()
 
     def __str__(self) -> str:
         return '<Infinity bitches>'
@@ -1355,6 +1300,39 @@ class Coordinate:
         if self.z:
             self.z = round(self.z, accuracy)
 
+    def inside_polygon(self, nodes: Node) -> bool:
+        '''
+        return whether or not this coordinate resides inside the argument closed polygon
+
+        if even number of intersections -> outside -> False
+        else: -> inside -> True
+        '''
+        intersections = 0
+
+        edges = nodes.to_edge_list()
+        for edge in edges:
+            if edge.gradient == 0:
+                continue
+
+            elif edge.gradient == Infinity():
+                # gradient test will definitly pass
+                # range test is the deciding factor
+                # x axis
+                if self.x < edge.start.x:
+                    # y axis
+                    if (self.y < edge.start.y and self.y > edge.end.y) or (self.y > edge.start.y and self.y < edge.end.y):
+                        intersections += 1
+
+            else:
+                # x coord test
+                x_line = round((self.y - edge.y_intercept) / edge.gradient, 5)
+                if self.x < x_line:
+                    # y axis
+                    if (self.y < edge.start.y and self.y > edge.end.y) or (self.y > edge.start.y and self.y < edge.end.y):
+                        intersections += 1
+
+        return intersections%2 == 1
+
     @property
     def origin(self) -> Coordinate:
         '''
@@ -1375,6 +1353,41 @@ class Coordinate:
         C = round(acos( ( a**2 + b**2 - c**2 )/( 2*a*b ) ), 5)
 
         return (B <= 90 and C <= 90)
+
+    def get_side_open_polygon(self, pre_inter1_node, post_inter2_node) -> bool:
+        '''
+        return whether the given coordinate is to the right or the left of the node
+        >0 intersection means it's on left, return True
+        0 intersection means it's on the right, return False
+        as rays goes from left to right
+        '''
+        # the ray is y=self.y, a horizontal line
+        edges = pre_inter1_node.to_list()
+        edges = edges[:edges.index(post_inter2_node.vertex)]
+
+        intersections = 0
+        for edge in edges:
+            if edge.gradient == 0:
+                continue
+
+            elif edge.gradient == Infinity():
+                # gradient test will definitly pass
+                # range test is the deciding factor
+                # x axis
+                if self.x < edge.start.x:
+                    # y axis
+                    if (self.y < edge.start.y and self.y > edge.end.y) or (self.y > edge.start.y and self.y < edge.end.y):
+                        intersections += 1
+
+            else:
+                # x coord test
+                x_line = round((self.y - edge.y_intercept) / edge.gradient, 5)
+                if self.x < x_line:
+                    # y axis
+                    if (self.y < edge.start.y and self.y > edge.end.y) or (self.y > edge.start.y and self.y < edge.end.y):
+                        intersections += 1
+
+        return intersections%2 == 0
 
     @classmethod
     def get_min_max(cls, coordinates_list: list[Coordinate]) -> tuple[Coordinate, Coordinate]:
