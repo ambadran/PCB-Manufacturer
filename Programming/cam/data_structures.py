@@ -94,21 +94,74 @@ class Intersection:
         block = intersection.comppad_block
         v1 = Coordinate(round(intersection.comppad_coord.x - block.thickness/2, 5), round(intersection.comppad_coord.y + block.thickness2/2, 5))
         v2 = Coordinate(round(intersection.comppad_coord.x + block.thickness/2, 5), round(intersection.comppad_coord.y + block.thickness2/2, 5))
-        v3 = Coordinate(round(intersection.comppad_coord.x - block.thickness/2, 5), round(intersection.comppad_coord.y - block.thickness2/2, 5))
-        v4 = Coordinate(round(intersection.comppad_coord.x + block.thickness/2, 5), round(intersection.comppad_coord.y - block.thickness2/2, 5))
+        v3 = Coordinate(round(intersection.comppad_coord.x + block.thickness/2, 5), round(intersection.comppad_coord.y - block.thickness2/2, 5))
+        v4 = Coordinate(round(intersection.comppad_coord.x - block.thickness/2, 5), round(intersection.comppad_coord.y - block.thickness2/2, 5))
         vertices = [v1, v2, v3, v4]
+
         e1 = Edge(v1, v2, None)
-        e2 = Edge(v1, v3, None)
-        e3 = Edge(v2, v4, None)
-        e4 = Edge(v3, v4, None)
+        e2 = Edge(v2, v3, None)
+        e3 = Edge(v3, v4, None)
+        e4 = Edge(v4, v1, None)
         edges = [e1, e2, e3, e4]
 
         ### STEP 1: Getting the vertices of the rectangle comppad that will be 
         ### displayed in the pcb (not the ones inbetween the trace)
-        passed_vertices = []
-        for vertex in vertices:
-            if not vertex.inside_polygon(trace_nodes):
-                passed_vertices.append(vertex)
+        print('\n\n\n')
+        print(vertices)
+        print(intersection.inter1_coord)
+        print(intersection.inter2_coord)
+        print('\n\n\n')
+        verts_with_inter = deepcopy(vertices)
+        for ind, edge in enumerate(edges):
+            if intersection.inter1_coord.inside_edge(edge):
+                print('passed')
+                verts_with_inter.insert(ind+1, intersection.inter1_coord)
+            else:
+                print('fail')
+            print()
+            print()
+
+        for ind, edge in enumerate(edges):
+            if intersection.inter2_coord.inside_edge(edge):
+                # since order could be skewed by previous loop
+                ind = verts_with_inter.index(edge.start)
+                verts_with_inter.insert(ind+1, intersection.inter2_coord)
+
+        if verts_with_inter.index(intersection.inter1_coord) < verts_with_inter.index(intersection.inter2_coord):
+            between_inter_coords = verts_with_inter[verts_with_inter.index(intersection.inter1_coord)+1:verts_with_inter.index(intersection.inter2_coord)]
+            outside_inter_coords = verts_with_inter[verts_with_inter.index(intersection.inter2_coord)+1:]
+            outside_inter_coords.extend(verts_with_inter[:verts_with_inter.index(intersection.inter1_coord)])
+
+        else:
+            between_inter_coords = verts_with_inter[verts_with_inter.index(intersection.inter2_coord)+1:verts_with_inter.index(intersection.inter1_coord)]
+            outside_inter_coords = verts_with_inter[verts_with_inter.index(intersection.inter1_coord)+1:]
+            outside_inter_coords.extend(verts_with_inter[:verts_with_inter.index(intersection.inter2_coord)])
+
+        delta_x = intersection.comppad_coord.x - intersection.inter1_edge.end.x
+        delta_y = intersection.comppad_coord.y - intersection.inter1_edge.end.y
+
+        if delta_x > 0:
+            orientation = True
+        elif delta_x < 0:
+            orientation = False
+        elif delta_x == 0:
+            if delta_y > 0:
+                orientation = True
+            elif delta_y < 0:
+                orientation = False
+
+        #TODO: orientation choosing algorithm is not working proberly for 3 traces ;(
+        if orientation:
+            passed_vertices = outside_inter_coords
+
+        else:
+            passed_vertices = between_inter_coords
+
+        print('\n\n\n')
+        print(verts_with_inter, 'verts with inter\n')
+        print(between_inter_coords, 'between inter coords\n')
+        print(outside_inter_coords, 'outside inter coords\n')
+        print('\n\n\n')
 
         ### STEP 2: ORDERING THE VERTICES
         min_v_inter1 = Edge(intersection.inter1_coord, passed_vertices[0], None).absolute_length
@@ -1340,8 +1393,27 @@ class Coordinate:
         '''
         return Coordinate(0, 0)
 
+    def inside_edge(self, edge: Edge) -> bool:
+        '''
+        returns whether or not this point is inside this edge
+        '''
+        if edge.gradient == Infinity():
+            print(self)
+            print(edge)
+            print(self.x, edge.start.x)
+            print(self.x == edge.start.x)
+            return (round(self.x, 3) == round(edge.start.x, 3)) and ((edge.start.y < self.y and self.y < edge.end.y) or (edge.start.y > self.y and self.y > edge.end.y))
+
+        elif edge.gradient == 0:
+            return (round(self.y, 3) == round(edge.start.y, 3)) and ((edge.start.x < self.x and self.x < edge.end.x) or (edge.start.x > self.x and self.x > edge.end.x))
+
+        else:
+            edge_y = edge.gradient*self.x + edge.y_intercept
+            return (round(self.y, 3) == round(edge_y, 3)) and ((edge.start.y < self.y and self.y < edge.end.y) or (edge.start.y > self.y and self.y > edge.end.y))
+
     def within_edge(self, edge: Edge, thickness: float) -> bool:
         '''
+        :thickness: BLOCK thickness
         #NOTE: Please Refer to iPad Notes pg86
         Angle SVE must be acute for the vertex to be in between an edge range
         :return: boolean value
