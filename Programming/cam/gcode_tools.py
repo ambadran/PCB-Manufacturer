@@ -217,6 +217,20 @@ def general_machine_init() -> str:
     return gcode
 
 
+def general_machine_deinit() -> str:
+    '''
+    Normal Deinitiation routine
+
+    :return: machine deninitiation gcode
+    '''
+    gcode = ''
+    gcode += '; Machine deinitialization Sequence... \n\n'
+    gcode += move(CoordMode.ABSOLUTE, use_00=True, coordinate=Coordinate(0, 0, 0))
+    gcode += 'B0 ; Turn Machine OFF\n'
+
+    return gcode
+
+
 def move(coordinate_mode: CoordMode, feedrate: Optional[int]=None, use_00: bool=False, comment: Optional[str]=None, **coordinates) -> str:
     '''
     generates movement Gxx gcode commands according to inputs
@@ -348,7 +362,8 @@ def get_tool_func(latch_offset_distance_in: int, latch_offset_distance_out: int,
     return tool
 
 
-def generate_holes_gcode(gerber: Gerber, tool: Callable, motor_up_z_position: int, motor_down_z_position: int, feedrate_XY: int, feedrate_Z: int, spindle_speed: int, initiated_before:bool=False, terminate_after: bool=True) -> str:
+def generate_holes_gcode(gerber: Gerber, tool: Callable, motor_up_z_position: int, 
+        motor_down_z_position: int, feedrate_XY: int, feedrate_Z: int, spindle_speed: int) -> str:
     '''
     Takes in String gerber file content, identifies the PCB holes and generates the Gcode to drill the holes from begging to end!
 
@@ -360,15 +375,9 @@ def generate_holes_gcode(gerber: Gerber, tool: Callable, motor_up_z_position: in
     :param feedrate_Z: integer mm/minute, only for z movement, which must be much slower for spindle to cut properly
     :param spindle_speed: rpm of DC motor to drill holes, please note that the value is 0-250, default value is 230 as tested.
 
-    :param initiated_before: if True, will put general machine initiation sequence in the beggining of the g-code
-    :param terminate_after: if true will Cut off machine power after job finishes
-
     :return: This function creates the gcode content as string according to the input coordinates
     '''
     gcode = ''
-
-    if not initiated_before:
-        gcode += general_machine_init()
 
     gcode += '\n; The following gcode is the PCB holes drill gcode\n\n'
 
@@ -405,25 +414,17 @@ def generate_holes_gcode(gerber: Gerber, tool: Callable, motor_up_z_position: in
     # Get the tool back to its place and deselect the tool
     gcode += tool(ToolChange.Deselect, Tool.Spindle)
 
-    # Turn Machine Off
-    if terminate_after:
-        gcode += move(CoordMode.ABSOLUTE, use_00=True, coordinate=[0, 0, 0])
-        gcode += 'B0 ; Turn Machine OFF\n'
-
     return gcode
 
 
 def generate_ink_laying_gcode(gerber: Gerber, tool: Callable, tip_thickness: float, pen_down_position: int, 
-        feedrate: int, initiated_before: bool=False, terminate_after: bool=True) -> str:
+        feedrate: int) -> str:
     '''
     :param gerber: Gerber Object
     :param tool: The tool function defined inside the get_tool_func closure function, it generates gcode to select wanted tool
     :param tip_thickness: number to convey thickness of pen tip in mm
     :param pen_down_position: position that pen touches PCB in Z axis
     :param feedrate: integer mm/minute, only for x and y movement for pen movement when drawing
-
-    :param initiated_before: if True, will put general machine initiation sequence in the beggining of the g-code
-    :param terminate_after: if true will Cut off machine power after job finishes
 
     :return: This function creates the gcode content as string according to the input coordinates
     '''
@@ -481,10 +482,6 @@ def generate_ink_laying_gcode(gerber: Gerber, tool: Callable, tip_thickness: flo
     ### G-Code to be generated ###
     gcode = ''
 
-    if not initiated_before:
-        gcode += general_machine_init()
-
-
     gcode += '\n; The following gcode is the ink laying gcode\n'
     gcode += f'; According to input gerber file it will have {num_ys} number of y iterations and Over-lapping distance is {overlapping_distance}\n\n'
 
@@ -522,11 +519,6 @@ def generate_ink_laying_gcode(gerber: Gerber, tool: Callable, tip_thickness: flo
     # Get the tool back and deselect it
     gcode += tool(ToolChange.Deselect, Tool.Pen)
 
-    # Turn Machine Off
-    if terminate_after:
-        gcode += move(CoordMode.ABSOLUTE, use_00=True, coordinate=[0, 0, 0])
-        gcode += 'B0 ; Turn Machine OFF\n'
-
     return gcode
 
 
@@ -541,9 +533,10 @@ def get_laser_coordinates_lists(gerber: Gerber, debug=False) -> list[list[Coordi
     :return: list of list of coordinates of one continious trace
     '''
     if debug:
-        Graph.DEBUG_APPLY_OFFSET = True
-        Graph.DEBUG_FILTER_TINY_EDGES = True
-        Graph.DEBUG_TO_SINGLY_LINKEDLIST = True
+        Graph.DEBUG_APPLY_OFFSET = False
+        Graph.DEBUG_FILTER_TINY_EDGES = False
+        Graph.DEBUG_TO_SINGLY_LINKEDLIST = False
+        Node.DEBUG_ADD_COMPPAD = False
 
     # converting trace gerber blocks to one big graph
     graph_unsep_unoff: Graph = gerber.blocks_to_graph(gerber.blocks[BlockType.Conductor])
@@ -559,24 +552,32 @@ def get_laser_coordinates_lists(gerber: Gerber, debug=False) -> list[list[Coordi
 
     # Converting the graphs to singly linkedlists
     linkedlists_sep_off: list[Node] = [graph.to_singly_linkedlist() for graph in graphs_sep_off]
-    # linkedlists_sep_off: list[Node] = [graph.to_singly_linkedlist() for graph in graphs_sep_off[:-1]]
-    # linkedlists_sep_off: list[Node].extend([graph.to_singly_linkedlist(terminate_after=True) for graph in graphs_sep_off[-1:]])
 
-    # Rounding trace coordinates  #TODO: this step should not be necessary
+    # Rounding trace coordinates  #TODO: This step should not be necessary
     linkedlists_sep_off_comppad: list[Node] = [linkedlist.round_all(5) for linkedlist in linkedlists_sep_off]
 
     # Incorporating component pads to the linked lists
     comppad_blocks: list[Block] = gerber.blocks[BlockType.ComponentPad]
-    # linkedlists_sep_off_comppad: list[Node] = [linkedlist.add_comppad(comppad_blocks) for linkedlist in linkedlists_sep_off]
-    linkedlists_sep_off_comppad: list[Node] = [linkedlist.add_comppad(comppad_blocks) for linkedlist in linkedlists_sep_off[:-1]]
-    linkedlists_sep_off[-1].add_comppad(comppad_blocks, terminate_after=True)
-    # linkedlists_sep_off[2].add_comppad(comppad_blocks, terminate_after=True)
+    linkedlists_sep_off_comppad: list[Node] = [linkedlist.add_comppad(comppad_blocks) for linkedlist in linkedlists_sep_off]
+    # linkedlists_sep_off_comppad = [linkedlists_sep_off[-3].add_comppad(comppad_blocks)]  # for testing
 
-    raise ValueError('still in development')
-    return graphs_sep_off_comppad
+    # Adding non-intersecting comppads
+    linkedlists_sep_off_comppad.extend(Node.get_non_intersecting_comppads(comppad_blocks))
+
+    # Converting list of nodes to list of list of coordiantes
+    coordlist_sep_off_comppad = [node.to_list() for node in linkedlists_sep_off_comppad]
+
+    # visuzlizing
+    if debug:
+        for linkedlist in linkedlists_sep_off_comppad[:-1]:
+            linkedlist.visualize(multiplier=15, x_offset=27, speed=5, terminate=False)
+        linkedlists_sep_off_comppad[-1].visualize(multiplier=15, x_offset=27, speed=5, terminate=True)
+
+    return coordlist_sep_off_comppad
 
 
-def generate_pcb_trace_gcode(gerber_file: str, tool: Callable, optimum_focal_distance: int, feedrate: int, laser_power: int, initiated_before: bool=False, terminate_after=True) -> str:
+def generate_pcb_trace_gcode(gerber_file: str, tool: Callable, optimum_focal_distance: int, 
+        feedrate: int, laser_power: int) -> str:
     '''
     :param gerber_file: the file that we want to get the holes coordinate from
     :param tool: The tool function defined inside the get_tool_func closure function, it generates gcode to select wanted tool
@@ -584,20 +585,14 @@ def generate_pcb_trace_gcode(gerber_file: str, tool: Callable, optimum_focal_dis
     :param feedrate: integer mm/minute, only for x and y movement, z movement is hardcoded here
     :param laser_power: laser intensity for toner transfer, please note that the value is 0-250, default value is 150 as tested.
 
-    :param initiated_before: if True, will put general machine initiation sequence in the beggining of the g-code
-    :param terminate_after: if True will Cut off machine power after job finishes
-
     :return: This function creates the gcode content as string according to the input coordinates
     '''
     gcode = ''
 
-    if not initiated_before:
-        gcode += general_machine_init()
-
     gcode += '\n; The following gcode is the PCB trace laser marking gcode\n\n'
 
     # Activiate Tool number 1, The Laser Module
-    gcode += f"M5 ; Being extra sure it won't light up before activation"
+    gcode += f"M5 ; Being extra sure it won't light up before activation\n\n"
     gcode += tool(ToolChange.Select, Tool.Laser)
     
     # Setting the laser module movment feedrate
@@ -611,13 +606,13 @@ def generate_pcb_trace_gcode(gerber_file: str, tool: Callable, optimum_focal_dis
 
     ### PCB trace laser marking Gcode
     # Getting Offset Coordinates for laser module to burn in 
-    coordinate_lists = get_laser_coordinates_lists(gerber_file)
+    coordinate_lists = get_laser_coordinates_lists(gerber_file, debug=False)
     for coordinate_list in coordinate_lists:
-        gcode += move(CoordMode=ABSOLUTE, coordinate=coordinate_list[0])
-        gcode += "M3"
+        gcode += move(CoordMode.ABSOLUTE, coordinate=coordinate_list[0])
+        gcode += "M3\n"
         for coordinate in coordinate_list[1:]:
             gcode += move(CoordMode.ABSOLUTE, coordinate=coordinate)
-        gcode += "M5"
+        gcode += "M5\n"
 
     gcode += '\n'
 
@@ -627,12 +622,8 @@ def generate_pcb_trace_gcode(gerber_file: str, tool: Callable, optimum_focal_dis
     # Get the tool back and deselect it
     gcode += tool(ToolChange.Deselect, Tool.Laser)
 
-    # Turn Machine Off
-    if terminate_after:
-        gcode += move(CoordMode.ABSOLUTE, use_00=True, coordinate=Coordinate(0, 0, 0))
-        gcode += 'B0 ; Turn Machine OFF\n'
-
     return gcode
+
 
 def export_gcode(gcode: str, file_name: str) -> None:
 

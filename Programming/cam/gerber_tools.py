@@ -391,6 +391,13 @@ class Gerber:
                     
         return all_traces
 
+    def mirror(self) -> None:
+        '''
+        Mirrors the gerber file for backward etching
+        '''
+        #TODO: check if it's only one layer PCB first,
+        # if not then raise Error
+        pass
 
 if __name__ == '__main__':
 

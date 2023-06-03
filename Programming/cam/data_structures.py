@@ -106,20 +106,11 @@ class Intersection:
 
         ### STEP 1: Getting the vertices of the rectangle comppad that will be 
         ### displayed in the pcb (not the ones inbetween the trace)
-        print('\n\n\n')
-        print(vertices)
-        print(intersection.inter1_coord)
-        print(intersection.inter2_coord)
-        print('\n\n\n')
+        # puting intersection_coords in their proper order in the rec vertices list
         verts_with_inter = deepcopy(vertices)
         for ind, edge in enumerate(edges):
             if intersection.inter1_coord.inside_edge(edge):
-                print('passed')
                 verts_with_inter.insert(ind+1, intersection.inter1_coord)
-            else:
-                print('fail')
-            print()
-            print()
 
         for ind, edge in enumerate(edges):
             if intersection.inter2_coord.inside_edge(edge):
@@ -127,6 +118,11 @@ class Intersection:
                 ind = verts_with_inter.index(edge.start)
                 verts_with_inter.insert(ind+1, intersection.inter2_coord)
 
+        # checking all coords are accounted for
+        if intersection.inter1_coord not in verts_with_inter or intersection.inter2_coord not in verts_with_inter:
+            raise ValueError("Didn't detect one of the intersection coords")
+        
+        # seperating inside and outside coords
         if verts_with_inter.index(intersection.inter1_coord) < verts_with_inter.index(intersection.inter2_coord):
             between_inter_coords = verts_with_inter[verts_with_inter.index(intersection.inter1_coord)+1:verts_with_inter.index(intersection.inter2_coord)]
             outside_inter_coords = verts_with_inter[verts_with_inter.index(intersection.inter2_coord)+1:]
@@ -136,6 +132,9 @@ class Intersection:
             between_inter_coords = verts_with_inter[verts_with_inter.index(intersection.inter2_coord)+1:verts_with_inter.index(intersection.inter1_coord)]
             outside_inter_coords = verts_with_inter[verts_with_inter.index(intersection.inter1_coord)+1:]
             outside_inter_coords.extend(verts_with_inter[:verts_with_inter.index(intersection.inter2_coord)])
+
+        ### STEP2: choosing outside_inter_coords and between_inter_coords ;)
+        #TODO: still can't make a devisive algorithm
 
         delta_x = intersection.comppad_coord.x - intersection.inter1_edge.end.x
         delta_y = intersection.comppad_coord.y - intersection.inter1_edge.end.y
@@ -150,12 +149,26 @@ class Intersection:
             elif delta_y < 0:
                 orientation = False
 
-        #TODO: orientation choosing algorithm is not working proberly for 3 traces ;(
         if orientation:
             passed_vertices = outside_inter_coords
 
         else:
             passed_vertices = between_inter_coords
+
+        # Corner case 1: when one of them is empty
+        if not between_inter_coords:
+            passed_vertices = outside_inter_coords
+
+        elif not outside_inter_coords:
+            passed_vertices = between_inter_coords
+
+        else:
+            # Corner case 2: if between or outside has inbetween vertices
+            if outside_inter_coords[0].inside_polygon(trace_nodes):
+                passed_vertices = between_inter_coords
+
+            elif between_inter_coords[0].inside_polygon(trace_nodes):
+                passed_vertices = outside_inter_coords
 
         print('\n\n\n')
         print(verts_with_inter, 'verts with inter\n')
@@ -443,10 +456,123 @@ class Intersection:
             return Intersection.generate_comppad_nodes_rectangle(intersection, trace_nodes, resolution)
 
         elif intersection.comppad_block.shape_type == ShapeType.Oval:
-            return Intersection.generate_comppad_nodes_oval(intersection, resolution)
+            # THIS IS ONLY TEMPORARY, Oval comppads are treated as rectangle
+            return Intersection.generate_comppad_nodes_rectangle(intersection, trace_nodes, resolution)
+            #TODO: develop Intersection.generate_comppad_nodes_oval() ;)
+            # return Intersection.generate_comppad_nodes_oval(intersection, resolution)
+
+    @staticmethod
+    def generate_comppad_nodes_circle_full(coordinate: Coordinate, block, Block, resolution: int=15) -> Node:
+        '''
+        Generates full coordinate linkedlist of a circle
+        '''
+        if not(resolution // 2 != resolution /2):
+            raise ValueError('resolution argument MUST be ODD number, \nas there will be pairs of coordinates PLUS the final single coordinate which will always result in an odd number. \nRefer to iPad notes to understand more')
+
+        ### Get circle equation attributes
+        # a and b are the x and y offset value from circle center respectively
+        a = coordinate.x
+        b = coordinate.y
+
+        # r is the radius of circle
+        r = round(block.thickness/2, 5)
+
+        x_max = a + r
+        x_min = a - r
+        max_coord = Coordinate(x_max, b)
+        min_coord = Coordinate(x_min, b)
+
+        ### Getting the list of x values of max x and min x
+        x_range = r
+        num_iterations = int((resolution-1)/2)
+        increment = round(x_range / (num_iterations + 1), 5)
+        x_values_max = []
+        for iter_ind in range(1, num_iterations+1):
+            x_values_max.append(a + iter_ind*increment)
+
+        x_range = r
+        num_iterations = int((resolution-1)/2)
+        increment = round(x_range / (num_iterations + 1), 5)
+        x_values_min = []
+        for iter_ind in range(1, num_iterations+1):
+            x_values_min.append(a - iter_ind*increment)
+        x_values_min.reverse()  # we start from left to right
+
+        x_values = []
+        x_values.extend(x_values_min)
+        x_values.extend(x_values_max)
+
+        ### Step 5: Getting the intersection between circle equation and all the intersection linear equations
+        semicircle_coords_positive = []
+        semicircle_coords_negative = []
+        for current_x_value in x_values:
+            y1 = round(b + math.sqrt(round(r**2 - (current_x_value - a)**2, 6)), 5)
+            semicircle_coords_positive.append(Coordinate(round(current_x_value, 6), y1))
+
+            y2 = round(b - math.sqrt(round(r**2 - (current_x_value - a)**2, 6)), 5)
+            if y1 != y2: # to eleminate max point
+                semicircle_coords_negative.append(Coordinate(round(current_x_value, 6), y2))
+
+        circle_coords = []
+        circle_coords.append(min_coord)
+        circle_coords.extend(semicircle_coords_positive)
+        circle_coords.append(max_coord)
+        circle_coords.extend(reversed(semicircle_coords_negative))
+        circle_coords.append(min_coord)
+        circle_coords.reverse()
+        
+        return Node.from_list(circle_coords)
+
+    @staticmethod
+    def generate_comppad_nodes_rectangle_full(coordinate: Coordinate, block: Block) -> Node:
+        '''
+        Generates full coordinate linkedlist of a circle
+        '''
+        v1 = Coordinate(round(coordinate.x - block.thickness/2, 5), round(coordinate.y + block.thickness2/2, 5))
+        v2 = Coordinate(round(coordinate.x + block.thickness/2, 5), round(coordinate.y + block.thickness2/2, 5))
+        v3 = Coordinate(round(coordinate.x + block.thickness/2, 5), round(coordinate.y - block.thickness2/2, 5))
+        v4 = Coordinate(round(coordinate.x - block.thickness/2, 5), round(coordinate.y - block.thickness2/2, 5))
+
+        return Node.from_list([v1, v2, v3, v4, v1][::-1])
+
+    @staticmethod
+    def generate_comppad_nodes_oval_full(coordinate: Coordinate, block: Block, resolution: int=15) -> Node:
+        '''
+        Generates full coordinate linkedlist of a circle
+        '''
+        pass
+
+    @staticmethod
+    def generate_non_intersecting_comppad_nodes(coordinate: Coordinate, block: Block, resolution: int=15) -> Node:
+        '''
+        Generates full coordinates of wanted comppad for non_intersection compponent pads
+        '''
+        if type(resolution) != int:
+            raise ValueError("resolution must be of type int")
+
+        if block.shape_type == ShapeType.Circle or (block.shape_type == ShapeType.Oval and block.thickness == block.thickness2):
+            return Intersection.generate_comppad_nodes_circle_full(coordinate, block, resolution)
+
+        elif block.shape_type == ShapeType.Rectangle:
+            return Intersection.generate_comppad_nodes_rectangle_full(coordinate, block)
+
+        elif block.shape_type == ShapeType.Oval:
+            # THIS IS ONLY TEMPORARY, Oval comppads are treated as rectangle
+            return Intersection.generate_comppad_nodes_rectangle_full(coordinate, block)
+            #TODO: develop Intersection.generate_comppad_nodes_oval_full() ;)
+            # return Intersection.generate_comppad_nodes_oval_full(coordinate, block, resolution)
 
 
 class Node:
+    '''
+    Class to implement Node datastructure which creates the linkedlist
+
+    This datastructure is mainly used to process the PCB traces after the offset operation 
+    is executed and it's time to integrate compponent pads
+    '''
+    DEBUG_ADD_COMPPAD = False
+    all_intersections_data = []
+
     def __init__(self, vertex: Coordinate, parent: Optional[Node]):
         self.vertex = vertex
         self.parent = parent
@@ -1091,8 +1217,12 @@ class Node:
 
     def add_comppad(self, blocks: list[Block], terminate_after=False) -> Node:
         '''
+        looks for any trace intersecting component pads and makes a geometry union operation 
+        between the trace and the comppad. THIS IS FUCKING MAGICAL ;)
+
         :param blocks: list of ComponentPad Block objects
 
+        :returns: the linkedlist of the trace with its comppads ;)
         '''
         print('NEW CALLLL!!!!!!\n')
 
@@ -1101,6 +1231,7 @@ class Node:
 
         print(self, 'before extracting intersection data')
         intersections_data = self.get_intersections_data(blocks)
+        Node.all_intersections_data.extend(intersections_data)  # creating a class variable of ALL intersections data
         print(self, 'after extracting intersection data, MUST BE THE SAME AS BEFORE INTERSECTION DATA EXTRACTOR ALGORITHM RAN')
 
         # if not self.test_all_parents_values(temp_self):
@@ -1167,7 +1298,35 @@ class Node:
         print('Number of intersections_data: ', len(intersections_data))
         print()
 
-        self.visualize(multiplier=15, x_offset=27, speed=5, terminate=terminate_after)
+        if Node.DEBUG_ADD_COMPPAD:
+            self.visualize(multiplier=15, x_offset=27, speed=5, terminate=terminate_after)
+
+        return self
+
+    def get_non_intersecting_comppads(blocks: list[Block], terminate_after=False) -> list[Node]:
+        '''
+        :param block: componentPad Block
+        :return: Node of the component Pad geometry which doesn't intersect any trace, a floating compponent pad
+        '''
+        if Node.all_intersections_data == []:
+            # .get_intersections_data() didn't run before
+            #TODO: check somehow if .add_comppad() did indeed run on every trace
+            raise ValueError('Must run add_comppad() for all traces first so as to get all intersection data\nOnly then can we know what comppads are left with no intersections data what so ever')
+
+        ### Step 1: Getting non-intersecting comppad
+        intersection_coordinate_list = [intersection.comppad_coord for intersection in Node.all_intersections_data]
+        non_intersecting_comppads_dict: dict[Coordinate: Block] = {}
+        for block in blocks:
+            for coordinate in block.coordinates:
+                if coordinate not in intersection_coordinate_list:
+                    non_intersecting_comppads_dict[coordinate] = block
+
+        ### Step 2: Getting Geometry of the non-intersecting comppad
+        non_intersecting_comppads_nodes = []
+        for coordinate, block in non_intersecting_comppads_dict.items():
+            non_intersecting_comppads_nodes.append(Intersection.generate_non_intersecting_comppad_nodes(coordinate, block))
+
+        return non_intersecting_comppads_nodes
 
     def __repr__(self) -> str:
         '''
@@ -1426,7 +1585,7 @@ class Coordinate:
 
         return (B <= 90 and C <= 90)
 
-    def get_side_open_polygon(self, pre_inter1_node, post_inter2_node) -> bool:
+    def get_side_open_polygon(self, pre_inter1_node, post_inter2_node, trace_nodes: Node) -> bool:
         '''
         return whether the given coordinate is to the right or the left of the node
         >0 intersection means it's on left, return True
@@ -1436,6 +1595,7 @@ class Coordinate:
         # the ray is y=self.y, a horizontal line
         edges = pre_inter1_node.to_list()
         edges = edges[:edges.index(post_inter2_node.vertex)]
+        #TODO: create the edge using trace_nodes and the other arguments only as refrences where to start and where to end
 
         intersections = 0
         for edge in edges:
@@ -1846,188 +2006,57 @@ class Coordinate:
         raise ValueError('END')
 
     @classmethod
-    def point_edge_intersection(cls, edge: Edge, coordinate: Coordinate, block: Block) -> Optional[list[Coordinate]]:
+    def point_edge_circle_intersection(cls, edge: Edge, coordinate: Coordinate, block: BLock) -> Optional[list[Coordinate]]:
         '''
-        Finds the intersection between edges of a graph (offseted traces) and the componentPad (offseted)
-        :param edge: edge on the graph to intersect the component pad
-        :param coordinate: center of the componentpad that if offset applied might intersect the edge
-        :param block: The Block datatype object in which this ComponentPad Coordinate belong to
-
-        :return: None if no intersection, 1 coordinate of the single intersection found or 2 coordinates if 2 intersections found
+        returns intersection data of a circle comppad
         '''
         intersections = []
-        if block.shape_type == ShapeType.Circle or (block.shape_type == ShapeType.Oval and block.thickness == block.thickness2):
 
-            a = coordinate.x
-            b = coordinate.y
-            r = round(block.thickness/2, 5)
+        a = coordinate.x
+        b = coordinate.y
+        r = round(block.thickness/2, 5)
 
-            if edge.gradient == Infinity():
-                # Getting equation of a vertical line
-                x = edge.start.x
+        if edge.gradient == Infinity():
+            # Getting equation of a vertical line
+            x = edge.start.x
 
-                # Getting min and maximum
-                if edge.start.y > edge.end.y:
-                    y_min = edge.end.y
-                    y_max = edge.start.y
-                else:
-                    y_min = edge.start.y
-                    y_max = edge.end.y
+            # Getting min and maximum
+            if edge.start.y > edge.end.y:
+                y_min = edge.end.y
+                y_max = edge.start.y
+            else:
+                y_min = edge.start.y
+                y_max = edge.end.y
 
-                # Getting intersection with vertical line
-                if (r**2 - (x-a)**2) >= 0:
-                    # Solutions Present
-                    y1 = round(b - math.sqrt(round(r**2 - (x - a)**2, 6)), 5)
-                    y2 = round(b + math.sqrt(round(r**2 - (x - a)**2, 6)), 5)
-                    
-                    # Within edge check
-                    if y1 <= y_max and y1 >= y_min:
-                        print(edge, coordinate, 'm inf 1')
-                        print(x, y1)
-                        print()
-                        intersections.append(Coordinate(x, y1))
+            # Getting intersection with vertical line
+            if (r**2 - (x-a)**2) >= 0:
+                # Solutions Present
+                y1 = round(b - math.sqrt(round(r**2 - (x - a)**2, 6)), 5)
+                y2 = round(b + math.sqrt(round(r**2 - (x - a)**2, 6)), 5)
+                
+                # Within edge check
+                if y1 <= y_max and y1 >= y_min:
+                    print(edge, coordinate, 'm inf 1')
+                    print(x, y1)
+                    print()
+                    intersections.append(Coordinate(x, y1))
 
-                    # Within edge check and repeated root check
-                    if y2 <= y_max and y2 >= y_min and y1 != y2:
-                        print(edge, coordinate, 'm inf 2')
-                        print(x, y2)
-                        print()
-                        intersections.append(Coordinate(x, y2))
-
-                else:
-                    # No intersection what so ever
-                    return None
-
-            elif edge.gradient == 0:
-
-                # Getting equation of a horizontal line
-                y = edge.start.y
-
-                # Getting min and maximum
-                if edge.start.x > edge.end.x:
-                    x_min = edge.end.x
-                    x_max = edge.start.x
-                else:
-                    x_min = edge.start.x
-                    x_max = edge.end.x
-
-                # Getting intersection with vertical line
-                if (r**2 - (y-b)**2) >= 0:
-                    # Solutions Present
-                    x1 = round(a - math.sqrt(round(r**2 - (y - b)**2, 6)), 5)
-                    x2 = round(a + math.sqrt(round(r**2 - (y - b)**2, 6)), 5)
-                    
-                    # Within Edge check
-                    if x1 <= x_max and x1 >= x_min:
-                        print(edge, coordinate, 'm0 1')
-                        print(x1, y)
-                        print()
-                        intersections.append(Coordinate(x1, y))
-
-                    # Within Edge check and same root check
-                    if x2 <= x_max and x2 >= x_min and x1 != x2:
-                        print(edge, coordinate, 'm0 2')
-                        print(x2, y)
-                        print()
-                        intersections.append(Coordinate(x2, y))
-
-                else:
-                    # No intersection what so ever
-                    return None
+                # Within edge check and repeated root check
+                if y2 <= y_max and y2 >= y_min and y1 != y2:
+                    print(edge, coordinate, 'm inf 2')
+                    print(x, y2)
+                    print()
+                    intersections.append(Coordinate(x, y2))
 
             else:
+                # No intersection what so ever
+                return None
 
-                # edge linear equation is given by getter attributes .gradient and .y_intercept
-                gradient = edge.gradient
-                y_intercept = edge.y_intercept
+        elif edge.gradient == 0:
 
-                # Getting min and maximum
-                if edge.start.y > edge.end.y:
-                    y_min = edge.end.y
-                    y_max = edge.start.y
-                else:
-                    y_min = edge.start.y
-                    y_max = edge.end.y
+            # Getting equation of a horizontal line
+            y = edge.start.y
 
-                # Getting intersection with line, solving simultaneous equation between circle and edge linear equation 
-                a_q = 1 + gradient**2
-                b_q = -2*a + 2*gradient*y_intercept - 2*b*gradient
-                c_q = y_intercept**2 - 2*b*y_intercept + b**2 - r**2 + a**2
-                if round(b_q**2 - 4*a_q*c_q, 5) >= 0:
-                    # Solving quadratic equation using quadratic formula
-                    x1 = round((-b_q + math.sqrt(round(b_q**2 - 4*a_q*c_q, 5))) / (2*a_q), 5)
-                    x2 = round((-b_q - math.sqrt(round(b_q**2 - 4*a_q*c_q, 5))) / (2*a_q), 5)
-
-                    # Getting values of y by substituting in inverse linear equation
-                    y1 = round(gradient*x1 + y_intercept, 5)
-                    y2 = round(gradient*x2 + y_intercept, 5)
-
-                    # Within edge check
-                    if y1 <= y_max and y1 >= y_min:
-                        print(edge, coordinate, 'else 1')
-                        print(x1, y1)
-                        print()
-                        intersections.append(Coordinate(x1, y1))
-
-                    # Within edge check and repeated root check
-                    if y2 <= y_max and y2 >= y_min and y1 != y2:
-                        print(edge, coordinate, 'else 2')
-                        print(x2, y2)
-                        print()
-                        intersections.append(Coordinate(x2, y2))
-
-                else:
-                    return None
-
-        elif block.shape_type == ShapeType.Rectangle:
-            # Refrence iPad Notes for more details
-            # Getting the Coordinates of the square
-            v1 = Coordinate(coordinate.x - round(block.thickness/2, 5), coordinate.y + round(block.thickness2/2, 5))
-            v2 = Coordinate(coordinate.x + round(block.thickness/2, 5), coordinate.y + round(block.thickness2/2, 5))
-            v3 = Coordinate(coordinate.x - round(block.thickness/2, 5), coordinate.y - round(block.thickness2/2, 5))
-            v4 = Coordinate(coordinate.x + round(block.thickness/2, 5), coordinate.y - round(block.thickness2/2, 5))
-            e1 = Edge(v1, v2, None)
-            e2 = Edge(v1, v3, None)
-            e3 = Edge(v2, v4, None)
-            e4 = Edge(v3, v4, None)
-
-            ### Step 1: Get intersection between the edge and all the four lines of the square
-            x_values = []
-            y_values = []
-            intersected_edges = []
-            if edge.gradient != e1.gradient:
-                intersected_edges.append(e1)
-                y_values.append(v1.y)  # or v2.y
-                if edge.gradient != Infinity():
-                    x_values.append(round((y_values[-1] - edge.y_intercept)/edge.gradient, 5))
-                else:
-                    x_values.append(edge.start.x)  # or edge.end.x
-
-            if edge.gradient != e2.gradient:
-                intersected_edges.append(e2)
-                x_values.append(v1.x)  # or v3.x
-                if edge.gradient != 0:
-                    y_values.append(edge.gradient*x_values[-1] + edge.y_intercept)
-                else:
-                    y_values.append(edge.start.y)  # or edge.end.y
-
-            if edge.gradient != e3.gradient:
-                intersected_edges.append(e3)
-                x_values.append(v2.x) # or v4.x
-                if edge.gradient != 0:
-                    y_values.append(edge.gradient*x_values[-1] + edge.y_intercept)
-                else:
-                    y_values.append(edge.start.y)  # or edge.end.y
-
-            if edge.gradient != e4.gradient:
-                intersected_edges.append(e4)
-                y_values.append(v3.y)  # or v4.y
-                if edge.gradient != Infinity():
-                    x_values.append(round((y_values[-1] - edge.y_intercept)/edge.gradient, 5))
-                else:
-                    x_values.append(edge.start.x)  # or edge.end.x
-
-            ### Step 2: testing if intersection is within edge and square edge
             # Getting min and maximum
             if edge.start.x > edge.end.x:
                 x_min = edge.end.x
@@ -2036,6 +2065,37 @@ class Coordinate:
                 x_min = edge.start.x
                 x_max = edge.end.x
 
+            # Getting intersection with vertical line
+            if (r**2 - (y-b)**2) >= 0:
+                # Solutions Present
+                x1 = round(a - math.sqrt(round(r**2 - (y - b)**2, 6)), 5)
+                x2 = round(a + math.sqrt(round(r**2 - (y - b)**2, 6)), 5)
+                
+                # Within Edge check
+                if x1 <= x_max and x1 >= x_min:
+                    print(edge, coordinate, 'm0 1')
+                    print(x1, y)
+                    print()
+                    intersections.append(Coordinate(x1, y))
+
+                # Within Edge check and same root check
+                if x2 <= x_max and x2 >= x_min and x1 != x2:
+                    print(edge, coordinate, 'm0 2')
+                    print(x2, y)
+                    print()
+                    intersections.append(Coordinate(x2, y))
+
+            else:
+                # No intersection what so ever
+                return None
+
+        else:
+
+            # edge linear equation is given by getter attributes .gradient and .y_intercept
+            gradient = edge.gradient
+            y_intercept = edge.y_intercept
+
+            # Getting min and maximum
             if edge.start.y > edge.end.y:
                 y_min = edge.end.y
                 y_max = edge.start.y
@@ -2043,43 +2103,35 @@ class Coordinate:
                 y_min = edge.start.y
                 y_max = edge.end.y
 
-            x_mins = []
-            y_mins = []
-            x_maxs = []
-            y_maxs = []
-            for intersected_edge in intersected_edges:
-                if intersected_edge.start.x > intersected_edge.end.x:
-                    x_mins.append(intersected_edge.end.x)
-                    x_maxs.append(intersected_edge.start.x)
-                else:
-                    x_mins.append(intersected_edge.start.x)
-                    x_maxs.append(intersected_edge.end.x)
+            # Getting intersection with line, solving simultaneous equation between circle and edge linear equation 
+            a_q = 1 + gradient**2
+            b_q = -2*a + 2*gradient*y_intercept - 2*b*gradient
+            c_q = y_intercept**2 - 2*b*y_intercept + b**2 - r**2 + a**2
+            if round(b_q**2 - 4*a_q*c_q, 5) >= 0:
+                # Solving quadratic equation using quadratic formula
+                x1 = round((-b_q + math.sqrt(round(b_q**2 - 4*a_q*c_q, 5))) / (2*a_q), 5)
+                x2 = round((-b_q - math.sqrt(round(b_q**2 - 4*a_q*c_q, 5))) / (2*a_q), 5)
 
-                if intersected_edge.start.y > intersected_edge.end.y:
-                    y_mins.append(intersected_edge.end.y)
-                    y_maxs.append(intersected_edge.start.y)
-                else:
-                    y_mins.append(intersected_edge.start.y)
-                    y_maxs.append(intersected_edge.end.y)
+                # Getting values of y by substituting in inverse linear equation
+                y1 = round(gradient*x1 + y_intercept, 5)
+                y2 = round(gradient*x2 + y_intercept, 5)
 
-            intersections = []
-            for x, y, x_min2, x_max2, y_min2, y_max2 in zip(x_values, y_values, x_mins, x_maxs, y_mins, y_maxs):
-                if x <= x_max and x >= x_min and y <= y_max and y >= y_min and x <= x_max2 and x >= x_min2 and y <= y_max2 and y >= y_min2:
-                    print(edge, coordinate, 'Square')
-                    print(x, y)
+                # Within edge check
+                if y1 <= y_max and y1 >= y_min:
+                    print(edge, coordinate, 'else 1')
+                    print(x1, y1)
                     print()
-                    intersections.append(Coordinate(round(x, 6), round(y, 6)))
+                    intersections.append(Coordinate(x1, y1))
 
-            if intersections:
-                return intersections
+                # Within edge check and repeated root check
+                if y2 <= y_max and y2 >= y_min and y1 != y2:
+                    print(edge, coordinate, 'else 2')
+                    print(x2, y2)
+                    print()
+                    intersections.append(Coordinate(x2, y2))
+
             else:
                 return None
-
-        elif block.shape_type == ShapeType.Oval:
-            return None
-
-        else:
-            raise ValueError(f'Unkonwn ShapeType: {block.shape_type}')
 
         if len(intersections) > 1:
             # Order intersections with right order, first encounter then second encounter
@@ -2094,6 +2146,133 @@ class Coordinate:
                 intersections = [intersections[1], intersections[0]]
 
         return intersections
+
+    @classmethod
+    def point_edge_rectangle_intersection(cls, edge: Edge, coordinate: Coordinate, block: Block) -> Optional[list[Coordinate]]:
+        '''
+        returns intersection data of a rectangle comppad
+        '''
+        # Refrence iPad Notes for more details
+        # Getting the Coordinates of the square
+        intersections = []
+
+        v1 = Coordinate(coordinate.x - round(block.thickness/2, 5), coordinate.y + round(block.thickness2/2, 5))
+        v2 = Coordinate(coordinate.x + round(block.thickness/2, 5), coordinate.y + round(block.thickness2/2, 5))
+        v3 = Coordinate(coordinate.x - round(block.thickness/2, 5), coordinate.y - round(block.thickness2/2, 5))
+        v4 = Coordinate(coordinate.x + round(block.thickness/2, 5), coordinate.y - round(block.thickness2/2, 5))
+        e1 = Edge(v1, v2, None)
+        e2 = Edge(v1, v3, None)
+        e3 = Edge(v2, v4, None)
+        e4 = Edge(v3, v4, None)
+
+        ### Step 1: Get intersection between the edge and all the four lines of the square
+        x_values = []
+        y_values = []
+        intersected_edges = []
+        if edge.gradient != e1.gradient:
+            intersected_edges.append(e1)
+            y_values.append(v1.y)  # or v2.y
+            if edge.gradient != Infinity():
+                x_values.append(round((y_values[-1] - edge.y_intercept)/edge.gradient, 5))
+            else:
+                x_values.append(edge.start.x)  # or edge.end.x
+
+        if edge.gradient != e2.gradient:
+            intersected_edges.append(e2)
+            x_values.append(v1.x)  # or v3.x
+            if edge.gradient != 0:
+                y_values.append(edge.gradient*x_values[-1] + edge.y_intercept)
+            else:
+                y_values.append(edge.start.y)  # or edge.end.y
+
+        if edge.gradient != e3.gradient:
+            intersected_edges.append(e3)
+            x_values.append(v2.x) # or v4.x
+            if edge.gradient != 0:
+                y_values.append(edge.gradient*x_values[-1] + edge.y_intercept)
+            else:
+                y_values.append(edge.start.y)  # or edge.end.y
+
+        if edge.gradient != e4.gradient:
+            intersected_edges.append(e4)
+            y_values.append(v3.y)  # or v4.y
+            if edge.gradient != Infinity():
+                x_values.append(round((y_values[-1] - edge.y_intercept)/edge.gradient, 5))
+            else:
+                x_values.append(edge.start.x)  # or edge.end.x
+
+        ### Step 2: testing if intersection is within edge and square edge
+        # Getting min and maximum
+        if edge.start.x > edge.end.x:
+            x_min = edge.end.x
+            x_max = edge.start.x
+        else:
+            x_min = edge.start.x
+            x_max = edge.end.x
+
+        if edge.start.y > edge.end.y:
+            y_min = edge.end.y
+            y_max = edge.start.y
+        else:
+            y_min = edge.start.y
+            y_max = edge.end.y
+
+        x_mins = []
+        y_mins = []
+        x_maxs = []
+        y_maxs = []
+        for intersected_edge in intersected_edges:
+            if intersected_edge.start.x > intersected_edge.end.x:
+                x_mins.append(intersected_edge.end.x)
+                x_maxs.append(intersected_edge.start.x)
+            else:
+                x_mins.append(intersected_edge.start.x)
+                x_maxs.append(intersected_edge.end.x)
+
+            if intersected_edge.start.y > intersected_edge.end.y:
+                y_mins.append(intersected_edge.end.y)
+                y_maxs.append(intersected_edge.start.y)
+            else:
+                y_mins.append(intersected_edge.start.y)
+                y_maxs.append(intersected_edge.end.y)
+
+        intersections = []
+        for x, y, x_min2, x_max2, y_min2, y_max2 in zip(x_values, y_values, x_mins, x_maxs, y_mins, y_maxs):
+            if x <= x_max and x >= x_min and y <= y_max and y >= y_min and x <= x_max2 and x >= x_min2 and y <= y_max2 and y >= y_min2:
+                print(edge, coordinate, 'Square')
+                print(x, y)
+                print()
+                intersections.append(Coordinate(round(x, 6), round(y, 6)))
+
+        if intersections:
+            return intersections
+        else:
+            return None
+
+    @classmethod
+    def point_edge_intersection(cls, edge: Edge, coordinate: Coordinate, block: Block) -> Optional[list[Coordinate]]:
+        '''
+        Finds the intersection between edges of a graph (offseted traces) and the componentPad (offseted)
+        :param edge: edge on the graph to intersect the component pad
+        :param coordinate: center of the componentpad that if offset applied might intersect the edge
+        :param block: The Block datatype object in which this ComponentPad Coordinate belong to
+
+        :return: None if no intersection, 1 coordinate of the single intersection found or 2 coordinates if 2 intersections found
+        '''
+        if block.shape_type == ShapeType.Circle or (block.shape_type == ShapeType.Oval and block.thickness == block.thickness2):
+            return Coordinate.point_edge_circle_intersection(edge, coordinate, block)
+
+        elif block.shape_type == ShapeType.Rectangle:
+            return Coordinate.point_edge_rectangle_intersection(edge, coordinate, block)
+
+        elif block.shape_type == ShapeType.Oval:
+            #TODO: develop this for Oval
+            # return None
+            #NOTE This is only temporary until Oval intersection algorithm is developed
+            return Coordinate.point_edge_rectangle_intersection(edge, coordinate, block)
+
+        else:
+            raise ValueError(f'Unkonwn ShapeType: {block.shape_type}')
 
 
 @dataclass

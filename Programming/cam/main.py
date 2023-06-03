@@ -7,13 +7,85 @@ My custom Gcode Generator :)))
 
 from gerber_tools import *
 from gcode_tools import *
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
-import json
+import default_settings
 
 class Settings:
     '''
     Class to make it easier to call and manipulate settings
     '''
+    default_settings_dict = default_settings.default_settings_dict
+
+    def __init__(self, input_settings_dict = {}):
+        self.settings_dict = {}
+
+        if input_settings_dict:
+            self.settings_dict.update(input_settings_dict)
+
+    def __getattr__(self, key):
+        if key not in self.settings_dict:
+            return self.default_settings_dict[key]
+
+        else:
+            return self.settings_dict[key]
+
+    @property
+    def tool(self):
+        return get_tool_func(self.X_latch_offset_distance_in, self.X_latch_offset_distance_out, self.tool_home_coordinates, self.tool_offsets, self.attach_detach_time)
+
+
+def main(settings: Settings):
+    '''
+    ### Main Code ###
+    '''
+    # Error checking the arguments
+    if not settings.all_gcode and not settings.holes and not settings.ink and not settings.laser:
+        raise ValueError("\nMust choose what Gcode to export!\nOptions:\n1- '--all-gcode' : exports all 3 gcodes\n2- '--holes' : Adds hole drilling gcode to Gcode file\n3- '--ink' : Adds ink laying gcode to Gcode file\n4- '--laser' : Adds laser drawing gcode to Gcode file")
+
+
+    ### Processing the Gerber file
+    # Read the gerber file
+    gerber = Gerber(file_path=settings.src)
+
+    # Recenter Gerber File with wanted Offset
+    gerber = Gerber.recenter_gerber_file(gerber, settings.user_x_offset, settings.user_y_offset)
+
+    # Mirror Gerber File
+    if settings.mirrored:
+        gerber.mirror()
+
+    ### Creating the Gcode file
+    gcode = ''
+
+    # Machine Init
+    gcode += general_machine_init()
+
+    # Creating the PCB ink laying Gcode
+    if settings.all_gcode or settings.ink:
+        gcode += generate_ink_laying_gcode(gerber, settings.tool, settings.tip_thickness, 
+                                           settings.pen_down_position, settings.ink_laying_feedrate)
+
+    # Creating the PCB trace laser Toner Transfer Gcode
+    if settings.all_gcode or settings.laser:
+        gcode += generate_pcb_trace_gcode(gerber, settings.tool, settings.optimum_laser_Z_position, 
+                                          settings.pcb_trace_feedrate, settings.laser_power)
+
+    # Creating the holes_gcode
+    if settings.all_gcode or settings.holes:
+        gcode += generate_holes_gcode(gerber, settings.tool, settings.router_Z_up_position, 
+                                      settings.router_Z_down_position, settings.router_feedrate_XY, 
+                                      settings.router_feedrate_Z, settings.spindle_speed)
+
+    # Machine Deinit
+    gcode += general_machine_deinit()
+
+    # exporting the created Gcode
+    export_gcode(gcode, settings.dest)
+
+
+if __name__ == '__main__':
+
+
+    ### default settings dict 
     default_settings_dict = {
 
         # Offset PCB from (0, 0)
@@ -58,68 +130,28 @@ class Settings:
         # Feedrates
         "pcb_trace_feedrate": 600,
         # Power intensities
-        "laser_power": 150
+        "laser_power": 150,
+
+        # mirrored
+        'mirrored': False,
+
+        # Gcode Modes
+        'all_gcode': False,
+        'ink': False,
+        'laser': False,
+        'holes': True 
+
     }
 
-    def __init__(self):
-        self.settings_dict = {}
+    ### Settings
+    settings = Settings(default_settings_dict)
 
-    def __getattr__(self, key):
-        if key not in self.settings_dict:
-            return self.default_settings_dict[key]
+    ### Source File
+    settings.src = 'gerber_files/default.gbr'
 
-        else:
-            return self.settings_dict[key]
+    ### Destination File
+    settings.dest = 'gcode_files/test_main.gcode'
 
-    @property
-    def tool(self):
-        return get_tool_func(self.X_latch_offset_distance_in, self.X_latch_offset_distance_out, self.tool_home_coordinates, self.tool_offsets, self.attach_detach_time)
-
-# Initiating DefaultSettings object
-settings = Settings()
-
-### Creating the CLI argument parser
-parser = ArgumentParser(description="Generates Custom Gcode Required by my PCB Manufacturing Machine :)", 
-        formatter_class=ArgumentDefaultsHelpFormatter)
-
-### Adding the positional arguments
-parser.add_argument('src', help="Source Gerber file to be converted to Gcode")
-
-### Adding keyword Arguments
-parser.add_argument('-D', '--dest', default="./pcb_gcode.nc", help="Destination Gcode file")
-parser.add_argument("-M", "--mirrored", default=False, type=bool, help="Mirror Given Srouce Gerber file. Used for traces of DIP components")
-for key, value in Settings.default_settings_dict.items():
-    parser.add_argument(f"--{key}", default=value, type=type(value), help="self-explained")
-
-### Extracting User inputs!
-settings.settings_dict.update(vars(parser.parse_args()))
-
-### Executing the Program!
-### Main Code ###
-# Read the gerber file
-gerber = Gerber(file_path=settings.src)
-
-# Recenter Gerber File with wanted Offset
-gerber = Gerber.recenter_gerber_file(gerber, settings.user_x_offset, settings.user_y_offset)
-
-gcode = ''
-
-# Creating the holes_gcode
-gcode += generate_holes_gcode(gerber, settings.tool, settings.router_Z_up_position, 
-                              settings.router_Z_down_position, settings.router_feedrate_XY, 
-                              settings.router_feedrate_Z, settings.spindle_speed, 
-                              terminate_after = False)
-
-# Creating the PCB ink laying Gcode
-gcode += generate_ink_laying_gcode(gerber, settings.tool, settings.tip_thickness, 
-                                   settings.pen_down_position, settings.ink_laying_feedrate, 
-                                   initiated_before=True, terminate_after = False)
-
-# Creating the PCB trace laser Toner Transfer Gcode
-gcode += generate_pcb_trace_gcode(gerber, settings.tool, settings.optimum_laser_Z_position, 
-                                  settings.pcb_trace_feedrate, settings.laser_power, 
-                                  initiated_before=True)
-
-# exporting the created Gcode
-export_gcode(gcode, settings.dest)
+    ### Executing the Program!
+    main(settings)
 
