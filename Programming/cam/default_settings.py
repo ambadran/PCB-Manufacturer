@@ -56,7 +56,9 @@ default_settings_dict = {
     'all_gcode': False,
     'ink': False,
     'laser': False,
-    'holes': False
+    'holes': False,
+
+    'debug_laser': False
 
 }
 

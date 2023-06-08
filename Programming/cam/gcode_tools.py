@@ -576,7 +576,7 @@ def get_laser_coordinates_lists(gerber: Gerber, debug=False) -> list[list[Coordi
 
 
 def generate_pcb_trace_gcode(gerber_file: str, tool: Callable, optimum_focal_distance: int, 
-        feedrate: int, laser_power: int) -> str:
+        feedrate: int, laser_power: int, debug: bool=False) -> str:
     '''
     :param gerber_file: the file that we want to get the holes coordinate from
     :param tool: The tool function defined inside the get_tool_func closure function, it generates gcode to select wanted tool
@@ -605,7 +605,7 @@ def generate_pcb_trace_gcode(gerber_file: str, tool: Callable, optimum_focal_dis
 
     ### PCB trace laser marking Gcode
     # Getting Offset Coordinates for laser module to burn in 
-    coordinate_lists = get_laser_coordinates_lists(gerber_file, debug=False)
+    coordinate_lists = get_laser_coordinates_lists(gerber_file, debug=debug)
     for coordinate_list in coordinate_lists:
         gcode += move(CoordMode.ABSOLUTE, coordinate=coordinate_list[0])
         gcode += "M3\n"
@@ -708,7 +708,7 @@ if __name__ == '__main__':
 #     gcode += generate_ink_laying_gcode(gerber, tool, tip_thickness, pen_down_position, ink_laying_feedrate, initiated_before=True, terminate_after = False)
 
     # Creating the PCB trace laser Toner Transfer Gcode
-    gcode += generate_pcb_trace_gcode(gerber, tool, optimum_laser_Z_position, pcb_trace_feedrate, laser_power)
+    gcode += generate_pcb_trace_gcode(gerber, tool, optimum_laser_Z_position, pcb_trace_feedrate, laser_power, debug=True)
 
     # exporting the created Gcode
     export_gcode(gcode, gcode_file_path)
