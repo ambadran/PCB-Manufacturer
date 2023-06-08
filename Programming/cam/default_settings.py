@@ -10,7 +10,7 @@ default_settings_dict = {
     "X_latch_offset_distance_in": 188,  # ABSOLUTE value
     "X_latch_offset_distance_out": 92,  # ABSOLUTE value
     "attach_detach_time": 5, # the P attribute in Gcode is in seconds
-    "tool_home_coordinates": {1: Coordinate(165, 0, 11), 
+    "tool_home_coordinates": {1: Coordinate(165, 0, 10.5), 
                             2: Coordinate(165, 91, 12), 
                             3: Coordinate(165, 185.5, 12)},  # ABSOLUTE values
 
@@ -47,7 +47,8 @@ default_settings_dict = {
     "laser_power": 150,
 
     # destination
-    'dest': '~/gerber_files/default.nc',
+    'dest': '/home/ambadran717/gcode_files/default.nc',
+
 
     # mirrored
     'mirrored': False,

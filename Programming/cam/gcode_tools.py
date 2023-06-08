@@ -314,15 +314,15 @@ def get_tool_func(latch_offset_distance_in: int, latch_offset_distance_out: int,
 
             ### Go get the tool
             # go to tool coordinate but male latch is just outside the female latch
-            gcode += move(CoordMode.ABSOLUTE, comment=f'Go to Tool-{wanted_tool.value} Home Pos', coordinate=tool_home_coordinate)
+            gcode += move(CoordMode.ABSOLUTE, use_00=True, comment=f'Go to Tool-{wanted_tool.value} Home Pos', coordinate=tool_home_coordinate)
             # Now male latch inside female latch, using incremental gcode
-            gcode += move(CoordMode.ABSOLUTE, comment='Enter Female Kinematic Mount Home Pos', x=latch_offset_distance_in)
+            gcode += move(CoordMode.ABSOLUTE,  use_00=True, comment='Enter Female Kinematic Mount Home Pos', x=latch_offset_distance_in)
             # now male latch twisting and locking on
             gcode += f"A1 ; Latch on Kinematic Mount\n"  
             # Wait until male latch is fully locked on
             gcode += f"G4 P{attach_detach_time} ; Wait for Kinematic Mount to fully attach\n"  
             # now pull off the female kinematch mount off its hanger, using incremental gcode
-            gcode += move(CoordMode.ABSOLUTE, comment='Exit Female Kinematic Mount Home Pos', x=latch_offset_distance_out)
+            gcode += move(CoordMode.ABSOLUTE,  use_00=True, comment='Exit Female Kinematic Mount Home Pos', x=latch_offset_distance_out)
 
             ### Fixing Current Coordinate according the new tool head
             gcode += set_grbl_coordinate(CoordMode.INCREMENTAL, comment=' ;Add tool offset coordinate', coordinate=tool_offset)
@@ -343,15 +343,15 @@ def get_tool_func(latch_offset_distance_in: int, latch_offset_distance_out: int,
 
             ### Deactivate it by selecting the empty tool in the multiplexer
             # go to tool coordinate but male latch is just outside the female latch
-            gcode += move(CoordMode.ABSOLUTE, comment=f'Go to Tool-{wanted_tool.value} Home Pos', coordinate=tool_home_coordinate)
+            gcode += move(CoordMode.ABSOLUTE, use_00=True, comment=f'Go to Tool-{wanted_tool.value} Home Pos', coordinate=tool_home_coordinate)
             # Put the tool back to it's hanger
-            gcode += move(CoordMode.ABSOLUTE, comment='Enter Female Kinematic Mount Home Pos', x=latch_offset_distance_out)
+            gcode += move(CoordMode.ABSOLUTE, use_00=True, comment='Enter Female Kinematic Mount Home Pos', x=latch_offset_distance_out)
             # male latch untwisting from female latch and locking off
             gcode += f"A0 ; Latch OFF Kinematic Mount\n" 
             # Wait until male latch is fully locked off
             gcode += f"G4 P{attach_detach_time} ; Wait for Kinematic Mount to fully detach\n"
             # Now pull off the male kinematic mount away from the female kinematic mount
-            gcode += move(CoordMode.ABSOLUTE, comment='Exit Female Kinematic Mount Home Pos', x=latch_offset_distance_in)
+            gcode += move(CoordMode.ABSOLUTE, use_00=True, comment='Exit Female Kinematic Mount Home Pos', x=latch_offset_distance_in)
 
         else:
             raise ValueError("Mode unknown")
@@ -611,6 +611,7 @@ def generate_pcb_trace_gcode(gerber_file: str, tool: Callable, optimum_focal_dis
         gcode += "M3\n"
         for coordinate in coordinate_list[1:]:
             gcode += move(CoordMode.ABSOLUTE, coordinate=coordinate)
+        gcode += move(CoordMode.ABSOLUTE, coordinate=coordinate_list[0])
         gcode += "M5\n"
 
     gcode += '\n'
