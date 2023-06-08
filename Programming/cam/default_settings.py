@@ -3,8 +3,8 @@ from data_structures import Coordinate
 default_settings_dict = {
 
     # Offset PCB from (0, 0)
-    "user_x_offset": 2,
-    "user_y_offset": 2,
+    "x_offset": 2,
+    "y_offset": 2,
 
     ### Tool Home positions and latch offset (as absolute values)
     "X_latch_offset_distance_in": 188,  # ABSOLUTE value
@@ -47,7 +47,7 @@ default_settings_dict = {
     "laser_power": 150,
 
     # destination
-    'dest': 'test.gcode',
+    'dest': '~/gerber_files/default.nc',
 
     # mirrored
     'mirrored': False,

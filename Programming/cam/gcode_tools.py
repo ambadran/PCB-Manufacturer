@@ -647,8 +647,8 @@ if __name__ == '__main__':
     ##### Tweaking Arguments #####
 
     # Offset PCB from (0, 0)
-    user_x_offset = 2
-    user_y_offset = 2
+    x_offset = 2
+    y_offset = 2
 
     ### Tool Home positions and latch offset (as absolute values)
     X_latch_offset_distance_in = 188  # ABSOLUTE value
@@ -695,7 +695,7 @@ if __name__ == '__main__':
     gerber = gerber.mirror()
 
     # Recenter Gerber File with wanted Offset
-    gerber = Gerber.recenter_gerber_file(gerber, user_x_offset, user_y_offset)
+    gerber = Gerber.recenter_gerber_file(gerber, x_offset, y_offset)
 
     # gerber.create_gerber_file('gerber_files/default.gbr')
 

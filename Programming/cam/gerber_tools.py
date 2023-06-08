@@ -309,12 +309,12 @@ class Gerber:
         return Coordinate(int(coordinate.x * self.x_multiplier), int(coordinate.y * self.y_multiplier))
 
     @staticmethod
-    def recenter_gerber_file(self, user_x_offset: int, user_y_offset: int) -> None:
+    def recenter_gerber_file(self, x_offset: int, y_offset: int) -> None:
         '''
         self.gerber_file is recentered according to input offsets
 
-        :param user_x_offset: wanted x offset from origin. if 0 then pcb will start at 0
-        :param user_y_offset: wanted y offset from origin. if 0 then pcb will start at 0
+        :param x_offset: wanted x offset from origin. if 0 then pcb will start at 0
+        :param y_offset: wanted y offset from origin. if 0 then pcb will start at 0
         '''
 
         # Get the all coordinates that relate to the Edge of the PCB
@@ -326,8 +326,8 @@ class Gerber:
         y_min = min_coordinate.y
 
         # Calculating the offset to be added to each coordinate in the gerber file
-        x_offset = int(-x_min + user_x_offset * self.x_multiplier)
-        y_offset = int(-y_min + user_y_offset * self.y_multiplier)
+        x_offset = int(-x_min + x_offset * self.x_multiplier)
+        y_offset = int(-y_min + y_offset * self.y_multiplier)
 
         # Generating the new gerber file with the offset added to every line of coordinates
         g_file_lines = self.gerber_file.split('\n')
@@ -440,8 +440,8 @@ if __name__ == '__main__':
     new_file_name = 'gerber_files/mirrored_and_offseted.gbr'
 
     # Offset PCB from (0, 0)
-    user_x_offset = 2
-    user_y_offset = 2
+    x_offset = 2
+    y_offset = 2
 
     # Initializing GerberFile Object
     gerber_object = Gerber(file_path=gerber_file_path)
@@ -450,7 +450,7 @@ if __name__ == '__main__':
     gerber_object = gerber_object.mirror()
 
     # Recenter Gerber File with wanted Offset
-    gerber_object = Gerber.recenter_gerber_file(gerber_object, user_x_offset, user_y_offset)
+    gerber_object = Gerber.recenter_gerber_file(gerber_object, x_offset, y_offset)
     
     # Writing a new gerber file for current gerber file content
     gerber_object.create_gerber_file(new_file_name)

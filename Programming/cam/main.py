@@ -47,7 +47,7 @@ def main(settings: Settings):
     gerber = Gerber(file_path=settings.src)
 
     # Recenter Gerber File with wanted Offset
-    gerber = Gerber.recenter_gerber_file(gerber, settings.user_x_offset, settings.user_y_offset)
+    gerber = Gerber.recenter_gerber_file(gerber, settings.x_offset, settings.y_offset)
 
     # Mirror Gerber File
     if settings.mirrored:
@@ -89,8 +89,8 @@ if __name__ == '__main__':
     default_settings_dict = {
 
         # Offset PCB from (0, 0)
-        "user_x_offset": 2,
-        "user_y_offset": 2,
+        "offset": 2,
+        "y_offset": 2,
 
         ### Tool Home positions and latch offset (as absolute values)
         "X_latch_offset_distance_in": 188,  # ABSOLUTE value

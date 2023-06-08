@@ -1,6 +1,39 @@
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from main import Settings, main
 from default_settings import default_settings_dict
+from typing import Optional
+
+def addArg(name: str, help_str: str, var_type, one_letter: Optional[str]=None) -> None:
+    '''
+    implements parser.add_argument()
+    '''
+    global parser
+    global default_settings_dict
+
+    if '-' in name:
+        raise ValueError('Please enter the python name (with _ not -)')
+
+    if '_' in name:
+        cli_name = name.replace('_', '-')
+    else:
+        cli_name = name
+
+    if var_type != bool:
+        if one_letter:
+            parser.add_argument(f'-{one_letter}', f'--{cli_name}', type=var_type, default=default_settings_dict[name], help=help_str)
+
+        else:
+            parser.add_argument(f'--{cli_name}', type=var_type, default=default_settings_dict[name], help=help_str)
+
+    else:
+        if one_letter:
+            parser.add_argument(f'-{one_letter}', f'--{cli_name}', action="store_true", default=default_settings_dict[name], help=help_str)
+
+        else:
+            parser.add_argument(f'--{cli_name}', action="store_true", default=default_settings_dict[name], help=help_str)
+
+    return parser
+
 
 if __name__ == '__main__':
     # Initiating Settings object
@@ -14,21 +47,23 @@ if __name__ == '__main__':
     parser.add_argument('src', help="Source Gerber file to be converted to Gcode\n")
 
     ### Adding keyword Arguments
-    parser.add_argument('-D', '--dest', default=default_settings_dict['dest'], help="Destination Gcode file\n")
-    parser.add_argument("-M", "--mirrored", default=default_settings_dict['mirrored'], type=bool, help="Mirror Given Srouce Gerber file. Used for traces of DIP components\n")
-    parser.add_argument("-ALL", "--all-gcode", default=default_settings_dict['all_gcode'], type=bool, help="Creates a Gcode file with hole drilling gcode, ink laying gcode and laser drawing gcode\n")
-    parser.add_argument("--holes", default=default_settings_dict['holes'], type=bool, help="Adds hole drilling gcode to Gcode file\n")
-    parser.add_argument("--ink", default=default_settings_dict['ink'], type=bool, help="Adds ink laying gcode to Gcode file\n")
-    parser.add_argument("--laser", default=default_settings_dict['laser'], type=bool, help="Adds laser drawing gcode to Gcode file\n")
-    parser.add_argument("--debug-laser", default=default_settings_dict['debug_laser'], type=bool, help="Adds laser drawing gcode to Gcode file\n")
-    # I am not adding those instead they have to be changed in the configuration file
-    # for key, value in Settings.default_settings_dict.items():
-    #     parser.add_argument(f"--{key}", default=value, type=type(value), help="self-explained")
+    addArg('dest', "Destination Gcode file", str, 'D')
+
+    addArg('mirrored', "Mirror Given Srouce Gerber file. Used for traces of DIP components", bool, 'M')
+
+    addArg('x_offset', "Value PCB offseted from X axis", int)
+    addArg('y_offset', "Value PCB offseted from Y axis", int)
+
+    addArg('all_gcode', "Creates a Gcode file with hole drilling gcode, ink laying gcode and laser drawing gcode", bool, 'ALL')
+    addArg('holes', "Adds hole drilling gcode to Gcode file", bool)
+    addArg('ink', "Adds ink laying gcode to Gcode file", bool)
+    addArg('laser', "Adds laser drawing gcode to Gcode file", bool)
+
+    addArg('debug_laser', "Shows Simulation of the PCB laser trace coordinates", bool)
 
     ### Extracting User inputs!
     # Getting arguments
     settings.settings_dict.update(vars(parser.parse_args()))
-
 
     ### Executing the Program!
     main(settings)
