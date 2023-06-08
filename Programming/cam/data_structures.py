@@ -136,6 +136,9 @@ class Intersection:
         ### STEP2: choosing outside_inter_coords and between_inter_coords ;)
         #TODO: still can't make a devisive algorithm
 
+        print('\n\n\n')
+        print(outside_inter_coords, 'outside_inter_coords')
+        print(between_inter_coords, 'between_inter_coords')
         # Case 1: when one of them is empty
         if not between_inter_coords:
             passed_vertices = outside_inter_coords
@@ -145,28 +148,43 @@ class Intersection:
 
         else:
             # Case 2: if between or outside has inbetween vertices
-            if outside_inter_coords[0].inside_polygon(trace_nodes):
-                passed_vertices = between_inter_coords
-
-            elif between_inter_coords[0].inside_polygon(trace_nodes):
-                passed_vertices = outside_inter_coords
-
+            for coord in outside_inter_coords:
+                if coord.inside_polygon(trace_nodes):
+                    passed_vertices = between_inter_coords
+                    case3_1 = False
+                    break
             else:
-                # Case 3: ;;;;;;;( 
-                delta_x_inter_edge = intersection.comppad_coord.x - intersection.inter1_edge.end.x
-                delta_y_inter_edge = intersection.comppad_coord.y - intersection.inter1_edge.end.y
-                delta_x_outside = intersection.comppad_coord.x - outside_inter_coords[0].x
-                delta_y_outside = intersection.comppad_coord.y - outside_inter_coords[0].y
-                delta_x_between = intersection.comppad_coord.x - between_inter_coords[0].x
-                delta_y_between = intersection.comppad_coord.y - between_inter_coords[0].y
-
-
-                if orientation:
+                case3_1 = True
+            
+            for coord in between_inter_coords:
+                if coord.inside_polygon(trace_nodes):
                     passed_vertices = outside_inter_coords
+                    case3_2 = False
+                    break
+            else:
+                case3_2 = True
 
-                else:
+            if case3_1 and case3_2:
+                # Case 3: ;;;;;;;( 
+                print('reached case 3')
+
+                inter1_comppad = Edge(intersection.inter1_coord, intersection.comppad_coord, None)
+                inter1_betweencoords = Edge(intersection.inter1_coord, between_inter_coords[0], None)
+                inter1_outsidecoords = Edge(intersection.inter1_coord, outside_inter_coords[0], None)
+
+                comppad_betweencoords_dir = inter1_comppad.is_similar_direction(inter1_betweencoords)
+                comppad_outsidecoords_dir = inter1_comppad.is_similar_direction(inter1_outsidecoords)
+
+                if not (comppad_betweencoords_dir ^ comppad_outsidecoords_dir): # not XOR means both same value
+                    raise ValueError(';;;;;;;;;;;(')
+
+                if not comppad_betweencoords_dir:
                     passed_vertices = between_inter_coords
 
+                elif not comppad_outsidecoords_dir:
+                    passed_vertices = outside_inter_coords
+
+        print('\n\n\n')
 
         if Node.DEBUG_RECTANGLE_COMPPAD:
             print('\n\n\n')
@@ -407,8 +425,8 @@ class Intersection:
 
         #TODO: shitty workaround, it comes here then it must invert the orientation
         # so i am going to recurse with a force invert option ;(
-        # if arc_coords_positive[0].inside_polygon(trace_nodes):
-        #     return Intersection.generate_comppad_nodes_circle(intersection, trace_nodes, resolution, force_invert=True)
+        if arc_coords_positive[0].inside_polygon(trace_nodes):
+            return Intersection.generate_comppad_nodes_circle(intersection, trace_nodes, resolution, force_invert=True)
 
         ### Step 6: Get the final ordered list of coordinates
         # PLEASE refer to iPad. The combination are truly ENORMOUS and was difficult to derive ;)
@@ -1235,7 +1253,7 @@ class Node:
         print('NEW CALLLL!!!!!!\n')
 
         ### Firstly: Find all the intersection data between all the traces and all the component pads :)
-        trace_nodes = self
+        trace_nodes = deepcopy(self)
 
         print(self, 'before extracting intersection data')
         intersections_data = self.get_intersections_data(blocks)
@@ -1298,8 +1316,8 @@ class Node:
                     ### Step 4:
                     print(f"Step 4: extending the current linkedlist with a node of value intersection.inter2_edge.end: {intersection.inter2_edge.end}")
                     print(f"and parent intersection.pre_inter2_node.parent: {repr(intersection.pre_inter2_node.parent)}")
-                    self.extend(Node(intersection.inter2_edge.end, intersection.pre_inter2_node.parent))  #doesn't work for [-3] when mirroed
-                    # self.extend(Node(intersection.pre_inter2_node.parent.vertex, intersection.pre_inter2_node.parent))  
+                    # self.extend(Node(intersection.inter2_edge.end, intersection.pre_inter2_node.parent))  #doesn't work for [-3] when mirroed
+                    self.extend(Node(intersection.pre_inter2_node.parent.vertex, intersection.pre_inter2_node.parent))  
             print(self, '\n')
 
             print()
@@ -2366,6 +2384,7 @@ class Edge:
     def angle_between(self, edge: Edge) -> float:
         '''
         returns the angle from in between two edges 
+        uses cosine rule
         
         #NOTE: Refer to iPad Pg-89
         '''
@@ -2579,6 +2598,15 @@ class Edge:
         else:
             return (self.delta_y > 0 and other.delta_y > 0) or (self.delta_y < 0 and other.delta_y < 0)
            
+    def is_similar_direction(self, other: Edge) -> bool:
+        '''
+        iPad pg-95
+        :returns whether two edges are in the same 'general' direction
+
+        basically if the second edge is pointing withing a 180degree range of the first edge
+        '''
+        return self.angle_between(other) < 90
+
     def pointing_away_from_coord(self, coordinate: Coordinate) -> bool:
         '''
         if the coordinate exists before the receprical line intersecting the midpoint of the edge, 
