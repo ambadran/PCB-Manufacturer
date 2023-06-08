@@ -223,7 +223,6 @@ class Gerber:
         self.check_GerberFile()
 
         with open(gerber_file_name, 'w') as g_file:
-            print('sldjflksdjf')
             g_file.write(gerber_file)
 
     @classmethod
@@ -391,36 +390,69 @@ class Gerber:
                     
         return all_traces
 
-    def mirror(self) -> None:
+    def mirror(self, x_y_axis: bool=True) -> None:
         '''
+        :param x_y_axis: determines whether to mirror in x or y axis, default is x-axis mirroring
         Mirrors the gerber file for backward etching
         '''
         #TODO: check if it's only one layer PCB first,
         # if not then raise Error
-        pass
+
+        # Get the all coordinates that relate to the Edge of the PCB
+        coordinates = self.coordinates_with_multiplier[BlockType.Profile]
+
+        # Get X and Y, min and max
+        min_coordinate, max_coordinate = Coordinate.get_min_max(coordinates)
+        # min coords are the current offsets as well
+        x_min = min_coordinate.x
+        y_min = min_coordinate.y
+
+        # mirroring the file
+        g_file_lines = self.gerber_file.split('\n')
+        for line_num, line in enumerate(g_file_lines):
+
+            coordinates = Gerber.get_XY(line)
+            if coordinates:
+                if x_y_axis:
+                    coordinates.x *= -1  # mirroring
+                else:
+                    coordinates.y *= -1  # mirroring
+
+                g_file_lines[line_num] = self.generate_line(line, coordinates)
+
+
+        new_file = "\n".join(g_file_lines)
+        self = Gerber(file_content=new_file)
+
+        # applying old offsets
+        x_min_offset = round(x_min/self.x_multiplier, 6)
+        y_min_offset = round(y_min/self.y_multiplier, 6)
+        self = Gerber.recenter_gerber_file(self, x_min_offset, y_min_offset)
+
+        return self
+
 
 if __name__ == '__main__':
 
     gerber_file_path = 'gerber_files/default.gbr'
     # gerber_file_path = 'gerber_files/test.gbr'
 
-    new_file_name = 'gerber_files/test2.gbr'
+    new_file_name = 'gerber_files/mirrored_and_offseted.gbr'
 
     # Offset PCB from (0, 0)
-    user_x_offset = 3.5
-    user_y_offset = 4.5
+    user_x_offset = 2
+    user_y_offset = 2
 
     # Initializing GerberFile Object
-    gerber_object = Gerber(gerber_file_path)
+    gerber_object = Gerber(file_path=gerber_file_path)
+
+    # Mirroring the Gerber file
+    gerber_object = gerber_object.mirror()
 
     # Recenter Gerber File with wanted Offset
-    gerber_object.recenter_gerber_file(user_x_offset, user_y_offset)
+    gerber_object = Gerber.recenter_gerber_file(gerber_object, user_x_offset, user_y_offset)
     
     # Writing a new gerber file for current gerber file content
     gerber_object.create_gerber_file(new_file_name)
-
-    # print(repr(list(gerber_object.traces.vertex_vertices.keys())[0]))
-
-    print(gerber_object.traces)
 
 

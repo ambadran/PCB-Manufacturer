@@ -51,7 +51,7 @@ def main(settings: Settings):
 
     # Mirror Gerber File
     if settings.mirrored:
-        gerber.mirror()
+        gerber = gerber.mirror()
 
     ### Creating the Gcode file
     gcode = ''
@@ -133,13 +133,13 @@ if __name__ == '__main__':
         "laser_power": 150,
 
         # mirrored
-        'mirrored': False,
+        'mirrored': True,
 
         # Gcode Modes
         'all_gcode': False,
         'ink': False,
-        'laser': False,
-        'holes': True 
+        'laser': True,
+        'holes':  False
 
     }
 

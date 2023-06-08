@@ -136,26 +136,7 @@ class Intersection:
         ### STEP2: choosing outside_inter_coords and between_inter_coords ;)
         #TODO: still can't make a devisive algorithm
 
-        delta_x = intersection.comppad_coord.x - intersection.inter1_edge.end.x
-        delta_y = intersection.comppad_coord.y - intersection.inter1_edge.end.y
-
-        if delta_x > 0:
-            orientation = True
-        elif delta_x < 0:
-            orientation = False
-        elif delta_x == 0:
-            if delta_y > 0:
-                orientation = True
-            elif delta_y < 0:
-                orientation = False
-
-        if orientation:
-            passed_vertices = outside_inter_coords
-
-        else:
-            passed_vertices = between_inter_coords
-
-        # Corner case 1: when one of them is empty
+        # Case 1: when one of them is empty
         if not between_inter_coords:
             passed_vertices = outside_inter_coords
 
@@ -163,18 +144,36 @@ class Intersection:
             passed_vertices = between_inter_coords
 
         else:
-            # Corner case 2: if between or outside has inbetween vertices
+            # Case 2: if between or outside has inbetween vertices
             if outside_inter_coords[0].inside_polygon(trace_nodes):
                 passed_vertices = between_inter_coords
 
             elif between_inter_coords[0].inside_polygon(trace_nodes):
                 passed_vertices = outside_inter_coords
 
-        print('\n\n\n')
-        print(verts_with_inter, 'verts with inter\n')
-        print(between_inter_coords, 'between inter coords\n')
-        print(outside_inter_coords, 'outside inter coords\n')
-        print('\n\n\n')
+            else:
+                # Case 3: ;;;;;;;( 
+                delta_x_inter_edge = intersection.comppad_coord.x - intersection.inter1_edge.end.x
+                delta_y_inter_edge = intersection.comppad_coord.y - intersection.inter1_edge.end.y
+                delta_x_outside = intersection.comppad_coord.x - outside_inter_coords[0].x
+                delta_y_outside = intersection.comppad_coord.y - outside_inter_coords[0].y
+                delta_x_between = intersection.comppad_coord.x - between_inter_coords[0].x
+                delta_y_between = intersection.comppad_coord.y - between_inter_coords[0].y
+
+
+                if orientation:
+                    passed_vertices = outside_inter_coords
+
+                else:
+                    passed_vertices = between_inter_coords
+
+
+        if Node.DEBUG_RECTANGLE_COMPPAD:
+            print('\n\n\n')
+            print(verts_with_inter, 'verts with inter\n')
+            print(between_inter_coords, 'between inter coords\n')
+            print(outside_inter_coords, 'outside inter coords\n')
+            print('\n\n\n')
 
         ### STEP 2: ORDERING THE VERTICES
         min_v_inter1 = Edge(intersection.inter1_coord, passed_vertices[0], None).absolute_length
@@ -220,7 +219,7 @@ class Intersection:
         return Node.from_list(ordered_rec_coords)
 
     @staticmethod
-    def generate_comppad_nodes_circle(intersection: Intersection, resolution: int) -> Node:
+    def generate_comppad_nodes_circle(intersection: Intersection, trace_nodes: Node, resolution: int, force_invert: bool=False) -> Node:
         '''
         generates the coordinates of the circle component pad or oval with equal x and y (aka a circle)
 
@@ -363,11 +362,14 @@ class Intersection:
             y2 = inverse_gradient*x2 + inverse_y_intercept
 
             # Choosing the correct maximum point, according to orientation argument
-            if  orientation:
-                max_coord = Coordinate(x1, y1)
-            else:
-                max_coord = Coordinate(x2, y2)
+            options = {True: Coordinate(x1, y1), False: Coordinate(x2, y2)}
 
+
+            if not force_invert:
+                max_coord = options[orientation]
+
+            else:
+                max_coord = options[not orientation]
 
             # Getting linear equation of correct maximum point and saving it in a variable, (ignoring minimum point)
             # tangent line of the comppad circle touching the maximum point from the parallel line passing through the 2 interseciton coords
@@ -400,8 +402,13 @@ class Intersection:
                     y2 = round(gradient*x2 + current_y_intercept, 5)
                     arc_coords_negative.append(Coordinate(x2, y2))
                 else:
-                    raise ValueError("SHITTT")
-                    # print('SHITTTT')
+                    print('NOOOOOOOO ;(')
+                    # raise ValueError('NOOOOOOOOOO')
+
+        #TODO: shitty workaround, it comes here then it must invert the orientation
+        # so i am going to recurse with a force invert option ;(
+        # if arc_coords_positive[0].inside_polygon(trace_nodes):
+        #     return Intersection.generate_comppad_nodes_circle(intersection, trace_nodes, resolution, force_invert=True)
 
         ### Step 6: Get the final ordered list of coordinates
         # PLEASE refer to iPad. The combination are truly ENORMOUS and was difficult to derive ;)
@@ -450,7 +457,7 @@ class Intersection:
             raise ValueError("resolution must be of type int")
 
         if intersection.comppad_block.shape_type == ShapeType.Circle or (intersection.comppad_block.shape_type == ShapeType.Oval  and intersection.comppad_block.thickness == intersection.comppad_block.thickness2):
-            return Intersection.generate_comppad_nodes_circle(intersection, resolution)
+            return Intersection.generate_comppad_nodes_circle(intersection, trace_nodes, resolution)
 
         elif intersection.comppad_block.shape_type == ShapeType.Rectangle:
             return Intersection.generate_comppad_nodes_rectangle(intersection, trace_nodes, resolution)
@@ -571,6 +578,7 @@ class Node:
     is executed and it's time to integrate compponent pads
     '''
     DEBUG_ADD_COMPPAD = False
+    DEBUG_RECTANGLE_COMPPAD = False
     all_intersections_data = []
 
     def __init__(self, vertex: Coordinate, parent: Optional[Node]):
@@ -1226,8 +1234,8 @@ class Node:
         '''
         print('NEW CALLLL!!!!!!\n')
 
-        ### Step 1: Find all the intersection data between all the traces and all the component pads :)
-        trace_nodes = deepcopy(self)
+        ### Firstly: Find all the intersection data between all the traces and all the component pads :)
+        trace_nodes = self
 
         print(self, 'before extracting intersection data')
         intersections_data = self.get_intersections_data(blocks)
@@ -1243,7 +1251,7 @@ class Node:
         if [intersection.stupid_corner_case_flag for intersection in intersections_data].count(True) > 1:
             raise ValueError("Somehow the intersecion data extraction algorithm detected more than one stupid_corner_case ;(")
 
-        ### Step 2: remove all old vertices in between intersections and add new component pad vertices
+        ### Secondly: remove all old vertices in between intersections and add new component pad vertices
         print()
         stupid_corner_case_flag = False
         single_line_trace_with_comppad_at_ends_only_flag = self.single_line_trace_with_comppad_at_ends_only
@@ -1260,7 +1268,7 @@ class Node:
 
             ### Step 1:
             print(f"Step 1: change parent of node pre_inter1_node: <{repr(self.child(intersection.pre_inter1_node.parent))}> to: <{repr(Node(intersection.inter1_coord, None))}>")
-
+            # tobe_removed = deepcopy(self.child(intersection.pre_inter1_node.parent).parent)
             self.child(intersection.pre_inter1_node.parent).parent = Node(intersection.inter1_coord, None)
             print(self, '\n')
 
@@ -1290,7 +1298,8 @@ class Node:
                     ### Step 4:
                     print(f"Step 4: extending the current linkedlist with a node of value intersection.inter2_edge.end: {intersection.inter2_edge.end}")
                     print(f"and parent intersection.pre_inter2_node.parent: {repr(intersection.pre_inter2_node.parent)}")
-                    self.extend(Node(intersection.inter2_edge.end, intersection.pre_inter2_node.parent))
+                    self.extend(Node(intersection.inter2_edge.end, intersection.pre_inter2_node.parent))  #doesn't work for [-3] when mirroed
+                    # self.extend(Node(intersection.pre_inter2_node.parent.vertex, intersection.pre_inter2_node.parent))  
             print(self, '\n')
 
             print()
@@ -1557,10 +1566,10 @@ class Coordinate:
         returns whether or not this point is inside this edge
         '''
         if edge.gradient == Infinity():
-            print(self)
-            print(edge)
-            print(self.x, edge.start.x)
-            print(self.x == edge.start.x)
+            # print(self)
+            # print(edge)
+            # print(self.x, edge.start.x)
+            # print(self.x == edge.start.x)
             return (round(self.x, 3) == round(edge.start.x, 3)) and ((edge.start.y < self.y and self.y < edge.end.y) or (edge.start.y > self.y and self.y > edge.end.y))
 
         elif edge.gradient == 0:

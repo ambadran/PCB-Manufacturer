@@ -532,11 +532,12 @@ def get_laser_coordinates_lists(gerber: Gerber, debug=False) -> list[list[Coordi
     :param gerber: Gerber Object
     :return: list of list of coordinates of one continious trace
     '''
+    debug=True
     if debug:
         Graph.DEBUG_APPLY_OFFSET = False
         Graph.DEBUG_FILTER_TINY_EDGES = False
         Graph.DEBUG_TO_SINGLY_LINKEDLIST = False
-        Node.DEBUG_ADD_COMPPAD = False
+        Node.DEBUG_ADD_COMPPAD = True
 
     # converting trace gerber blocks to one big graph
     graph_unsep_unoff: Graph = gerber.blocks_to_graph(gerber.blocks[BlockType.Conductor])
@@ -558,8 +559,9 @@ def get_laser_coordinates_lists(gerber: Gerber, debug=False) -> list[list[Coordi
 
     # Incorporating component pads to the linked lists
     comppad_blocks: list[Block] = gerber.blocks[BlockType.ComponentPad]
-    linkedlists_sep_off_comppad: list[Node] = [linkedlist.add_comppad(comppad_blocks) for linkedlist in linkedlists_sep_off]
-    # linkedlists_sep_off_comppad = [linkedlists_sep_off[-3].add_comppad(comppad_blocks)]  # for testing
+    # linkedlists_sep_off_comppad: list[Node] = [linkedlist.add_comppad(comppad_blocks) for linkedlist in linkedlists_sep_off]
+    linkedlists_sep_off_comppad = [linkedlists_sep_off[0].add_comppad(comppad_blocks, terminate_after=True)]  # for testing
+    raise ValueError("Stop here")
 
     # Adding non-intersecting comppads
     linkedlists_sep_off_comppad.extend(Node.get_non_intersecting_comppads(comppad_blocks))
@@ -692,6 +694,9 @@ if __name__ == '__main__':
     # Read the gerber file
     gerber = Gerber(file_path=gerber_file_path)
 
+    # Mirror Gerber File
+    gerber = gerber.mirror()
+
     # Recenter Gerber File with wanted Offset
     gerber = Gerber.recenter_gerber_file(gerber, user_x_offset, user_y_offset)
 
@@ -706,7 +711,7 @@ if __name__ == '__main__':
 #     gcode += generate_ink_laying_gcode(gerber, tool, tip_thickness, pen_down_position, ink_laying_feedrate, initiated_before=True, terminate_after = False)
 
     # Creating the PCB trace laser Toner Transfer Gcode
-    gcode += generate_pcb_trace_gcode(gerber, tool, optimum_laser_Z_position, pcb_trace_feedrate, laser_power, initiated_before=True)
+    gcode += generate_pcb_trace_gcode(gerber, tool, optimum_laser_Z_position, pcb_trace_feedrate, laser_power)
 
     # exporting the created Gcode
     export_gcode(gcode, gcode_file_path)

@@ -1,5 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
+from copy import deepcopy
 
 @dataclass
 class Node:
@@ -135,12 +136,12 @@ class Node:
         return string_representation
 
 
-node1 = Node(1, Node(2, Node(3, None)))
-node1.parent.parent.parent = node1
-print(node1.last_node)
+# node1 = Node(1, Node(2, Node(3, None)))
+# node1.parent.parent.parent = node1
+# print(node1.last_node)
 
-node2 = Node(4, Node(5, Node(6, None)))
-node2.parent.parent.parent = node2
+# node2 = Node(4, Node(5, Node(6, None)))
+# node2.parent.parent.parent = node2
 
 # print(node1)
 # node1.extend(node2)
@@ -152,3 +153,16 @@ node2.parent.parent.parent = node2
 # print(node1)
 # node1 = Node.reversed(node1)
 # print('\nreturn: ', node1)
+
+
+node1 = Node(1, Node(2, Node(3, None)))
+node2 = deepcopy(node1)
+
+print(node1)
+print(node2)
+
+node1.parent = Node(4, None)
+
+print(node1)
+print(node2)
+
