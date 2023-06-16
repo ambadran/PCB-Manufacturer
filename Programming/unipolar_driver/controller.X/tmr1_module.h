@@ -14,7 +14,7 @@ bool pair_select = false;  // whether we will flip 0&2 or 1&3
 bool set_clear_sequence = false;  // decide whether we will set,clear or clear,set
 bool tmp_set_clear_sequence = false; // a buffer to let set_sequence increment every 2 cycles
 
-#if CONSTANT_STEPS
+#ifdef CONSTANT_STEPS
 #define num_steps 790
 #else
 int num_steps[2] = {500, 780};  // anti-clockwise has more steps than clock-wise

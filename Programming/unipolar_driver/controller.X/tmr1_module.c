@@ -13,22 +13,31 @@ void TMR1_init() {
 
 void start_timer() {
     
-    if (CW_CCW_select) {
+    if (CW_CCW_select) { // clockwise motion - shaft locking
         // updating current position
         update_current_position(current_position - OF_num_TMR1);
+        
         // set new target overflow number
-#if CONSTANT_STEPS
+#ifdef CONSTANT_STEPS
         target_OF_num = num_steps - current_position;
 #else
-        target_OF_num = num_steps[CW_CCW_select] - current_position;
+        target_OF_num = num_steps[1] - current_position;
 #endif
         
-    } else {
+    } else {  // anti-clockwise motion - shaft unlocking
         // updating current position
         update_current_position(current_position + OF_num_TMR1);
+        
         // set new target overflow number
+#ifdef CONSTANT_STEPS
         target_OF_num = current_position;
-    
+#else
+        if (current_position > num_steps[0]) {
+            target_OF_num = num_steps[0];
+        } else {
+            target_OF_num = current_position;
+        }
+#endif
     }
     
     // zero out current overflow number with every new start
@@ -54,7 +63,7 @@ void update_current_position(int value) {
 
 void TMR1_ISR() {
         
-#if DEBUG_MODE
+#ifdef DEBUG_MODE
         GPIO5 = 1;  // for calculating start time
 #endif
         
@@ -80,7 +89,7 @@ void TMR1_ISR() {
             
         }
         
-#if DEBUG_MODE
+#ifdef DEBUG_MODE
         GPIO5 = 0;  // for calculating end time
         GPIO5 = !GPIO5;  // for debugging
 #endif

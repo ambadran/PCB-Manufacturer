@@ -36,9 +36,16 @@ void main(void) {
         }
         
 #ifdef ENABLE_SOFT_UART
-        soft_uart_send_16bit(OF_num_TMR1);
-        __delay_ms(5);
-        soft_uart_send_16bit(target_OF_num);
+        
+        // because the RAM is sooo freakin tiny, I couldn't even send two characters at once ;)
+//        sprintf(message, "OF_num_TMR1: %d\ntarget_OF_num: %d\ncurrent_position: %d\n", OF_num_TMR1, target_OF_num, current_position);
+//        sprintf(message, "0%d", OF_num_TMR1);
+//        soft_uart_send_string(message);
+
+        soft_uart_send_string("OF_num_TMR1: ");
+        soft_uart_send_int(OF_num_TMR1);
+        soft_uart_send_string(" \n");
+   
         __delay_ms(5);
 #endif
         
