@@ -6,7 +6,6 @@
 
 uint8_t intToASCII(uint8_t num) {
     return '0' + num;
-//    return num;
 }
 
 void soft_uart_init() {
@@ -38,7 +37,83 @@ void soft_uart_send_uint8_t(uint8_t value) {
         
 }
 
-void soft_uart_send_int(int value) {
+unsigned divu10(unsigned n) {
+    unsigned q, r;
+    q = (n >> 1) + (n >> 2);
+    q = q + (q >> 4);
+    q = q + (q >> 8);
+//    q = q + (q >> 16);  // it doesn't support 16bits anyway
+    q = q >> 3;
+    r = n - (((q << 2) + q) << 1);
+    return q + (r > 9);
+}
+
+void soft_uart_send_int(int value){
+
+    uint8_t third_digit = intToASCII(value%10);
+    value = divu10(value);
+    uint8_t second_digit = intToASCII(value%10);
+    value = divu10(value);
+    uint8_t first_digit = intToASCII(value%10);
+    
+    soft_uart_send_uint8_t(first_digit);
+    soft_uart_send_uint8_t(second_digit);
+    soft_uart_send_uint8_t(third_digit);
+    
+}
+
+void soft_uart_send_string(char* string) {
+    
+    uint8_t i = 0;
+    while (string[i] != '\0') {
+        // getting ASCII value of character by casting it into an integer
+        soft_uart_send_uint8_t((uint8_t)string[i]);
+        i++;
+    }
+}
+
+void soft_uart_send_ALL() {
+    // because the RAM is sooo freakin tiny, I couldn't even sprintf two characters at once ;)
+//        sprintf(message, "OF_num_TMR1: %d\ntarget_OF_num: %d\ncurrent_position: %d\n", OF_num_TMR1, target_OF_num, current_position);
+//        sprintf(message, "0%d", OF_num_TMR1);
+//        soft_uart_send_string(message);
+
+    soft_uart_send_string("OF_num_TMR1: ");
+    soft_uart_send_int(OF_num_TMR1);
+    soft_uart_send_string("\n");
+
+    soft_uart_send_string("target_OF_num: ");
+    soft_uart_send_int(target_OF_num);
+    soft_uart_send_string("\n");
+
+    soft_uart_send_string("current_position: ");
+    soft_uart_send_int(current_position);
+    soft_uart_send_string("\n");
+
+}
+
+#endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //    uint8_t index = MAXDIGITS-1;
 //    uint8_t* nums[MAXDIGITS];
@@ -58,25 +133,17 @@ void soft_uart_send_int(int value) {
 //    }
     
     
-    uint8_t first_digit = (value!=0)?0:intToASCII(value%10);
-    value *= 0.1;
-    uint8_t second_digit = (value!=0)?0:intToASCII(value%10);
-    value *= 0.1;
-    uint8_t third_digit = (value!=0)?0:intToASCII(value%10);
+//    uint8_t first_digit = (value!=0)?0:intToASCII(value%10);
+//    value *= 0.1;
+//    uint8_t second_digit = (value!=0)?0:intToASCII(value%10);
+//    value *= 0.1;
+//    uint8_t third_digit = (value!=0)?0:intToASCII(value%10);
     
-    soft_uart_send_uint8_t(first_digit);
-    soft_uart_send_uint8_t(second_digit);
-    soft_uart_send_uint8_t(third_digit);
-}
-
-void soft_uart_send_string(char* string) {
-    
-    uint8_t i = 0;
-    while (string[i] != '\0') {
-        // getting ASCII value of character by casting it into an integer
-        soft_uart_send_uint8_t((uint8_t)string[i]);
-        i++;
-    }
-}
-
-#endif
+//    soft_uart_send_uint8_t((value!=0) ? intToASCII(value%10) : 0);
+//    soft_uart_send_uint8_t(value);
+//    value *= 0.1;
+//    soft_uart_send_uint8_t((value!=0) ? intToASCII(value%10) : 0);
+//    soft_uart_send_uint8_t(value);
+//    value *= 0.1;
+//    soft_uart_send_uint8_t((value!=0) ? intToASCII(value%10) : 0);
+//    soft_uart_send_uint8_t(value%10);

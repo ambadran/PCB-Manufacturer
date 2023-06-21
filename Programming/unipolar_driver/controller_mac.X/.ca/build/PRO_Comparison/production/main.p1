@@ -1,0 +1,322 @@
+Version 4.0 HI-TECH Software Intermediate Code
+[v F583 `(v ~T0 @X0 0 tf ]
+[p mainexit ]
+"5 ./coil_control.h
+[; ;./coil_control.h: 5: void coil_init(void);
+[v _coil_init `(v ~T0 @X0 0 ef ]
+"5 ./comparator_module.h
+[; ;./comparator_module.h: 5: void comparator_deinit(void);
+[v _comparator_deinit `(v ~T0 @X0 0 ef ]
+"5 ./interrupts.h
+[; ;./interrupts.h: 5: void interrupt_init(void);
+[v _interrupt_init `(v ~T0 @X0 0 ef ]
+"27 ./tmr1_module.h
+[; ;./tmr1_module.h: 27: void TMR1_init(void);
+[v _TMR1_init `(v ~T0 @X0 0 ef ]
+"5 ./adc_module.h
+[; ;./adc_module.h: 5: void adc_deinit(void);
+[v _adc_deinit `(v ~T0 @X0 0 ef ]
+"22 ./software_uart.h
+[; ;./software_uart.h: 22: void soft_uart_init(void);
+[v _soft_uart_init `(v ~T0 @X0 0 ef ]
+"15 ./coil_control.h
+[; ;./coil_control.h: 15: void reset_all_pins(void);
+[v _reset_all_pins `(v ~T0 @X0 0 ef ]
+[v F36 `(v ~T0 @X0 1 tf1`ul ]
+"12 /opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/builtins.h
+[v __delay `JF36 ~T0 @X0 0 e ]
+[p i __delay ]
+"33 ./tmr1_module.h
+[; ;./tmr1_module.h: 33: void retrieve_current_position(void);
+[v _retrieve_current_position `(v ~T0 @X0 0 ef ]
+"1623 /opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 1623: extern volatile __bit GPIO3 __attribute__((address(0x2B)));
+[v _GPIO3 `Vb ~T0 @X0 0 e@43 ]
+"29 ./tmr1_module.h
+[; ;./tmr1_module.h: 29: void start_timer(void);
+[v _start_timer `(v ~T0 @X0 0 ef ]
+"30 ./software_uart.h
+[; ;./software_uart.h: 30: void soft_uart_send_ALL(void);
+[v _soft_uart_send_ALL `(v ~T0 @X0 0 ef ]
+[t ~ __interrupt . k ]
+[t T1 __interrupt ]
+"1746 /opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 1746: extern volatile __bit TMR1IF __attribute__((address(0x60)));
+[v _TMR1IF `Vb ~T0 @X0 0 e@96 ]
+"37 ./tmr1_module.h
+[; ;./tmr1_module.h: 37: void TMR1_ISR(void);
+[v _TMR1_ISR `(v ~T0 @X0 0 ef ]
+"55 /opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 55: __asm("INDF equ 00h");
+[; <" INDF equ 00h ;# ">
+"75
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 75: __asm("TMR0 equ 01h");
+[; <" TMR0 equ 01h ;# ">
+"95
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 95: __asm("PCL equ 02h");
+[; <" PCL equ 02h ;# ">
+"115
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 115: __asm("STATUS equ 03h");
+[; <" STATUS equ 03h ;# ">
+"201
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 201: __asm("FSR equ 04h");
+[; <" FSR equ 04h ;# ">
+"221
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 221: __asm("GPIO equ 05h");
+[; <" GPIO equ 05h ;# ">
+"309
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 309: __asm("PCLATH equ 0Ah");
+[; <" PCLATH equ 0Ah ;# ">
+"329
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 329: __asm("INTCON equ 0Bh");
+[; <" INTCON equ 0Bh ;# ">
+"407
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 407: __asm("PIR1 equ 0Ch");
+[; <" PIR1 equ 0Ch ;# ">
+"455
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 455: __asm("TMR1 equ 0Eh");
+[; <" TMR1 equ 0Eh ;# ">
+"462
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 462: __asm("TMR1L equ 0Eh");
+[; <" TMR1L equ 0Eh ;# ">
+"482
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 482: __asm("TMR1H equ 0Fh");
+[; <" TMR1H equ 0Fh ;# ">
+"502
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 502: __asm("T1CON equ 010h");
+[; <" T1CON equ 010h ;# ">
+"567
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 567: __asm("CMCON equ 019h");
+[; <" CMCON equ 019h ;# ">
+"626
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 626: __asm("ADRESH equ 01Eh");
+[; <" ADRESH equ 01Eh ;# ">
+"646
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 646: __asm("ADCON0 equ 01Fh");
+[; <" ADCON0 equ 01Fh ;# ">
+"730
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 730: __asm("OPTION_REG equ 081h");
+[; <" OPTION_REG equ 081h ;# ">
+"800
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 800: __asm("TRISIO equ 085h");
+[; <" TRISIO equ 085h ;# ">
+"850
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 850: __asm("PIE1 equ 08Ch");
+[; <" PIE1 equ 08Ch ;# ">
+"898
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 898: __asm("PCON equ 08Eh");
+[; <" PCON equ 08Eh ;# ">
+"932
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 932: __asm("OSCCAL equ 090h");
+[; <" OSCCAL equ 090h ;# ">
+"992
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 992: __asm("WPU equ 095h");
+[; <" WPU equ 095h ;# ">
+"1037
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 1037: __asm("IOC equ 096h");
+[; <" IOC equ 096h ;# ">
+"1042
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 1042: __asm("IOCB equ 096h");
+[; <" IOCB equ 096h ;# ">
+"1211
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 1211: __asm("VRCON equ 099h");
+[; <" VRCON equ 099h ;# ">
+"1271
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 1271: __asm("EEDATA equ 09Ah");
+[; <" EEDATA equ 09Ah ;# ">
+"1276
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 1276: __asm("EEDAT equ 09Ah");
+[; <" EEDAT equ 09Ah ;# ">
+"1309
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 1309: __asm("EEADR equ 09Bh");
+[; <" EEADR equ 09Bh ;# ">
+"1329
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 1329: __asm("EECON1 equ 09Ch");
+[; <" EECON1 equ 09Ch ;# ">
+"1367
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 1367: __asm("EECON2 equ 09Dh");
+[; <" EECON2 equ 09Dh ;# ">
+"1387
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 1387: __asm("ADRESL equ 09Eh");
+[; <" ADRESL equ 09Eh ;# ">
+"1407
+[; ;/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8/pic/include/proc/pic12f675.h: 1407: __asm("ANSEL equ 09Fh");
+[; <" ANSEL equ 09Fh ;# ">
+"9 ./fuses.h
+[p x FOSC  =  INTRCIO    ]
+"10
+[p x WDTE  =  OFF        ]
+"11
+[p x PWRTE  =  ON        ]
+"12
+[p x MCLRE  =  OFF       ]
+"13
+[p x BOREN  =  ON        ]
+"14
+[p x CP  =  OFF          ]
+"15
+[p x CPD  =  OFF         ]
+[v F582 `*F583 ~T0 @X0 -> 2 `i t ]
+[v F581 `F582 ~T0 @X0 -> 2 `i t ]
+"17 ./coil_control.h
+[; ;./coil_control.h: 17: void (*func_ptr[2][2][2])(void);
+[v _func_ptr `F581 ~T0 @X0 -> 2 `i e ]
+"8 ./tmr1_module.h
+[; ;./tmr1_module.h: 8: int OF_num_TMR1 = 00;
+[v _OF_num_TMR1 `i ~T0 @X0 1 e ]
+[i _OF_num_TMR1
+-> 0 `i
+]
+"9
+[; ;./tmr1_module.h: 9: int target_OF_num = 1;
+[v _target_OF_num `i ~T0 @X0 1 e ]
+[i _target_OF_num
+-> 1 `i
+]
+"10
+[; ;./tmr1_module.h: 10: int current_position;
+[v _current_position `i ~T0 @X0 1 e ]
+"12
+[; ;./tmr1_module.h: 12: uint8_t CW_CCW_select = 0;
+[v _CW_CCW_select `uc ~T0 @X0 1 e ]
+[i _CW_CCW_select
+-> -> 0 `i `uc
+]
+"13
+[; ;./tmr1_module.h: 13: _Bool pair_select = 0;
+[v _pair_select `a ~T0 @X0 1 e ]
+[i _pair_select
+-> -> 0 `i `a
+]
+"14
+[; ;./tmr1_module.h: 14: _Bool set_clear_sequence = 0;
+[v _set_clear_sequence `a ~T0 @X0 1 e ]
+[i _set_clear_sequence
+-> -> 0 `i `a
+]
+"15
+[; ;./tmr1_module.h: 15: _Bool tmp_set_clear_sequence = 0;
+[v _tmp_set_clear_sequence `a ~T0 @X0 1 e ]
+[i _tmp_set_clear_sequence
+-> -> 0 `i `a
+]
+"20
+[; ;./tmr1_module.h: 20: int num_steps[2] = {500, 780};
+[v _num_steps `i ~T0 @X0 -> 2 `i e ]
+[i _num_steps
+:U ..
+-> 500 `i
+-> 780 `i
+..
+]
+"13 ./software_uart.h
+[; ;./software_uart.h: 13: int temp_value;
+[v _temp_value `i ~T0 @X0 1 e ]
+"14
+[; ;./software_uart.h: 14: uint8_t third_digit;
+[v _third_digit `uc ~T0 @X0 1 e ]
+"15
+[; ;./software_uart.h: 15: uint8_t second_digit;
+[v _second_digit `uc ~T0 @X0 1 e ]
+"16
+[; ;./software_uart.h: 16: uint8_t first_digit;
+[v _first_digit `uc ~T0 @X0 1 e ]
+[v $root$_main `(v ~T0 @X0 0 e ]
+"11 main.c
+[; ;main.c: 11: void main(void) {
+[v _main `(v ~T0 @X0 1 ef ]
+{
+[e :U _main ]
+[f ]
+"14
+[; ;main.c: 14:     coil_init();
+[e ( _coil_init ..  ]
+"15
+[; ;main.c: 15:     comparator_deinit();
+[e ( _comparator_deinit ..  ]
+"16
+[; ;main.c: 16:     interrupt_init();
+[e ( _interrupt_init ..  ]
+"17
+[; ;main.c: 17:     TMR1_init();
+[e ( _TMR1_init ..  ]
+"18
+[; ;main.c: 18:     adc_deinit();
+[e ( _adc_deinit ..  ]
+"20
+[; ;main.c: 20:     soft_uart_init();
+[e ( _soft_uart_init ..  ]
+"24
+[; ;main.c: 24:     reset_all_pins();
+[e ( _reset_all_pins ..  ]
+"27
+[; ;main.c: 27:     _delay((unsigned long)((2000)*(4000000/4000.0)));
+[e ( __delay (1 -> * -> -> 2000 `i `d / -> -> 4000000 `l `d .4000.0 `ul ]
+"28
+[; ;main.c: 28:     retrieve_current_position();
+[e ( _retrieve_current_position ..  ]
+"31
+[; ;main.c: 31:     while(1) {
+[e :U 83 ]
+{
+"33
+[; ;main.c: 33:         if(GPIO3 != CW_CCW_select) {
+[e $ ! != -> _GPIO3 `i -> _CW_CCW_select `i 85  ]
+{
+"34
+[; ;main.c: 34:             CW_CCW_select = GPIO3;
+[e = _CW_CCW_select -> _GPIO3 `uc ]
+"35
+[; ;main.c: 35:             start_timer();
+[e ( _start_timer ..  ]
+"36
+[; ;main.c: 36:         }
+}
+[e :U 85 ]
+"40
+[; ;main.c: 40:         soft_uart_send_ALL();
+[e ( _soft_uart_send_ALL ..  ]
+"42
+[; ;main.c: 42:         _delay((unsigned long)((10)*(4000000/4000.0)));
+[e ( __delay (1 -> * -> -> 10 `i `d / -> -> 4000000 `l `d .4000.0 `ul ]
+"46
+[; ;main.c: 46:     }
+}
+[e :U 82 ]
+[e $U 83  ]
+[e :U 84 ]
+"48
+[; ;main.c: 48:     return;
+[e $UE 81  ]
+"49
+[; ;main.c: 49: }
+[e :UE 81 ]
+}
+[v $root$_ISR `(v ~T0 @X0 0 e ]
+"52
+[; ;main.c: 52: void __attribute__((picinterrupt(("")))) ISR(void) {
+[v _ISR `(v ~T1 @X0 1 ef ]
+{
+[e :U _ISR ]
+[f ]
+"54
+[; ;main.c: 54:     if(TMR1IF) {
+[e $ ! _TMR1IF 87  ]
+{
+"55
+[; ;main.c: 55:         TMR1_ISR();
+[e ( _TMR1_ISR ..  ]
+"56
+[; ;main.c: 56:         TMR1IF = 0;
+[e = _TMR1IF -> -> 0 `i `b ]
+"58
+[; ;main.c: 58:     }
+}
+[e :U 87 ]
+"61
+[; ;main.c: 61:     return;
+[e $UE 86  ]
+"63
+[; ;main.c: 63: }
+[e :UE 86 ]
+}

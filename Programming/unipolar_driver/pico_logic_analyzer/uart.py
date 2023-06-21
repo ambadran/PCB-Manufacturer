@@ -18,11 +18,16 @@ def print2():
     '''
     v2
     '''
-    while chr(uart.read(1)[0]) != '\n':
-        pass
+    # while chr(uart.read(1)[0]) != '\n':
+    #     pass
 
-    res = uart.read(16)
-    print(res.decode())
+    # res = uart.read(19)
+    res = uart.readline()
+    print(res[8], end='\r')
+    # try:
+    #     print(res.decode()[8], end='\r')
+    # except Exception:
+    #     pass
 
 def main():
     while True:

@@ -1,0 +1,79 @@
+make -f nbproject/Makefile-Config_1.mk SUBPROJECTS= .clean-conf
+make[1]: Entering directory '/home/abdulrahman/Projects/PCB_manufacturer/Programming/unipolar_driver/controller_mac.X'
+rm -f  -r .ca/build/Config_1/production
+rm -f  -r .ca/dist/Config_1/production
+make[1]: Leaving directory '/home/abdulrahman/Projects/PCB_manufacturer/Programming/unipolar_driver/controller_mac.X'
+[32mCLEAN SUCCESSFUL (total time: 52ms)[0m
+make -f nbproject/Makefile-Config_1.mk SUBPROJECTS= .build-conf
+make[1]: Entering directory '/home/abdulrahman/Projects/PCB_manufacturer/Programming/unipolar_driver/controller_mac.X'
+make  -f nbproject/Makefile-Config_1.mk .ca/dist/Config_1/production/controller_mac.X.production.hex
+make[2]: Entering directory '/home/abdulrahman/Projects/PCB_manufacturer/Programming/unipolar_driver/controller_mac.X'
+"/opt/microchip/xc8/v2.36/bin/xc8-cc"  -mcpu=12F675 -c   -mdfp="/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8"  -fno-short-double -fno-short-float -O1 -fasmfile -maddrqual=ignore -xassembler-with-cpp -mwarn=-3 -Wa,-a -DXPRJ_Config_1=Config_1  -msummary=-psect,-class,+mem,-hex,-file  -ginhx32 -Wl,--data-init -mno-keep-startup -mno-osccal -mno-resetbits -mno-save-resetbits -mno-download -mno-stackcall -mdefault-config-bits   -std=c99 -gdwarf-3 -mstack=compiled:auto:auto     -o .ca/build/Config_1/production/coil_control.p1 coil_control.c 
+"/opt/microchip/xc8/v2.36/bin/xc8-cc"  -mcpu=12F675 -c   -mdfp="/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8"  -fno-short-double -fno-short-float -O1 -fasmfile -maddrqual=ignore -xassembler-with-cpp -mwarn=-3 -Wa,-a -DXPRJ_Config_1=Config_1  -msummary=-psect,-class,+mem,-hex,-file  -ginhx32 -Wl,--data-init -mno-keep-startup -mno-osccal -mno-resetbits -mno-save-resetbits -mno-download -mno-stackcall -mdefault-config-bits   -std=c99 -gdwarf-3 -mstack=compiled:auto:auto     -o .ca/build/Config_1/production/interrupts.p1 interrupts.c 
+"/opt/microchip/xc8/v2.36/bin/xc8-cc"  -mcpu=12F675 -c   -mdfp="/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8"  -fno-short-double -fno-short-float -O1 -fasmfile -maddrqual=ignore -xassembler-with-cpp -mwarn=-3 -Wa,-a -DXPRJ_Config_1=Config_1  -msummary=-psect,-class,+mem,-hex,-file  -ginhx32 -Wl,--data-init -mno-keep-startup -mno-osccal -mno-resetbits -mno-save-resetbits -mno-download -mno-stackcall -mdefault-config-bits   -std=c99 -gdwarf-3 -mstack=compiled:auto:auto     -o .ca/build/Config_1/production/adc_module.p1 adc_module.c 
+"/opt/microchip/xc8/v2.36/bin/xc8-cc"  -mcpu=12F675 -c   -mdfp="/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8"  -fno-short-double -fno-short-float -O1 -fasmfile -maddrqual=ignore -xassembler-with-cpp -mwarn=-3 -Wa,-a -DXPRJ_Config_1=Config_1  -msummary=-psect,-class,+mem,-hex,-file  -ginhx32 -Wl,--data-init -mno-keep-startup -mno-osccal -mno-resetbits -mno-save-resetbits -mno-download -mno-stackcall -mdefault-config-bits   -std=c99 -gdwarf-3 -mstack=compiled:auto:auto     -o .ca/build/Config_1/production/comparator_module.p1 comparator_module.c 
+"/opt/microchip/xc8/v2.36/bin/xc8-cc"  -mcpu=12F675 -c   -mdfp="/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8"  -fno-short-double -fno-short-float -O1 -fasmfile -maddrqual=ignore -xassembler-with-cpp -mwarn=-3 -Wa,-a -DXPRJ_Config_1=Config_1  -msummary=-psect,-class,+mem,-hex,-file  -ginhx32 -Wl,--data-init -mno-keep-startup -mno-osccal -mno-resetbits -mno-save-resetbits -mno-download -mno-stackcall -mdefault-config-bits   -std=c99 -gdwarf-3 -mstack=compiled:auto:auto     -o .ca/build/Config_1/production/software_uart.p1 software_uart.c 
+"/opt/microchip/xc8/v2.36/bin/xc8-cc"  -mcpu=12F675 -c   -mdfp="/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8"  -fno-short-double -fno-short-float -O1 -fasmfile -maddrqual=ignore -xassembler-with-cpp -mwarn=-3 -Wa,-a -DXPRJ_Config_1=Config_1  -msummary=-psect,-class,+mem,-hex,-file  -ginhx32 -Wl,--data-init -mno-keep-startup -mno-osccal -mno-resetbits -mno-save-resetbits -mno-download -mno-stackcall -mdefault-config-bits   -std=c99 -gdwarf-3 -mstack=compiled:auto:auto     -o .ca/build/Config_1/production/tmr0_module.p1 tmr0_module.c 
+"/opt/microchip/xc8/v2.36/bin/xc8-cc"  -mcpu=12F675 -c   -mdfp="/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8"  -fno-short-double -fno-short-float -O1 -fasmfile -maddrqual=ignore -xassembler-with-cpp -mwarn=-3 -Wa,-a -DXPRJ_Config_1=Config_1  -msummary=-psect,-class,+mem,-hex,-file  -ginhx32 -Wl,--data-init -mno-keep-startup -mno-osccal -mno-resetbits -mno-save-resetbits -mno-download -mno-stackcall -mdefault-config-bits   -std=c99 -gdwarf-3 -mstack=compiled:auto:auto     -o .ca/build/Config_1/production/main.p1 main.c 
+"/opt/microchip/xc8/v2.36/bin/xc8-cc"  -mcpu=12F675 -c   -mdfp="/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8"  -fno-short-double -fno-short-float -O1 -fasmfile -maddrqual=ignore -xassembler-with-cpp -mwarn=-3 -Wa,-a -DXPRJ_Config_1=Config_1  -msummary=-psect,-class,+mem,-hex,-file  -ginhx32 -Wl,--data-init -mno-keep-startup -mno-osccal -mno-resetbits -mno-save-resetbits -mno-download -mno-stackcall -mdefault-config-bits   -std=c99 -gdwarf-3 -mstack=compiled:auto:auto     -o .ca/build/Config_1/production/tmr1_module.p1 tmr1_module.c 
+::: advisory: (2049) C99 compliant libraries are currently not available for baseline or mid-range devices, or for enhanced mid-range devices using a reentrant stack; using C90 libraries
+::: advisory: (2049) C99 compliant libraries are currently not available for baseline or mid-range devices, or for enhanced mid-range devices using a reentrant stack; using C90 libraries
+::: advisory: (2049) C99 compliant libraries are currently not available for baseline or mid-range devices, or for enhanced mid-range devices using a reentrant stack; using C90 libraries
+::: advisory: (2049) C99 compliant libraries are currently not available for baseline or mid-range devices, or for enhanced mid-range devices using a reentrant stack; using C90 libraries
+software_uart.c:70:18: warning: implicit conversion changes signedness: 'unsigned int' to 'int' [-Wsign-conversion]
+    temp_value = divu10(temp_value);
+               ~ ^~~~~~~~~~~~~~~~~~
+software_uart.c:70:25: warning: implicit conversion changes signedness: 'int' to 'unsigned int' [-Wsign-conversion]
+    temp_value = divu10(temp_value);
+                 ~~~~~~ ^~~~~~~~~~
+software_uart.c:72:18: warning: implicit conversion changes signedness: 'unsigned int' to 'int' [-Wsign-conversion]
+    temp_value = divu10(temp_value);
+               ~ ^~~~~~~~~~~~~~~~~~
+software_uart.c:72:25: warning: implicit conversion changes signedness: 'int' to 'unsigned int' [-Wsign-conversion]
+    temp_value = divu10(temp_value);
+                 ~~~~~~ ^~~~~~~~~~
+software_uart.c:84:18: warning: implicit conversion changes signedness: 'unsigned int' to 'int' [-Wsign-conversion]
+    temp_value = divu10(temp_value);
+               ~ ^~~~~~~~~~~~~~~~~~
+software_uart.c:84:25: warning: implicit conversion changes signedness: 'int' to 'unsigned int' [-Wsign-conversion]
+    temp_value = divu10(temp_value);
+                 ~~~~~~ ^~~~~~~~~~
+software_uart.c:86:18: warning: implicit conversion changes signedness: 'unsigned int' to 'int' [-Wsign-conversion]
+    temp_value = divu10(temp_value);
+               ~ ^~~~~~~~~~~~~~~~~~
+software_uart.c:86:25: warning: implicit conversion changes signedness: 'int' to 'unsigned int' [-Wsign-conversion]
+    temp_value = divu10(temp_value);
+                 ~~~~~~ ^~~~~~~~~~
+software_uart.c:98:18: warning: implicit conversion changes signedness: 'unsigned int' to 'int' [-Wsign-conversion]
+    temp_value = divu10(temp_value);
+               ~ ^~~~~~~~~~~~~~~~~~
+software_uart.c:98:25: warning: implicit conversion changes signedness: 'int' to 'unsigned int' [-Wsign-conversion]
+    temp_value = divu10(temp_value);
+                 ~~~~~~ ^~~~~~~~~~
+software_uart.c:100:18: warning: implicit conversion changes signedness: 'unsigned int' to 'int' [-Wsign-conversion]
+    temp_value = divu10(temp_value);
+               ~ ^~~~~~~~~~~~~~~~~~
+software_uart.c:100:25: warning: implicit conversion changes signedness: 'int' to 'unsigned int' [-Wsign-conversion]
+    temp_value = divu10(temp_value);
+                 ~~~~~~ ^~~~~~~~~~
+12 warnings generated.
+::: advisory: (2049) C99 compliant libraries are currently not available for baseline or mid-range devices, or for enhanced mid-range devices using a reentrant stack; using C90 libraries
+::: advisory: (2049) C99 compliant libraries are currently not available for baseline or mid-range devices, or for enhanced mid-range devices using a reentrant stack; using C90 libraries
+::: advisory: (2049) C99 compliant libraries are currently not available for baseline or mid-range devices, or for enhanced mid-range devices using a reentrant stack; using C90 libraries
+::: advisory: (2049) C99 compliant libraries are currently not available for baseline or mid-range devices, or for enhanced mid-range devices using a reentrant stack; using C90 libraries
+"/opt/microchip/xc8/v2.36/bin/xc8-cc"  -mcpu=12F675 -Wl,-Map=.ca/dist/Config_1/production/controller_mac.X.production.map  -DXPRJ_Config_1=Config_1  -Wl,--defsym=__MPLAB_BUILD=1   -mdfp="/opt/microchip/mplabx/v6.00/packs/Microchip/PIC10-12Fxxx_DFP/1.5.61/xc8"  -fno-short-double -fno-short-float -O1 -fasmfile -maddrqual=ignore -xassembler-with-cpp -mwarn=-3 -Wa,-a -msummary=-psect,-class,+mem,-hex,-file  -ginhx32 -Wl,--data-init -mno-keep-startup -mno-osccal -mno-resetbits -mno-save-resetbits -mno-download -mno-stackcall -mdefault-config-bits -std=c99 -gdwarf-3 -mstack=compiled:auto:auto      -Wl,--memorysummary,.ca/dist/Config_1/production/memoryfile.xml -o .ca/dist/Config_1/production/controller_mac.X.production.elf  .ca/build/Config_1/production/interrupts.p1 .ca/build/Config_1/production/coil_control.p1 .ca/build/Config_1/production/adc_module.p1 .ca/build/Config_1/production/comparator_module.p1 .ca/build/Config_1/production/software_uart.p1 .ca/build/Config_1/production/tmr0_module.p1 .ca/build/Config_1/production/tmr1_module.p1 .ca/build/Config_1/production/main.p1     
+::: advisory: (2049) C99 compliant libraries are currently not available for baseline or mid-range devices, or for enhanced mid-range devices using a reentrant stack; using C90 libraries
+coil_control.c:55:: advisory: (1510) non-reentrant function "_reset_all_pins" appears in multiple call graphs and has been duplicated by the compiler
+tmr0_module.c:5:: warning: (520) function "_TMR0_init" is never called
+tmr1_module.c:50:: warning: (520) function "_stop_timer" is never called
+
+Memory Summary:
+    Program space        used   3B6h (   950) of   400h words   ( 92.8%)
+    Data space           used    34h (    52) of    40h bytes   ( 81.2%)
+    EEPROM space         used     0h (     0) of    80h bytes   (  0.0%)
+    Configuration bits   used     1h (     1) of     1h word    (100.0%)
+    ID Location space    used     4h (     4) of     4h bytes   (100.0%)
+
+make[2]: Leaving directory '/home/abdulrahman/Projects/PCB_manufacturer/Programming/unipolar_driver/controller_mac.X'
+make[1]: Leaving directory '/home/abdulrahman/Projects/PCB_manufacturer/Programming/unipolar_driver/controller_mac.X'
+[32mBUILD SUCCESSFUL (total time: 1s)[0m
