@@ -37,7 +37,8 @@ void main(void) {
         
 #ifdef ENABLE_SOFT_UART
 
-        soft_uart_send_ALL();
+//        soft_uart_send_ALL();
+        soft_uart_send_int_AS_IS(OF_num_TMR1);
    
         __delay_ms(10);
 #endif

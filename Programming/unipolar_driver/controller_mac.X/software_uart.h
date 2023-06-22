@@ -18,6 +18,8 @@ void soft_uart_init(void);
 
 void soft_uart_send_uint8_t(uint8_t value);
 
+void soft_uart_send_int_AS_IS(int value);
+
 void soft_uart_send_int(int value);  //decided to do the calculations outside the send to not interfere with bit delays on sending
 // then i redecided to implement it again because after thinking it through
 // the calculations is done between the stop and start bits so it doesn't really matter

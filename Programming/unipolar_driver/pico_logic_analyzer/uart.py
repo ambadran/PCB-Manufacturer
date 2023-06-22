@@ -33,3 +33,8 @@ def main():
     while True:
         print2()
         time.sleep(0.2)
+
+def main2():
+    while True:
+        print('value: ', int(uart.read(1)[0]), end='\r');
+        time.sleep(0.2)

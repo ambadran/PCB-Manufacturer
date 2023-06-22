@@ -48,8 +48,29 @@ unsigned divu10(unsigned n) {
     return q + (r > 9);
 }
 
+void soft_uart_send_int_AS_IS(int value) {
+        // start condition
+    S_UART_TX = 0;
+    __delay_us(one_bit_delay);
+
+    // data frame 1
+    for(uint8_t i=0; i<16; i++) {
+
+        S_UART_TX = (value>>i) & 0b1;
+
+        __delay_us(one_bit_delay);
+    }
+
+    // stop condition
+    S_UART_TX = 1;
+    __delay_us(one_bit_delay);
+    __delay_us(one_bit_delay);
+}
+
 void soft_uart_send_int(int value){
 
+    // should implement a while loop (value!=0)
+    // and a dynamic array expanding with every new digit from the int
     uint8_t third_digit = intToASCII(value%10);
     value = divu10(value);
     uint8_t second_digit = intToASCII(value%10);
