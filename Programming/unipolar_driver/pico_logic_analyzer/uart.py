@@ -36,5 +36,21 @@ def main():
 
 def main2():
     while True:
-        print('value: ', int(uart.read(1)[0]), end='\r');
+        res = uart.read()[-2:]
+        print('value: ', (res[0]<<8 | res[1]), end='\r');
         time.sleep(0.2)
+
+time.sleep(2)
+
+if __name__ == '__main__':
+    main2()
+        
+
+
+
+
+
+
+
+
+

@@ -54,7 +54,25 @@ void soft_uart_send_int_AS_IS(int value) {
     __delay_us(one_bit_delay);
 
     // data frame 1
-    for(uint8_t i=0; i<16; i++) {
+    uint8_t i;
+    for(i=8; i<16; i++) {
+
+        S_UART_TX = (value>>i) & 0b1;
+
+        __delay_us(one_bit_delay);
+    }
+
+    // stop condition
+    S_UART_TX = 1;
+    __delay_us(one_bit_delay);
+    __delay_us(one_bit_delay);
+    
+            // start condition
+    S_UART_TX = 0;
+    __delay_us(one_bit_delay);
+
+    // data frame 1
+    for(i=0; i<8; i++) {
 
         S_UART_TX = (value>>i) & 0b1;
 

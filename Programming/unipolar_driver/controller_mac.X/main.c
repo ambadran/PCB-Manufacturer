@@ -38,11 +38,10 @@ void main(void) {
 #ifdef ENABLE_SOFT_UART
 
 //        soft_uart_send_ALL();
-        soft_uart_send_int_AS_IS(OF_num_TMR1);
+        soft_uart_send_int_AS_IS(current_position);
    
-        __delay_ms(10);
+        __delay_ms(5);
 #endif
-        
         
     }
     
@@ -57,7 +56,6 @@ void __interrupt() ISR(void) {
         TMR1IF = 0;
         
     }
-    
     
     return;
     

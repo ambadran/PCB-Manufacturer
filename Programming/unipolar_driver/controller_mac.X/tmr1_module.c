@@ -14,8 +14,6 @@ void TMR1_init() {
 void start_timer() {
     
     if (CW_CCW_select) { // clockwise motion - shaft locking
-        // updating current position
-        update_current_position(current_position - OF_num_TMR1);
         
         // set new target overflow number
 #ifdef CONSTANT_STEPS
@@ -25,8 +23,6 @@ void start_timer() {
 #endif
         
     } else {  // anti-clockwise motion - shaft unlocking
-        // updating current position
-        update_current_position(current_position + OF_num_TMR1);
         
         // set new target overflow number
 #ifdef CONSTANT_STEPS
@@ -85,6 +81,12 @@ void TMR1_ISR() {
             TMR1ON = 0; // stops once number of steps is achieved
             reset_all_pins();
             
+            // updating current position
+            if(CW_CCW_select) {
+                update_current_position(current_position + OF_num_TMR1);
+            } else {
+                update_current_position(0); //TODO: shoulding be a constant 0
+            }
         }
         
 #ifdef DEBUG_MODE
