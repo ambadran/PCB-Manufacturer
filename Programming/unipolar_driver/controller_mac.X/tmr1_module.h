@@ -17,7 +17,7 @@ bool tmp_set_clear_sequence = false; // a buffer to let set_sequence increment e
 #ifdef CONSTANT_STEPS
 #define num_steps 790
 #else
-int num_steps[2] = {500, 780};  // anti-clockwise has more steps than clock-wise
+int num_steps[2] = {570, 780};  // anti-clockwise has more steps than clock-wise
                                 // this is because closing needs more torque
                                 // and to gaurantee it reaches the end (even if it
                                 // skips a couple of steps when it reaches the end)
