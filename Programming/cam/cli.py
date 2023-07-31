@@ -1,3 +1,10 @@
+'''
+Python script to implement terminal command functionality
+
+To test the laser gcode for example
+
+python3 cli.py -D test.gcode --laser --debug-laser gerber_files/mirrored_and_offseted.gbr
+'''
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from main import Settings, main
 from default_settings import default_settings_dict

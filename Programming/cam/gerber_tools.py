@@ -434,10 +434,10 @@ class Gerber:
 
 if __name__ == '__main__':
 
-    gerber_file_path = 'gerber_files/default.gbr'
+    gerber_file_path = 'gerber_files/unipolar_driver.gbr'
     # gerber_file_path = 'gerber_files/test.gbr'
 
-    new_file_name = 'gerber_files/mirrored_and_offseted.gbr'
+    new_file_name = 'gerber_files/unipolar_driver_mirrored_and_offseted.gbr'
 
     # Offset PCB from (0, 0)
     x_offset = 2

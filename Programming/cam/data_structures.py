@@ -1286,6 +1286,12 @@ class Node:
 
             ### Step 1:
             print(f"Step 1: change parent of node pre_inter1_node: <{repr(self.child(intersection.pre_inter1_node.parent))}> to: <{repr(Node(intersection.inter1_coord, None))}>")
+
+            # Extra Step 1: when one edge has two intersections
+            if intersection.inter1_edge == intersection.inter2_edge:
+                print(f"and saving {repr(self.child(intersection.pre_inter1_node.parent.parent))} \n\tfor step 4 as this is a full intersection on one edge corner case")
+                tmp_2inter_1edge_node = self.child(intersection.pre_inter1_node.parent.parent)
+
             # tobe_removed = deepcopy(self.child(intersection.pre_inter1_node.parent).parent)
             self.child(intersection.pre_inter1_node.parent).parent = Node(intersection.inter1_coord, None)
             print(self, '\n')
@@ -1315,9 +1321,15 @@ class Node:
                 else:
                     ### Step 4:
                     print(f"Step 4: extending the current linkedlist with a node of value intersection.inter2_edge.end: {intersection.inter2_edge.end}")
-                    print(f"and parent intersection.pre_inter2_node.parent: {repr(intersection.pre_inter2_node.parent)}")
-                    # self.extend(Node(intersection.inter2_edge.end, intersection.pre_inter2_node.parent))  #doesn't work for [-3] when mirroed
-                    self.extend(Node(intersection.pre_inter2_node.parent.vertex, intersection.pre_inter2_node.parent))  
+                    # Special Step 4: when one edge has two intersections
+                    if intersection.inter1_edge == intersection.inter2_edge:
+                        print(f"and tmp node stored in step1: {repr(tmp_2inter_1edge_node)}")
+                        self.extend(Node(intersection.pre_inter2_node.parent.vertex, tmp_2inter_1edge_node))  
+
+                    else:
+                        print(f"and parent intersection.pre_inter2_node.parent: {repr(intersection.pre_inter2_node.parent)}")
+                        # self.extend(Node(intersection.inter2_edge.end, intersection.pre_inter2_node.parent))  #doesn't work for [-3] when mirroed
+                        self.extend(Node(intersection.pre_inter2_node.parent.vertex, intersection.pre_inter2_node.parent))  
             print(self, '\n')
 
             print()
@@ -2582,6 +2594,23 @@ class Edge:
             # it's either infinite intersections if same line or no intersection if different lines
             return None
 
+    def intersects(self, other: Edge) -> bool:
+        '''
+        checks if two edges intersect or not
+        '''
+        hypothetical_intersection = self.intersection(other)
+        if hypothetical_intersection is None:
+            return False
+
+        return ((((self.start.x < hypothetical_intersection.x and hypothetical_intersection.x < self.edge.x) 
+                    or (self.start.x > hypothetical_intersection.x and hypothetical_intersection.x > self.edge.x)) 
+                and ((self.start.x < hypothetical_intersection.y and hypothetical_intersection.x < self.edge.y) 
+                    or (self.start.x > hypothetical_intersection.y and hypothetical_intersection.x > self.edge.y)))
+            and (((other.start.x < hypothetical_intersection.x and hypothetical_intersection.x < other.edge.x) 
+                    or (other.start.x > hypothetical_intersection.x and hypothetical_intersection.x > other.edge.x)) 
+                and ((other.start.x < hypothetical_intersection.y and hypothetical_intersection.x < other.edge.y) 
+                    or (other.start.x > hypothetical_intersection.y and hypothetical_intersection.x > other.edge.y))))
+
     def is_same_direction(self, other: Edge) -> bool:
         '''
         :param self: edge1
@@ -2647,6 +2676,13 @@ class Edge:
         '''
         return f"{self.start} -> {self.end} : thickness{self.thickness}"
 
+    @property
+    def isnotvertex(self) -> bool:
+        '''
+        tests whether edges has different start and end coords or not
+        '''
+        return not (abs(self.delta_x) == 0 and abs(self.delta_y) == 0)
+
 
 class Graph:
     '''
@@ -2665,13 +2701,14 @@ class Graph:
     '''
     # class variables
     used_colors = set()
-    TINY_EDGE_OFFSET = 0.2
+    TINY_EDGE_OFFSET = 0.1
     CURVE_THRESHOLD_LENGTH = 0.8
 
-    # Debuggin switches
+    # Debugging switches - defaulted to False
+    DEBUG_SEPERATE = False
+    DEBUG_ORDERED_EDGES = False
     DEBUG_APPLY_OFFSET = False
     DEBUG_FILTER_TINY_EDGES = False
-    DEBUG_ORDERED_EDGES = False
     DEBUG_TO_SINGLY_LINKEDLIST = False
 
     def __init__(self, vertices: list[Coordinate] = []):
@@ -2717,7 +2754,7 @@ class Graph:
         '''
         # checking if it's an edge
         if abs(edge.delta_x) == 0 and abs(edge.delta_y) == 0:
-            raise ValueError("not an edge, it's a point")
+            raise ValueError(f"not an edge, it's a point\n{edge}")
 
         # Adding only if it's not there, ensure not duplicates
         if edge not in self.vertex_edges[edge.start]:
@@ -2730,7 +2767,7 @@ class Graph:
         if edge.start not in self.vertex_vertices[edge.end]:
             self.vertex_vertices[edge.end].append(edge.start)
 
-    def ordered_edges(self, ignore_non_tree=False) -> list[Ezdge]:
+    def ordered_edges(self, ignore_non_tree=False) -> list[Edge]:
         '''
         DP algorithm to order edges,
         #NOTE: HIGHLY DEPENDENT ON 'Edge.anticlockwise_successors()'
@@ -2780,7 +2817,9 @@ class Graph:
                     else:
                         raise ValueError("Use Graph.ordered_edges_non_tree() for non-tree graphs")
                 
-        # Edge.visualize_edges(ordered_edges, speed=1)
+        if Graph.DEBUG_ORDERED_EDGES:
+            Edge.visualize_edges(ordered_edges, speed=1, hide_turtle=False, line_width=2, terminate=False)
+
         return ordered_edges
 
     @property
@@ -2879,7 +2918,7 @@ class Graph:
         else:
             turtle.showturtle()
 
-        colors = ['black', 'red', 'blue', 'light blue', 'green', 'brown', 'dark green', 'orange', 'gray', 'indigo']
+        colors = ['black', 'red', 'blue', 'light blue', 'green', 'brown', 'dark green', 'orange', 'gray', 'indigo', 'dark blue', 'dark red']
         color = random.choice(colors)
         while color in Graph.used_colors:
             color = random.choice(colors)
@@ -3004,11 +3043,21 @@ class Graph:
                 # print()
         
         # Removing duplicate edges
-        #TODO
+        #TODO??!?
         # for graph_ind, graph in enumerate(seperated_graphs):
         #     for vertex in graph.vertex_edges:
         #         seperated_graphs[graph_ind].vertex_edges[vertex] = list(set(graph.vertex_edges[vertex]))
 
+        #TODO:
+        ### Joining graphs that connect through mathematical intersection only not vertex appearance on multiple series of coords
+
+        if Graph.DEBUG_SEPERATE:
+
+            # for graph in seperated_graphs[:-1]:
+            #     graph.visualize(speed=0, line_width=1, x_offset=25, y_offset=25, multiplier = 10, terminate=False)
+            # seperated_graphs[-1].visualize(speed=0, line_width=1, x_offset=25, y_offset=25, multiplier = 10, terminate=True)
+
+            seperated_graphs[9].visualize(speed=0, line_width=1, x_offset=25, y_offset=25, multiplier = 10, terminate=True)
 
         return seperated_graphs
 
@@ -3124,12 +3173,17 @@ class Graph:
                         y = edge.start.y + abs_offset
 
                 elif prev_gradient == gradient:
-                    if ind != 0:
-                        x = current_edge.end.x
-                        y = current_edge.end.y
-                    else:
-                        raise ValueError('This case is not implemented yet')
-                        pass #TODO:
+                    # print('please be hererere')
+                    # if ind != 0:
+                    #     x = current_edge.end.x
+                    #     y = current_edge.end.y
+                    # else:
+                    #     raise ValueError('This case is not implemented yet')
+                    #     pass #TODO:
+                    
+                    # BUG FOUND!
+                    # if both lines are of same gradient after each other then they should be considered the same line
+                    continue
 
                 else:  # both gradient different and not infinity and not 0
                     x = round((y_intercept - prev_y_intercept) / (prev_gradient - gradient), 3)
@@ -3155,6 +3209,7 @@ class Graph:
                         print(f'Previous offseted Vertex: {prev_vertex}')
                     else:
                         print(f'No prev offseted vertex for first iterations')
+
                     if prev_gradient != Infinity():
                         print(f'Previous offseted edge linear equations:\ny = {prev_gradient}*x + {prev_y_intercept}')
                     else:
@@ -3449,14 +3504,17 @@ class Graph:
                 if abs(edge.delta_x) <= Graph.TINY_EDGE_OFFSET and abs(edge.delta_y) <= Graph.TINY_EDGE_OFFSET:
                     edges_to_be_removed.append(edge)
         
+        if Graph.DEBUG_FILTER_TINY_EDGES:
+            print("\n\n\n------> Removed Edges:")
+
         for edge in edges_to_be_removed:
             self.remove_edge(edge)
 
-        if Graph.DEBUG_FILTER_TINY_EDGES:
-            print("Removed Edges:")
-            for edge in edges_to_be_removed:
+            if Graph.DEBUG_FILTER_TINY_EDGES:
                 print(edge)
-            print()
+
+        if Graph.DEBUG_FILTER_TINY_EDGES:
+            print("\n\n")
 
     @classmethod
     def join(cls, *graphs: Graph) -> Graph:
