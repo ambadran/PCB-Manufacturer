@@ -539,6 +539,7 @@ def get_laser_coordinates_lists(gerber: Gerber, debug=False) -> list[list[Coordi
         Graph.DEBUG_FILTER_TINY_EDGES = False
         Graph.DEBUG_TO_SINGLY_LINKEDLIST = False
         Node.DEBUG_ADD_COMPPAD = True  #TODO: current it always shows debugging info
+        Node.DEBUG_RECTANGLE_COMPPAD = True
 
     # converting trace gerber blocks to one big graph
     graph_unsep_unoff: Graph = gerber.blocks_to_graph(gerber.blocks[BlockType.Conductor])
@@ -560,8 +561,8 @@ def get_laser_coordinates_lists(gerber: Gerber, debug=False) -> list[list[Coordi
 
     # Incorporating component pads to the linked lists
     comppad_blocks: list[Block] = gerber.blocks[BlockType.ComponentPad]
-    # linkedlists_sep_off_comppad: list[Node] = [linkedlist.add_comppad(comppad_blocks) for linkedlist in linkedlists_sep_off]
-    linkedlists_sep_off_comppad: list[Node] = linkedlists_sep_off[1].add_comppad(comppad_blocks, terminate_after=True)
+    linkedlists_sep_off_comppad: list[Node] = [linkedlist.add_comppad(comppad_blocks) for linkedlist in linkedlists_sep_off]
+    # linkedlists_sep_off_comppad: list[Node] = linkedlists_sep_off[6].add_comppad(comppad_blocks, terminate_after=True)
 
     raise ValueError('STOP')
 

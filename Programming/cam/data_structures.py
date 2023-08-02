@@ -133,21 +133,47 @@ class Intersection:
             outside_inter_coords = verts_with_inter[verts_with_inter.index(intersection.inter1_coord)+1:]
             outside_inter_coords.extend(verts_with_inter[:verts_with_inter.index(intersection.inter2_coord)])
 
+        if Node.DEBUG_RECTANGLE_COMPPAD:
+            print('\n\n\n')
+            print('\tRECTANGLE_COMMPAD DEBUG INFO:')
+            print(outside_inter_coords, 'outside_inter_coords')
+            print(between_inter_coords, 'between_inter_coords')
+
+
         ### STEP2: choosing outside_inter_coords and between_inter_coords ;)
         #TODO: still can't make a devisive algorithm
 
-        print('\n\n\n')
-        print(outside_inter_coords, 'outside_inter_coords')
-        print(between_inter_coords, 'between_inter_coords')
-        # Case 1: when one of them is empty
-        if not between_inter_coords:
-            passed_vertices = outside_inter_coords
+        ## Case 1: when one of them is empty
+        #TODO: PLEASE REWRITE THIS HORRIBLE TERRIBLE LOGIC
+        if (not between_inter_coords) or (not outside_inter_coords):
+            # Case 1a: the list with all the 4 coords is inside polygon aka inside trace, thus no comppad coords to be drawn
+            for coord in outside_inter_coords:
+                if coord.inside_polygon(trace_nodes):
+                    passed_vertices = []
+                    case3_1 = False
+                    break
+            else:
+                case3_1 = True
+            
+            for coord in between_inter_coords:
+                if coord.inside_polygon(trace_nodes):
+                    passed_vertices = []
+                    case3_2 = False
+                    break
+            else:
+                case3_2 = True
 
-        elif not outside_inter_coords:
-            passed_vertices = between_inter_coords
+            if not case3_1 and not case3_2:
+                raise ValueError("HOW?! WHY?! WHAT?! ;;;;(")
 
+            # Case 1b: the 4 coords are not inside trace, thus the passing coords are all the four coords where ever they are, outside or between
+            # NOTE: this case should be after having both case3_1 and 2 as True
+            if case3_1 and case3_2:
+                passed_vertices = outside_inter_coords if outside_inter_coords else between_inter_coords
+
+
+        ## Case 2: if between or outside has inbetween vertices
         else:
-            # Case 2: if between or outside has inbetween vertices
             for coord in outside_inter_coords:
                 if coord.inside_polygon(trace_nodes):
                     passed_vertices = between_inter_coords
@@ -184,16 +210,20 @@ class Intersection:
                 elif not comppad_outsidecoords_dir:
                     passed_vertices = outside_inter_coords
 
-        print('\n\n\n')
 
         if Node.DEBUG_RECTANGLE_COMPPAD:
-            print('\n\n\n')
+            print('\n\n')
             print(verts_with_inter, 'verts with inter\n')
             print(between_inter_coords, 'between inter coords\n')
             print(outside_inter_coords, 'outside inter coords\n')
             print('\n\n\n')
 
         ### STEP 2: ORDERING THE VERTICES
+
+        # if no passing vertices
+        if not passed_vertices:
+            return None
+
         min_v_inter1 = Edge(intersection.inter1_coord, passed_vertices[0], None).absolute_length
         min_v_1 = passed_vertices[0]
         min_v_inter2 = Edge(intersection.inter2_coord, passed_vertices[0], None).absolute_length
@@ -1297,7 +1327,9 @@ class Node:
             print(self, '\n')
 
             ### Step 2:
-            self.extend(Intersection.generate_comppad_nodes(intersection, trace_nodes))
+            generated_comppad_nodes = Intersection.generate_comppad_nodes(intersection, trace_nodes)
+            if generated_comppad_nodes:
+                self.extend(generated_comppad_nodes)
             print("Step 2: fill in the componentpad nodes\n", f"{self}\n")
 
             ### Step 3:
@@ -1311,6 +1343,7 @@ class Node:
                 self.pre_last_node.parent = self  # I don't use normal .make_it_loop() because the last node is already added in step 3
                 stupid_corner_case_flag = False
 
+            #TODO: fix this if-else rubbish into elif
             else:
 
                 if single_line_trace_with_comppad_at_ends_only_flag:
@@ -1324,7 +1357,7 @@ class Node:
                     # Special Step 4: when one edge has two intersections
                     if intersection.inter1_edge == intersection.inter2_edge:
                         print(f"and tmp node stored in step1: {repr(tmp_2inter_1edge_node)}")
-                        self.extend(Node(intersection.pre_inter2_node.parent.vertex, tmp_2inter_1edge_node))  
+                        self.extend(tmp_2inter_1edge_node)
 
                     else:
                         print(f"and parent intersection.pre_inter2_node.parent: {repr(intersection.pre_inter2_node.parent)}")
