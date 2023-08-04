@@ -15,6 +15,7 @@ import sys
 turtle_window_size_x = 850
 turtle_window_size_y = 550
 LASER_BEAM_THICKNESS = 0.05
+CIRCLE_RESOLUTION = 35  # use 15 for debugging
 
 ### METHOD CALLS ###
 sys.setrecursionlimit(10000)  # apparently I did reach the maximum recursion limit for a trace represented as a linkedlist in unipolar_driver.gbr trace No.10
@@ -251,18 +252,30 @@ class Intersection:
         if not passed_vertices:
             return None
 
-        ### STEP 3: ORDERING THE VERTICES
-        ### it's essentially a Backtracking algorithm to find an order that works
+        ### STEP 3: ORDERING THE VERTICES (I love this one)
         ###     input: passed_vertices
         ###     output: ordered_rec_coords
+        rec_coords_extended = vertices
+        rec_coords_extended.extend(vertices)
 
-        #TODO: finish the algorithm
-        frontier = Stack()
+        for first_coord in passed_vertices:
+            ordered_rec_coords = [first_coord]
+            first_element_ind = rec_coords_extended.index(first_coord)  # it always finds the first occurance so must work
 
-        # ordered_rec_coords = []
-        # while (len(ordered_rec_coords) != len(passed_vertices)) or not Intersection.rec_coords_order_correct(ordered_rec_coords, vertices):
-        #     ordered_rec_coords.
+            for increment in range(1, len(passed_vertices)):
+                next_correct_coord = rec_coords_extended[first_element_ind+increment]
+                if next_correct_coord in passed_vertices:
+                    ordered_rec_coords.append(next_correct_coord)
 
+                else:  
+                    # next correct coord not in passed vertices so must try another first coord
+                    break
+
+            else:  
+                # all passed_vertices were correctly found in order so stopping the loop and continuing with found ordered_rec_coords
+                break
+        else:
+            raise ValueError(f"Somehow couldn't recreate a correct sequence from passed_vertices {passed_vertices}")
 
 
         # coords are reversed to create the linkedlist 
@@ -496,7 +509,7 @@ class Intersection:
         pass
 
     @staticmethod
-    def generate_comppad_nodes(intersection: Intersection, trace_nodes: Node, resolution: int=15) -> Node:
+    def generate_comppad_nodes(intersection: Intersection, trace_nodes: Node, resolution: int=CIRCLE_RESOLUTION) -> Node:
         '''
         generates the coordinates of the component pad in the form of a linkedlist
 
@@ -520,7 +533,7 @@ class Intersection:
             # return Intersection.generate_comppad_nodes_oval(intersection, resolution)
 
     @staticmethod
-    def generate_comppad_nodes_circle_full(coordinate: Coordinate, block, Block, resolution: int=15) -> Node:
+    def generate_comppad_nodes_circle_full(coordinate: Coordinate, block, Block, resolution: int=CIRCLE_RESOLUTION) -> Node:
         '''
         Generates full coordinate linkedlist of a circle
         '''
@@ -594,14 +607,14 @@ class Intersection:
         return Node.from_list([v1, v2, v3, v4, v1][::-1])
 
     @staticmethod
-    def generate_comppad_nodes_oval_full(coordinate: Coordinate, block: Block, resolution: int=15) -> Node:
+    def generate_comppad_nodes_oval_full(coordinate: Coordinate, block: Block, resolution: int=CIRCLE_RESOLUTION) -> Node:
         '''
         Generates full coordinate linkedlist of a circle
         '''
         pass
 
     @staticmethod
-    def generate_non_intersecting_comppad_nodes(coordinate: Coordinate, block: Block, resolution: int=15) -> Node:
+    def generate_non_intersecting_comppad_nodes(coordinate: Coordinate, block: Block, resolution: int=CIRCLE_RESOLUTION) -> Node:
         '''
         Generates full coordinates of wanted comppad for non_intersection compponent pads
         '''

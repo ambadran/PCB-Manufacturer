@@ -522,7 +522,7 @@ def generate_ink_laying_gcode(gerber: Gerber, tool: Callable, tip_thickness: flo
     return gcode
 
 
-def get_laser_coordinates_lists(gerber: Gerber, debug=False) -> list[list[Coordinate]]:
+def get_laser_coordinates_lists(gerber: Gerber, include_edge_cuts: bool = True, debug: bool =False) -> list[list[Coordinate]]:
     '''
     Get list of list of coordinates, each list is one continious piece of trace.
 
@@ -530,6 +530,8 @@ def get_laser_coordinates_lists(gerber: Gerber, debug=False) -> list[list[Coordi
     go to first coordinate in the next list, turn laser on , go to all coordiantes, then laser OFF, etc..
 
     :param gerber: Gerber Object
+    :param include_edge_cuts: includes the edge cuts as part of pcb laser marking process
+    :param debug: enable debugging info
     :return: list of list of coordinates of one continious trace
     '''
     if debug:
@@ -538,8 +540,8 @@ def get_laser_coordinates_lists(gerber: Gerber, debug=False) -> list[list[Coordi
         Graph.DEBUG_APPLY_OFFSET = False
         Graph.DEBUG_FILTER_TINY_EDGES = False
         Graph.DEBUG_TO_SINGLY_LINKEDLIST = False
-        Node.DEBUG_ADD_COMPPAD = True  #TODO: current it always shows debugging info
-        Node.DEBUG_RECTANGLE_COMPPAD = True
+        Node.DEBUG_ADD_COMPPAD = False  #TODO: current it always shows debugging info
+        Node.DEBUG_RECTANGLE_COMPPAD = False
 
     # converting trace gerber blocks to one big graph
     graph_unsep_unoff: Graph = gerber.blocks_to_graph(gerber.blocks[BlockType.Conductor])
@@ -562,21 +564,22 @@ def get_laser_coordinates_lists(gerber: Gerber, debug=False) -> list[list[Coordi
     # Incorporating component pads to the linked lists
     comppad_blocks: list[Block] = gerber.blocks[BlockType.ComponentPad]
     linkedlists_sep_off_comppad: list[Node] = [linkedlist.add_comppad(comppad_blocks) for linkedlist in linkedlists_sep_off]
-    # linkedlists_sep_off_comppad: list[Node] = linkedlists_sep_off[10].add_comppad(comppad_blocks, terminate_after=True)
-
-    raise ValueError('STOP')
 
     # Adding non-intersecting comppads
     linkedlists_sep_off_comppad.extend(Node.get_non_intersecting_comppads(comppad_blocks))
 
-    # Converting list of nodes to list of list of coordiantes
-    coordlist_sep_off_comppad = [node.to_list() for node in linkedlists_sep_off_comppad]
-
-    # visuzlizing
+    # visuzlizing for debugging
     if debug:
         for linkedlist in linkedlists_sep_off_comppad[:-1]:
             linkedlist.visualize(multiplier=15, x_offset=27, speed=5, terminate=False)
         linkedlists_sep_off_comppad[-1].visualize(multiplier=15, x_offset=27, speed=5, terminate=True)
+
+    # Converting list of nodes to list of list of coordiantes
+    coordlist_sep_off_comppad = [node.to_list() for node in linkedlists_sep_off_comppad]
+
+    # Adding edge cuts if wanted
+    if include_edge_cuts:
+        coordlist_sep_off_comppad.append(gerber.coordinates[BlockType.Profile])
 
     return coordlist_sep_off_comppad
 
