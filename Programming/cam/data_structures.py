@@ -7,7 +7,19 @@ import random
 import math
 from enum import Enum
 from heapq import heappush, heappop
+import sys
 
+############################ GLOBAL DEFS ############################
+
+### VARIABLES ###
+turtle_window_size_x = 850
+turtle_window_size_y = 550
+LASER_BEAM_THICKNESS = 0.05
+
+### METHOD CALLS ###
+sys.setrecursionlimit(10000)  # apparently I did reach the maximum recursion limit for a trace represented as a linkedlist in unipolar_driver.gbr trace No.10
+
+### GLOBAL FUNCS ###
 def sin(angle):
     return math.sin(math.radians(angle))
 
@@ -26,7 +38,9 @@ def acos(value):
 def atan(value):
     return math.degrees(math.atan(value))
 
-LASER_BEAM_THICKNESS = 0.05
+####################################################################################################
+
+
 
 class Stack:
     """
@@ -81,6 +95,19 @@ class Intersection:
     stupid_corner_case_flag: bool = False  # fuck the stupid corner case
 
     @staticmethod
+    def rec_coords_order_correct(ordered_rec_coords: list, rec_vertices: list[Coordinate, Coordinate, Coordinate, Coordinate]) -> bool:
+        '''
+        checks the rectangle coord whether they are indeed in order or form a weird shape not a rectangle
+        '''
+        rec_vertices.extend(rec_vertices)  # to ensure if we start from the last index we go back to first
+        first_element_ind = rec_vertices.index(ordered_rec_coords[0])  # it always finds the first occurance so must work
+        for increment, coord in enumerate(ordered_rec_coords):
+            if coord != rec_vertices[first_element_ind+increment]:
+                return False
+
+        return True
+
+    @staticmethod
     def generate_comppad_nodes_rectangle(intersection: Intersection, trace_nodes: Node, resolution: int) -> Node:
         '''
         generates the coordinates of the rectangle component pad 
@@ -104,9 +131,10 @@ class Intersection:
         e4 = Edge(v4, v1, None)
         edges = [e1, e2, e3, e4]
 
-        ### STEP 1: Getting the vertices of the rectangle comppad that will be 
-        ### displayed in the pcb (not the ones inbetween the trace)
-        # puting intersection_coords in their proper order in the rec vertices list
+        ### STEP 1&2: Getting only vertices of the rectangle comppad that should be displayed
+        ### STEP 1: seperating the 4 four vertices into two groups: between_inter_coords and outside_inter_coords
+        ###         input: vertices, edges
+        ###         output: outside_inter_coords, between_inter_coords
         verts_with_inter = deepcopy(vertices)
         for ind, edge in enumerate(edges):
             if intersection.inter1_coord.inside_edge(edge):
@@ -141,7 +169,8 @@ class Intersection:
 
 
         ### STEP2: choosing outside_inter_coords and between_inter_coords ;)
-        #TODO: still can't make a devisive algorithm
+        ###     input: outside_inter_coords, between_inter_coords
+        ###     output: passed_vertices (it's just one of outside_inter_coords or between_inter_coords renamed to passed_vertices)
 
         ## Case 1: when one of them is empty
         #TODO: PLEASE REWRITE THIS HORRIBLE TERRIBLE LOGIC
@@ -218,49 +247,23 @@ class Intersection:
             print(outside_inter_coords, 'outside inter coords\n')
             print('\n\n\n')
 
-        ### STEP 2: ORDERING THE VERTICES
-
         # if no passing vertices
         if not passed_vertices:
             return None
 
-        min_v_inter1 = Edge(intersection.inter1_coord, passed_vertices[0], None).absolute_length
-        min_v_1 = passed_vertices[0]
-        min_v_inter2 = Edge(intersection.inter2_coord, passed_vertices[0], None).absolute_length
-        min_v_2 = passed_vertices[0]
-        for vertex in passed_vertices[1:]:
-            current_v_inter1 = Edge(intersection.inter1_coord, vertex, None).absolute_length
-            current_v_inter2 = Edge(intersection.inter2_coord, vertex, None).absolute_length
+        ### STEP 3: ORDERING THE VERTICES
+        ### it's essentially a Backtracking algorithm to find an order that works
+        ###     input: passed_vertices
+        ###     output: ordered_rec_coords
 
-            if current_v_inter1 < min_v_inter1:
-                min_v_inter1 = current_v_inter1
-                min_v_1 = vertex
+        #TODO: finish the algorithm
+        frontier = Stack()
 
-            if current_v_inter2 < min_v_inter2:
-                min_v_inter2 = current_v_inter2
-                min_v_2 = vertex
+        # ordered_rec_coords = []
+        # while (len(ordered_rec_coords) != len(passed_vertices)) or not Intersection.rec_coords_order_correct(ordered_rec_coords, vertices):
+        #     ordered_rec_coords.
 
-        the_rest = [v for v in passed_vertices if (v != min_v_1 and v != min_v_2)]
-        if len(the_rest) == 1:
-            middle_vertices = the_rest
 
-        elif len(the_rest) == 2:
-            min_v_inter1_1 = Edge(intersection.inter1_coord, the_rest[0], None).absolute_length
-            min_v_inter1_2 = Edge(intersection.inter1_coord, the_rest[1], None).absolute_length
-
-            if min_v_inter1_1 < min_v_inter1_2:
-                middle_vertices = [the_rest[0], the_rest[1]]
-
-            else:
-                middle_vertices = [the_rest[1], the_rest[0]]
-
-        else:
-            middle_vertices = []
-
-        ordered_rec_coords = []
-        ordered_rec_coords.append(min_v_1)
-        ordered_rec_coords.extend(middle_vertices)
-        ordered_rec_coords.append(min_v_2)
 
         # coords are reversed to create the linkedlist 
         ordered_rec_coords.reverse()
@@ -870,6 +873,7 @@ class Node:
         '''
         visualizes the linked list
         '''
+        turtle.Screen().setup(turtle_window_size_x, turtle_window_size_y)
         skk = turtle.Turtle()
         turtle.width(line_width)
         turtle.speed(speed)
@@ -1280,7 +1284,7 @@ class Node:
 
         :returns: the linkedlist of the trace with its comppads ;)
         '''
-        print('NEW CALLLL!!!!!!\n')
+        print('NEW .add_comppad CALLLL!!!!!!\n')
 
         ### Firstly: Find all the intersection data between all the traces and all the component pads :)
         trace_nodes = deepcopy(self)
