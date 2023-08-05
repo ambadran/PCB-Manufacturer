@@ -13,7 +13,7 @@ import sys
 
 ### VARIABLES ###
 turtle_window_size_x = 850
-turtle_window_size_y = 550
+turtle_window_size_y = 580
 LASER_BEAM_THICKNESS = 0.05
 CIRCLE_RESOLUTION = 35  # use 15 for debugging
 
@@ -1392,6 +1392,7 @@ class Node:
 
         return self
 
+    @staticmethod
     def get_non_intersecting_comppads(blocks: list[Block], terminate_after=False) -> list[Node]:
         '''
         :param block: componentPad Block
@@ -1416,6 +1417,27 @@ class Node:
             non_intersecting_comppads_nodes.append(Intersection.generate_non_intersecting_comppad_nodes(coordinate, block))
 
         return non_intersecting_comppads_nodes
+
+    @staticmethod
+    def get_edge_cut_node(edge_cut_coords: list[Coordinate]) -> Node:
+        '''
+        extracts the edge cuts
+
+        :param edge_cut_coords: list of coordinates from the edge cut gerber block -> gerber.coordinates[BlockType.Profile]
+        :return: Node of the edge cut coordiantes
+        '''
+        # getting the coords of the edge cut rectangle
+        bottom_left, top_right = Coordinate.get_min_max(edge_cut_coords)
+        bottom_right = Coordinate(top_right.x, bottom_left.y)
+        top_left = Coordinate(bottom_left.x, top_right.y)
+
+        # Creating the node
+        edge_cut_node = Node(bottom_left, Node(bottom_right, Node(top_right, Node(top_left, None))))
+        
+        # Making it a ring node
+        edge_cut_node.make_it_loop()
+
+        return edge_cut_node
 
     def __repr__(self) -> str:
         '''
@@ -2583,6 +2605,7 @@ class Edge:
         '''
         visualizes the sequence of edges in a list 
         '''
+        turtle.Screen().setup(turtle_window_size_x, turtle_window_size_y)
         skk = turtle.Turtle()
         turtle.width(line_width)
         turtle.speed(speed)
@@ -2960,6 +2983,7 @@ class Graph:
         '''
         Uses Python Turtle graphs to draw the graph
         '''
+        turtle.Screen().setup(turtle_window_size_x, turtle_window_size_y)
         skk = turtle.Turtle()
         turtle.width(line_width)
         turtle.speed(speed)

@@ -67,7 +67,8 @@ def main(settings: Settings):
     # Creating the PCB trace laser Toner Transfer Gcode
     if settings.all_gcode or settings.laser:
         gcode += generate_pcb_trace_gcode(gerber, settings.tool, settings.optimum_laser_Z_position, 
-                settings.pcb_trace_feedrate, settings.laser_power, debug=settings.debug_laser)
+                settings.pcb_trace_feedrate, settings.laser_power, settings.include_edge_cuts, settings.laser_passes, 
+                debug=settings.debug_laser)
 
     # Creating the holes_gcode
     if settings.all_gcode or settings.holes:
@@ -84,6 +85,7 @@ def main(settings: Settings):
 
 if __name__ == '__main__':
 
+    # just a test
 
     ### default settings dict 
     default_settings_dict = {

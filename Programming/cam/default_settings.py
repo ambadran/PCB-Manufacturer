@@ -45,6 +45,12 @@ default_settings_dict = {
     "pcb_trace_feedrate": 600,
     # Power intensities
     "laser_power": 150,
+    # Include edge cut in pcb laser marking
+    "include_edge_cuts": True,
+    # Laser Gcode Passes
+    "laser_passes": 1,
+    # Show laser Gcode Creation Debugging info and visualization :)
+    'debug_laser': False,
 
     # destination
     'dest': '/home/ambadran717/gcode_files/default.nc',
@@ -59,7 +65,6 @@ default_settings_dict = {
     'laser': False,
     'holes': False,
 
-    'debug_laser': False
 
 }
 

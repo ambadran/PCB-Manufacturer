@@ -12,7 +12,7 @@ from typing import Optional
 
 def addArg(name: str, help_str: str, var_type, one_letter: Optional[str]=None) -> None:
     '''
-    implements parser.add_argument()
+    implements parser.add_argument() easily
     '''
     global parser
     global default_settings_dict
@@ -65,7 +65,8 @@ if __name__ == '__main__':
     addArg('holes', "Adds hole drilling gcode to Gcode file", bool)
     addArg('ink', "Adds ink laying gcode to Gcode file", bool)
     addArg('laser', "Adds laser drawing gcode to Gcode file", bool)
-
+    addArg('include_edge_cuts', "Include Edge cuts in laser marking process", bool)
+    addArg('laser_passes', "Number of passes for laser marking Gcode", int)
     addArg('debug_laser', "Shows Simulation of the PCB laser trace coordinates", bool)
 
     ### Extracting User inputs!

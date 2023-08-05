@@ -522,7 +522,7 @@ def generate_ink_laying_gcode(gerber: Gerber, tool: Callable, tip_thickness: flo
     return gcode
 
 
-def get_laser_coordinates_lists(gerber: Gerber, include_edge_cuts: bool = True, debug: bool =False) -> list[list[Coordinate]]:
+def get_laser_coordinates_lists(gerber: Gerber, include_edge_cuts: bool, debug: bool =False) -> list[list[Coordinate]]:
     '''
     Get list of list of coordinates, each list is one continious piece of trace.
 
@@ -568,6 +568,10 @@ def get_laser_coordinates_lists(gerber: Gerber, include_edge_cuts: bool = True, 
     # Adding non-intersecting comppads
     linkedlists_sep_off_comppad.extend(Node.get_non_intersecting_comppads(comppad_blocks))
 
+    # Adding edge cuts if wanted
+    if include_edge_cuts:
+        linkedlists_sep_off_comppad.append(Node.get_edge_cut_node(gerber.coordinates[BlockType.Profile]))
+
     # visuzlizing for debugging
     if debug:
         for linkedlist in linkedlists_sep_off_comppad[:-1]:
@@ -577,21 +581,19 @@ def get_laser_coordinates_lists(gerber: Gerber, include_edge_cuts: bool = True, 
     # Converting list of nodes to list of list of coordiantes
     coordlist_sep_off_comppad = [node.to_list() for node in linkedlists_sep_off_comppad]
 
-    # Adding edge cuts if wanted
-    if include_edge_cuts:
-        coordlist_sep_off_comppad.append(gerber.coordinates[BlockType.Profile])
-
     return coordlist_sep_off_comppad
 
 
 def generate_pcb_trace_gcode(gerber_file: str, tool: Callable, optimum_focal_distance: int, 
-        feedrate: int, laser_power: int, debug: bool=False) -> str:
+        feedrate: int, laser_power: int, include_edge_cuts: bool, laser_passes: int, debug: bool=False) -> str:
     '''
     :param gerber_file: the file that we want to get the holes coordinate from
     :param tool: The tool function defined inside the get_tool_func closure function, it generates gcode to select wanted tool
     :param optimum_focal_distance: the distance at the laser is at its best focal distance
     :param feedrate: integer mm/minute, only for x and y movement, z movement is hardcoded here
     :param laser_power: laser intensity for toner transfer, please note that the value is 0-250, default value is 150 as tested.
+    :param passes: number of passes done by laser
+    :param debug: passed to get_laser_coordinates_lists
 
     :return: This function creates the gcode content as string according to the input coordinates
     '''
@@ -614,14 +616,22 @@ def generate_pcb_trace_gcode(gerber_file: str, tool: Callable, optimum_focal_dis
 
     ### PCB trace laser marking Gcode
     # Getting Offset Coordinates for laser module to burn in 
-    coordinate_lists = get_laser_coordinates_lists(gerber_file, debug=debug)
-    for coordinate_list in coordinate_lists:
-        gcode += move(CoordMode.ABSOLUTE, coordinate=coordinate_list[0])
-        gcode += "M3\n"
-        for coordinate in coordinate_list[1:]:
-            gcode += move(CoordMode.ABSOLUTE, coordinate=coordinate)
-        gcode += move(CoordMode.ABSOLUTE, coordinate=coordinate_list[0])
-        gcode += "M5\n"
+    # The bulk of the code is in this single line ;)
+    coordinate_lists = get_laser_coordinates_lists(gerber_file, include_edge_cuts, debug=debug)  
+
+    gcode += f"Number of passes: {laser_passes}\n\n"
+    for pass_num in range(laser_passes):
+        gcode += f'; Pass number: {pass_num}\n'
+
+        for coordinate_list in coordinate_lists:
+            gcode += move(CoordMode.ABSOLUTE, coordinate=coordinate_list[0])
+            gcode += "M3\n"
+
+            for coordinate in coordinate_list[1:]:
+                gcode += move(CoordMode.ABSOLUTE, coordinate=coordinate)
+
+            gcode += move(CoordMode.ABSOLUTE, coordinate=coordinate_list[0])  #TODO: ??!??!?! what is this ???!?!
+            gcode += "M5\n"
 
     gcode += '\n'
 
