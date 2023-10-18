@@ -18,3 +18,5 @@ __pychache__
 /Programming/unipolar_driver/controller_mac.X/build/
 /Programming/unipolar_driver/controller_mac.X/dist/
 *.lck
+/Programming/PCB_clamping_system/pcb-auto-clamping-controller.X/dist/
+/Programming/PCB_clamping_system/pcb-auto-clamping-controller.X/build/
