@@ -1,0 +1,13 @@
+"Id";"Designator";"Footprint";"Quantity";"Designation";"Supplier and ref";
+1;"Q2,Q4,Q1,Q3";"TO-92_Inline";4;"S8050";;;
+2;"R4,R3";"R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal";2;"330";;;
+3;"C1";"C_Disc_D3.0mm_W2.0mm_P2.50mm";1;"10nF";;;
+4;"DebuggerPins1,Output1";"PinHeader_1x05_P2.54mm_Vertical";2;"Conn_01x05_Female";;;
+5;"Input1";"PinHeader_1x03_P2.54mm_Vertical";1;"Conn_01x03_Female";;;
+6;"R1,R2";"R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal";2;"300";;;
+7;"D3,D4,D1,D2";"D_DO-34_SOD68_P7.62mm_Horizontal";4;"DIODE";;;
+8;"Debug/UART_pin1";"PinSocket_1x01_P2.54mm_Vertical";1;"Conn_01x01_Socket";;;
+9;"uC1";"DIP-8_W7.62mm";1;"PIC12F675-IP";;;
+10;"PowerRegulator1";"TO-220-3_Vertical";1;"LM7805_TO220";;;
+11;"CP1";"CP_Radial_D5.0mm_P2.50mm";1;"C_Polarized";;;
+12;"R5";"R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal";1;"10k";;;
