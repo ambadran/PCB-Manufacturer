@@ -74,7 +74,8 @@ def main(settings: Settings):
     if settings.all_gcode or settings.holes:
         gcode += generate_holes_gcode(gerber, settings.tool, settings.router_Z_up_position, 
                                       settings.router_Z_down_position, settings.router_feedrate_XY, 
-                                      settings.router_feedrate_Z, settings.spindle_speed)
+                                      settings.router_feedrate_Z_drilling, settings.router_feedrate_Z_up_from_pcb,
+                                      settings.spindle_speed)
 
     # Machine Deinit
     gcode += general_machine_deinit()
@@ -83,9 +84,8 @@ def main(settings: Settings):
     export_gcode(gcode, settings.dest)
 
 
+# just a test
 if __name__ == '__main__':
-
-    # just a test
 
     ### default settings dict 
     default_settings_dict = {

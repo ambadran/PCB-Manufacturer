@@ -21,3 +21,4 @@ __pychache__
 /Programming/PCB_clamping_system/pcb-auto-clamping-controller.X/dist/
 /Programming/PCB_clamping_system/pcb-auto-clamping-controller.X/build/
 */private.xml
+*.vim

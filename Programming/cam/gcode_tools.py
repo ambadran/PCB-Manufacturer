@@ -363,7 +363,8 @@ def get_tool_func(latch_offset_distance_in: int, latch_offset_distance_out: int,
 
 
 def generate_holes_gcode(gerber: Gerber, tool: Callable, motor_up_z_position: int, 
-        motor_down_z_position: int, feedrate_XY: int, feedrate_Z: int, spindle_speed: int) -> str:
+        motor_down_z_position: int, feedrate_XY: int, feedrate_Z_drilling: int, feedrate_Z_up_from_pcb: int, 
+        spindle_speed: int) -> str:
     '''
     Takes in String gerber file content, identifies the PCB holes and generates the Gcode to drill the holes from begging to end!
 
@@ -393,7 +394,7 @@ def generate_holes_gcode(gerber: Gerber, tool: Callable, motor_up_z_position: in
     gcode += f'S{spindle_speed} ; sets pwm speed when we enable it\n\n'
 
     # Moving Motor to proper up Z position and home position
-    gcode += move(CoordMode.ABSOLUTE, comment="Moving Spindle to UP Postion", z=motor_up_z_position, feedrate=feedrate_Z)
+    gcode += move(CoordMode.ABSOLUTE, comment="Moving Spindle to UP Postion", z=motor_up_z_position, feedrate=feedrate_Z_up_from_pcb)
     gcode += '\n'
 
     # Turn the DC motor on and wait two seconds
@@ -404,8 +405,8 @@ def generate_holes_gcode(gerber: Gerber, tool: Callable, motor_up_z_position: in
     coordinates = gerber.coordinates[BlockType.ComponentPad]
     for coordinate in coordinates:
         gcode += move(CoordMode.ABSOLUTE, coordinate=coordinate, feedrate=feedrate_XY)
-        gcode += move(CoordMode.ABSOLUTE, z=motor_down_z_position, feedrate=feedrate_Z)
-        gcode += move(CoordMode.ABSOLUTE, z=motor_up_z_position, feedrate=feedrate_Z)
+        gcode += move(CoordMode.ABSOLUTE, z=motor_down_z_position, feedrate=feedrate_Z_drilling)
+        gcode += move(CoordMode.ABSOLUTE, z=motor_up_z_position, feedrate=feedrate_Z_up_from_pcb)
     gcode += '\n'
 
     # deactivating the tool PWM

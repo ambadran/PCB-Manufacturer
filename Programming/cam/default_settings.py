@@ -22,11 +22,12 @@ default_settings_dict = {
 
     ### spindle tweaking values
     # Z positions
-    "router_Z_up_position": 20,
-    "router_Z_down_position": 25,
+    "router_Z_up_position": 10,
+    "router_Z_down_position": 13,
     # Feedrates
-    "router_feedrate_XY": 700,
-    "router_feedrate_Z": 10,
+    "router_feedrate_XY": 600,
+    "router_feedrate_Z_drilling": 1,
+    "router_feedrate_Z_up_from_pcb": 20,
     # Power intensities
     "spindle_speed": 230,
 
@@ -53,7 +54,7 @@ default_settings_dict = {
     'debug_laser': False,
 
     # destination
-    'dest': '/home/ambadran717/gcode_files/default.nc',
+    'dest': './default.gcode',
 
 
     # mirrored
