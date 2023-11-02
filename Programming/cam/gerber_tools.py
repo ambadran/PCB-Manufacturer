@@ -434,11 +434,11 @@ class Gerber:
 
 if __name__ == '__main__':
 
-    gerber_file_path = 'gerber_files/unipolar_driver.gbr'
+    gerber_file_path = '/home/mr-atom/circuit_projects/current_sensor/current_sensor/Gerber/current_sensor-F_Cu.gbr'
+    
     # gerber_file_path = 'gerber_files/test.gbr'
 
-    new_file_name = 'gerber_files/unipolar_driver_mirrored_and_offseted.gbr'
-
+    new_file_name = '/home/mr-atom/circuit_projects/current_sensor/current_sensor/Gerber/mirrored_recentered.gbr'
     # Offset PCB from (0, 0)
     x_offset = 2
     y_offset = 2

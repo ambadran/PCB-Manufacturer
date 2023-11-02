@@ -541,7 +541,7 @@ def get_laser_coordinates_lists(gerber: Gerber, include_edge_cuts: bool, debug: 
         Graph.DEBUG_APPLY_OFFSET = False
         Graph.DEBUG_FILTER_TINY_EDGES = False
         Graph.DEBUG_TO_SINGLY_LINKEDLIST = False
-        Node.DEBUG_ADD_COMPPAD = False  #TODO: current it always shows debugging info
+        Node.DEBUG_ADD_COMPPAD = False  #TODO: currently it always shows debugging info
         Node.DEBUG_RECTANGLE_COMPPAD = False
 
     # converting trace gerber blocks to one big graph

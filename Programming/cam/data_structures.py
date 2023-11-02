@@ -472,7 +472,7 @@ class Intersection:
         #TODO: shitty workaround, it comes here then it must invert the orientation
         # so i am going to recurse with a force invert option ;(
         if arc_coords_positive[0].inside_polygon(trace_nodes):
-            return Intersection.generate_comppad_nodes_circle(intersection, trace_nodes, resolution, force_invert=True)
+            return Intersection.generate_comppad_nodes_circle(intersection, trace_nodes, resolution, force_invert=not force_invert)
 
         ### Step 6: Get the final ordered list of coordinates
         # PLEASE refer to iPad. The combination are truly ENORMOUS and was difficult to derive ;)
@@ -882,7 +882,7 @@ class Node:
             
         return count
 
-    def visualize(self, hide_turtle=True, speed=0, x_offset=20, y_offset=20, line_width=1.5, multiplier=8, terminate=False) -> None:
+    def visualize(self, hide_turtle=True, speed=0, x_offset=40, y_offset=20, line_width=1.5, multiplier=8, terminate=False) -> None:
         '''
         visualizes the linked list
         '''
@@ -3651,10 +3651,10 @@ class Graph:
         # Checking if graph can be converted
         for vertex in self.vertex_vertices.keys():
             if len(self.vertex_vertices[vertex]) != 2:
-                raise ValueError("every vertices must point to two other vertices only")
+                raise ValueError(f"every vertices must point to two other vertices only, vertex: {vertex}")
 
             if len(self.vertex_edges[vertex]) != 2:
-                raise ValueError("every vertices must point to two other edges only")
+                raise ValueError(f"every vertices must point to two other edges only, vertex: {vertex}")
 
         #TODO: didn't test if the vertices list values of the current vertex has in their vertices list the current vertex value
 
