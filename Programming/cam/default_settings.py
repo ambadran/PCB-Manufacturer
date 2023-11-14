@@ -22,7 +22,7 @@ default_settings_dict = {
 
     ### spindle tweaking values
     # Z positions
-    "router_Z_up_position": 10,
+    "router_Z_up_position": 8,
     "router_Z_down_position": 13,
     # Feedrates
     "router_feedrate_XY": 600,

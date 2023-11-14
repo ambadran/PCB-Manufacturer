@@ -1,0 +1,12 @@
+"Id";"Designator";"Footprint";"Quantity";"Designation";"Supplier and ref";
+1;"D1";"D_DO-34_SOD68_P7.62mm_Horizontal";1;"D_Schottky";;;
+2;"Relay2,Relay1";"Relay_SPDT_SANYOU_SRD_Series_Form_C";2;"12v";;;
+3;"Q1";"TO-92_Inline";1;"S8050";;;
+4;"CircuitPowerControl1";"PinSocket_1x04_P2.54mm_Vertical";1;"Conn_01x04_Male";;;
+5;"AC_in1,AC_out1";"TerminalBlock_bornier-2_P5.08mm";2;"Screw_Terminal_01x02";;;
+6;"R3";"R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal";1;"470";;;
+7;"R1";"R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal";1;"10kohm";;;
+8;"R2";"R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal";1;"220";;;
+9;"C1";"C_Disc_D5.0mm_W2.5mm_P2.50mm";1;"100nF";;;
+10;"CP1";"CP_Radial_D5.0mm_P2.00mm";1;"100uF";;;
+11;"LED1";"D_A-405_P2.54mm_Vertical_AnodeUp";1;"RED";;;
