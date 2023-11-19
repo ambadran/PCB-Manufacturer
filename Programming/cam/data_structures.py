@@ -1311,10 +1311,11 @@ class Node:
         #     return ValueError('Node.get_intersections_data() ulters the linkedlist, THIS IS HIGHLY UNACCEPTABLE!')
 
         if self.single_line_trace_with_comppad_at_ends_only and len(intersections_data) != 2:
-            raise ValueError(f"WHAT THE FUCK?!??!?!?!??!!!!!???!!!!!!!\n{self}")
+            raise ValueError(f"WHAT THE FUCK?!??!?!?!??!!!!!???!!!!!!!\n{self}\n{[intersection.comppad_coord for intersection in intersections_data]}")
 
         if [intersection.stupid_corner_case_flag for intersection in intersections_data].count(True) > 1:
-            raise ValueError("Somehow the intersecion data extraction algorithm detected more than one stupid_corner_case ;(")
+            problematic_intersections = [intersecion for intersecion in intersections_data if intersecion.stupid_corner_case_flag]
+            raise ValueError(f"Somehow the intersecion data extraction algorithm detected more than one stupid_corner_case ;(: {problematic_intersections}")
 
         ### Secondly: remove all old vertices in between intersections and add new component pad vertices
         print()
@@ -3496,7 +3497,7 @@ class Graph:
             return None
 
         if edge.start not in self.vertex_vertices[edge.end] or edge.end not in self.vertex_vertices[edge.start]:
-            raise ValueError("Edge not properly implemented in graph")
+            raise ValueError(f"Edge not properly implemented in graph: {edge}")
 
         if len(self.vertex_vertices[edge.start]) == 1:
             # deadend at starting point of edge
