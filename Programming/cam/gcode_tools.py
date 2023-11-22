@@ -548,7 +548,7 @@ def get_laser_coordinates_lists(gerber: Gerber, include_edge_cuts: bool, debug: 
     graph_unsep_unoff: Graph = gerber.blocks_to_graph(gerber.blocks[BlockType.Conductor])
 
     # Filtering the stupid tiny edges
-    graph_unsep_unoff.filter_tiny_edges()
+    graph_unsep_unoff.filter_tiny_edges()  # doesn't filter all of them ;)
 
     # seperating continious traces each into it's own graph
     graphs_sep_unoff: list[Graph] = graph_unsep_unoff.seperate()

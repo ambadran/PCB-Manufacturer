@@ -2362,6 +2362,13 @@ class Coordinate:
             return None
 
     @classmethod
+    def point_edge_oval_intersection(cls, edge: Edge, coordinate: Coordinate, block: Block) -> Optional[list[Coordinate]]:
+        '''
+        returns intersection data of a rectangle comppad
+        '''
+        pass
+
+    @classmethod
     def point_edge_intersection(cls, edge: Edge, coordinate: Coordinate, block: Block) -> Optional[list[Coordinate]]:
         '''
         Finds the intersection between edges of a graph (offseted traces) and the componentPad (offseted)
@@ -2378,10 +2385,7 @@ class Coordinate:
             return Coordinate.point_edge_rectangle_intersection(edge, coordinate, block)
 
         elif block.shape_type == ShapeType.Oval:
-            #TODO: develop this for Oval
-            # return None
-            #NOTE This is only temporary until Oval intersection algorithm is developed
-            return Coordinate.point_edge_rectangle_intersection(edge, coordinate, block)
+            return Coordinate.point_edge_oval_intersection(edge, coordinate, block)
 
         else:
             raise ValueError(f'Unkonwn ShapeType: {block.shape_type}')
