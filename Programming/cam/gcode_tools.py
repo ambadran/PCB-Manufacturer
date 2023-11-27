@@ -620,7 +620,7 @@ def generate_pcb_trace_gcode(gerber_file: str, tool: Callable, optimum_focal_dis
     # The bulk of the code is in this single line ;)
     coordinate_lists = get_laser_coordinates_lists(gerber_file, include_edge_cuts, debug=debug)  
 
-    gcode += f"Number of passes: {laser_passes}\n\n"
+    gcode += f"; Number of passes: {laser_passes}\n\n"
     for pass_num in range(laser_passes):
         gcode += f'; Pass number: {pass_num}\n'
 

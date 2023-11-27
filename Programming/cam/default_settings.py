@@ -43,13 +43,13 @@ default_settings_dict = {
     # Z positions
     "optimum_laser_Z_position": 16,  # 44mm from laser head to PCB
     # Feedrates
-    "pcb_trace_feedrate": 600,
+    "pcb_trace_feedrate": 400,
     # Power intensities
-    "laser_power": 150,
+    "laser_power": 200,
     # Include edge cut in pcb laser marking
     "include_edge_cuts": True,
     # Laser Gcode Passes
-    "laser_passes": 1,
+    "laser_passes": 3,
     # Show laser Gcode Creation Debugging info and visualization :)
     'debug_laser': False,
 
