@@ -437,11 +437,13 @@ if __name__ == '__main__':
     # gerber_file_path = 'gerber_files/test.gbr'
     # gerber_file_path = '/home/mr-atom/circuit_projects/current_sensor/current_sensor/Gerber/current_sensor-F_Cu.gbr'
     # gerber_file_path = '/Users/ambadran717/circuit_projects/unipolar_driver V2/Circuit/Circuit/Gerber/unipolar stepper driver-F_Cu.gbr'
-    gerber_file_path = '/Users/ambadran717/circuit_projects/current-sensor V1/current_sensor/Gerber/current_sensor-F_Cu.gbr'
+    # gerber_file_path = '/Users/ambadran717/circuit_projects/current-sensor V1/current_sensor/Gerber/current_sensor-F_Cu.gbr'
+    gerber_file_path = '/home/mr-atom/Projects/PCB_manufacturer/Circuit/limit_switch/Gerber/limit_switch-F_Cu.gbr'
 
 
     # new_file_name = '/Users/ambadran717/circuit_projects/unipolar_driver V2/Circuit/Circuit/Gerber/mirrored_offseted.gbr'
-    new_file_name = '/Users/ambadran717/circuit_projects/current-sensor V1/current_sensor/Gerber/mirrored_offseted.gbr'
+    # new_file_name = '/Users/ambadran717/circuit_projects/current-sensor V1/current_sensor/Gerber/mirrored_offseted.gbr'
+    new_file_name= '/home/mr-atom/Projects/PCB_manufacturer/Circuit/limit_switch/Gerber/mirrored_offseted.gbr'
 
     # Offset PCB from (0, 0)
     x_offset = 2

@@ -2855,7 +2855,11 @@ class Graph:
         ordered_edges = []
 
         visited = set()
-        next_edge = list(self.vertex_edges.values())[0][0]
+        try:
+            next_edge = list(self.vertex_edges.values())[0][0]
+        except IndexError:
+            raise IndexError("self: ", self, self.vertex_edges)
+
         while len(visited) < self.edge_count:
 
             # print()
