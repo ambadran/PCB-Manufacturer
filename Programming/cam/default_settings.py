@@ -49,7 +49,7 @@ default_settings_dict = {
     # Include edge cut in pcb laser marking
     "include_edge_cuts": True,
     # Laser Gcode Passes
-    "laser_passes": 3,
+    "laser_passes": 1,
     # Show laser Gcode Creation Debugging info and visualization :)
     'debug_laser': False,
 
