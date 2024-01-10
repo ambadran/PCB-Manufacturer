@@ -1,0 +1,11 @@
+"Id";"Designator";"Footprint";"Quantity";"Designation";"Supplier and ref";
+1;"J1";"JST_EH_S3B-EH_1x03_P2.50mm_Horizontal";1;"Conn_01x03_Socket";;;
+2;"Q3";"TO-92_Inline";1;"S8550";;;
+3;"R3,R2";"R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal";2;"1k";;;
+4;"Q2,Q1,Q4";"TO-92_Inline";3;"S8050";;;
+5;"DC_Motor_Terminal1";"TerminalBlock_bornier-2_P5.08mm";1;"Screw_Terminal_01x02";;;
+6;"Q5";"TO-220-3_Vertical";1;"IRF540N";;;
+7;"R1";"R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal";1;"10k";;;
+8;"CP1";"CP_Radial_D5.0mm_P2.50mm";1;"10uF";;;
+9;"D1";"D_DO-27_P12.70mm_Horizontal";1;"SR360";;;
+10;"C1";"C_Disc_D5.0mm_W2.5mm_P2.50mm";1;"100nF";;;
