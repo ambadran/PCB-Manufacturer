@@ -22,57 +22,44 @@
 # THE SOFTWARE.
 #-----------------------------------------------------------------------------
 
-#Basic WiFi configuration:
-
+from machine import reset, SoftI2C, Pin
+from pmu import cam_power_on
+import ssd1306f
+import camera
+import cam_config as cc
 from time import sleep
-import network
-import site
 
-class Sta:
+# Switch on camera power controlled by AXP2101
+cam_power_on()
 
-   AP = "iPhone 15 Pro" 
-   PWD = "12345678"
+# camera
+camera.conf(cc.FRAMESIZE, cc.FRAMESIZE_QQVGA) # 160x120
+camera.conf(cc.PIXFORMAT, cc.PIXFORMAT_GRAYSCALE)
+cam = camera.init()
 
-   def __init__(my, ap='', pwd=''):
-      network.WLAN(network.AP_IF).active(False) # disable access point
-      my.wlan = network.WLAN(network.STA_IF)
-      my.wlan.active(True)
-      if ap == '':
-        my.ap = Sta.AP
-        my.pwd = Sta.PWD 
-      else:
-        my.ap = ap
-        my.pwd = pwd
+if not cam:
+   print('No camera. Hard reset!!')
+   sleep(5)
+   reset()
 
-   def connect(my, ap='', pwd=''):
-      if ap != '':
-        my.ap = ap
-        my.pwd = pwd
+# liligo t-camera board
+i2c = SoftI2C(Pin(6), Pin(7)) # id, scl, sda
+# i2c.scan() # [52, 60]
+display = ssd1306f.SSD1306_I2C(128, 64, i2c)
 
-      if not my.wlan.isconnected(): 
-        my.wlan.connect(my.ap, my.pwd)
+@micropython.native
+def see(dark = 120): # dark threshold value default 120
+   # display.invert(1) # 1 invert / 0 normal
+   while True:
+      img=camera.capture_bmp()[160*10:] # skip 10 row from captured image
+      for y in range(64):
+          cnt=160*y
+          for x in range(128):
+            display.pixel(x,y,(0 if img[cnt]<dark else 1))
+            cnt+=1
+      display.show()
 
-   def status(my):
-      if my.wlan.isconnected():
-        return my.wlan.ifconfig()
-      else:
-        return ()
+print('Ready, system start')
+see(150) # start
 
-   def wait(my):
-      cnt = 30
-      while cnt > 0:
-         print("Waiting ..." )
-         # con(my.ap, my.pwd) # Connect to an AP
-         if my.wlan.isconnected():
-           print("Connected to %s" % my.ap)
-           print('network config:', my.wlan.ifconfig())
-           site.server=my.wlan.ifconfig()[0]
-           cnt = 0
-         else:
-           sleep(5)
-           cnt -= 5
-      return
-
-   def scan(my):
-      return my.wlan.scan()   # Scan for available access points
 

@@ -145,8 +145,8 @@ if cam:
       reset()
 
 # set auth
-auth.on=True
-#auth.on=False  # False: no authentication needed
+# auth.on=True
+auth.on=False  # False: no authentication needed
 
 if auth.on:
    auth.pwd=pwd()
