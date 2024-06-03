@@ -1,0 +1,17 @@
+SpinTimer	KEYWORD1
+action	KEYWORD2
+attachAction	KEYWORD2
+start	KEYWORD2
+cancel	KEYWORD2
+isExpired	KEYWORD2
+isRunning	KEYWORD2
+tick	KEYWORD2
+
+SpinTimerAction	KEYWORD1
+timeExpired	KEYWORD2
+
+SpinTimerContext	KEYWORD1
+instance	KEYWORD2
+handleTick	KEYWORD2
+
+scheduleTimers	KEYWORD2

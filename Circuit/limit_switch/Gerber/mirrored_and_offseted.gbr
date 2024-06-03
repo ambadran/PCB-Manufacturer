@@ -12,10 +12,10 @@ G04 Created by KiCad (PCBNEW 7.0.10-7.0.10~ubuntu22.04.1) date 2024-02-16 15:51:
 G01*
 G04 APERTURE LIST*
 G04 Aperture macros list*
-%AMRoundRect*0 ,Rectangle with rounded corners *0 ,$1 Rounding radius *0 ,$2 $3 $4 $5 $6 $7 $8 $9 X,Y pos of 4 corners *0 ,Add a 4 corners polygon primitive as box body *4,1,4,-0.75,0.6,-0.75,-0.6,
+%AMRoundRect*0 ,,,,Rectangle with rounded corners *0 ,,,,$1 Rounding radius *0 ,,,,$2 $3 $4 $5 $6 $7 $8 $9 X,Y pos of 4 corners *0 ,,,,Add a 4 corners polygon primitive as box body *4,1,4,-0.75,0.6,-0.75,-0.6,
 0.75,-0.6,
 0.75,0.6,
--0.75,0.6,0.0*0 ,Add four circle primitives for the rounded corners *1,1,0.5,-0.75,0.6*1,1,0.5,-0.75,-0.6*1,1,0.5,0.75,-0.6*1,1,0.5,0.75,0.6*0 ,Add four rect primitives between the rounded corners *20,1,0.5,-0.75,0.6,-0.75,-0.6,0.0*20,1,0.5,-0.75,-0.6,0.75,-0.6,0.0*20,1,0.5,0.75,-0.6,0.75,0.6,0.0*20,1,0.5,0.75,0.6,-0.75,0.6,0.0*%
+-0.75,0.6,0.0*0 ,,,,Add four circle primitives for the rounded corners *1,1,0.5,-0.75,0.6*1,1,0.5,-0.75,-0.6*1,1,0.5,0.75,-0.6*1,1,0.5,0.75,0.6*0 ,,,,Add four rect primitives between the rounded corners *20,1,0.5,-0.75,0.6,-0.75,-0.6,0.0*20,1,0.5,-0.75,-0.6,0.75,-0.6,0.0*20,1,0.5,0.75,-0.6,0.75,0.6,0.0*20,1,0.5,0.75,0.6,-0.75,0.6,0.0*%
 G04 Aperture macros list end*
 %TA.AperFunction,ComponentPad*%
 %ADD10O,1.95X1.7*%
