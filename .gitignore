@@ -26,3 +26,4 @@ __pychache__
 */private.xml
 *.vim
 *.csv#
+*.gcode
